@@ -3,17 +3,16 @@ set -e
 
 # Config
 # TODO add number of organisations and channels
-chain_channel="federation_channel"
+chain_channel="federation-channel"
 chaincode_name="federation"
-chaincode_path="../chaincode/federation"
+chaincode_path="../federated-learning/chaincode/federation"
 
 # Bring network up - single node Raft 
 ./network.sh down # remove any containers from previous runs (optional)
 ./network.sh up
 
 # Create channel
-./network.sh createChannel
-
+./network.sh createChannel -c $chain_channel
 
 # Deploy chaincode 
 ./network.sh deployCC \
@@ -37,8 +36,8 @@ peer chaincode invoke \
   --ordererTLSHostnameOverride orderer.example.com \
   --tls \
   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-  -C $chaincode_name \
-  -n $chain_channel \
+  -C $chain_channel \
+  -n $chaincode_name \
   --peerAddresses localhost:7051 \
   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
   --peerAddresses localhost:9051 \
