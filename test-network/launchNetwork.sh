@@ -5,7 +5,7 @@ set -e
 # TODO add number of organisations and channels
 chain_channel="federation-channel"
 chaincode_name="federation"
-chaincode_path="../federated-learning/chaincode/federation"
+chaincode_path="../federated-learning/chaincode/federation/"
 
 # Bring network up - single node Raft 
 ./network.sh down # remove any containers from previous runs (optional)
