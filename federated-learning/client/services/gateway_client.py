@@ -1,12 +1,14 @@
 import requests
 import json
+import os
+from ..utils import get_file_path 
 
 # Base URL of the NestJS server
 BASE_URL = 'http://localhost:3000/gateway'  # Adjust port if needed
 
 def get_hello():
     response = requests.get(f'{BASE_URL}/hello')
-    return response.json()
+    return response.text
 
 def upload_file(file_path):
     files = {'file': open(file_path, 'rb')}
@@ -33,22 +35,23 @@ if __name__ == "__main__":
     print(hello_response)
 
     # Call the upload_file endpoint
-    file_upload_response = upload_file('path/to/your/file.txt')  # Update with the correct file path
-    print(file_upload_response)
+    # file_path = get_file_path('./data/20MB_file.txt')
+    # file_upload_response = upload_file(file_path)  # Update with the correct file path
+    # print(file_upload_response)
 
-    # Initialize the ledger
-    init_ledger_response = init_ledger()
-    print(init_ledger_response)
+    # # Initialize the ledger
+    # init_ledger_response = init_ledger()
+    # print(init_ledger_response)
 
-    # Get all models
+    # # Get all models
     all_models_response = get_all_models()
     print(all_models_response)
 
-    # Create a new model
-    new_model = {
-        'id': 'model123',
-        'size': 5,
-        'owner': 'Alice'
-    }
-    create_model_response = create_model(new_model)
-    print(create_model_response)
+    # # Create a new model
+    # new_model = {
+    #     'id': 'model123',
+    #     'size': 5,
+    #     'owner': 'Alice'
+    # }
+    # create_model_response = create_model(new_model)
+    # print(create_model_response)

@@ -126,6 +126,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   }
   
   getHello(): string {
+    console.log('Say hello to the world!');
     return 'Hello World!';
   }
 
