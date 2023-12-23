@@ -1,0 +1,54 @@
+import requests
+import json
+
+# Base URL of the NestJS server
+BASE_URL = 'http://localhost:3000/gateway'  # Adjust port if needed
+
+def get_hello():
+    response = requests.get(f'{BASE_URL}/hello')
+    return response.json()
+
+def upload_file(file_path):
+    files = {'file': open(file_path, 'rb')}
+    response = requests.post(f'{BASE_URL}/upload', files=files)
+    return response.json()
+
+def init_ledger():
+    response = requests.get(f'{BASE_URL}/initLedger')
+    return response.json()
+
+def get_all_models():
+    response = requests.get(f'{BASE_URL}/allModels')
+    return response.json()
+
+def create_model(model_data):
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(f'{BASE_URL}/model', headers=headers, data=json.dumps(model_data))
+    return response.json()
+
+# Example usage:
+if __name__ == "__main__":
+    # Call the get_hello endpoint
+    hello_response = get_hello()
+    print(hello_response)
+
+    # Call the upload_file endpoint
+    file_upload_response = upload_file('path/to/your/file.txt')  # Update with the correct file path
+    print(file_upload_response)
+
+    # Initialize the ledger
+    init_ledger_response = init_ledger()
+    print(init_ledger_response)
+
+    # Get all models
+    all_models_response = get_all_models()
+    print(all_models_response)
+
+    # Create a new model
+    new_model = {
+        'id': 'model123',
+        'size': 5,
+        'owner': 'Alice'
+    }
+    create_model_response = create_model(new_model)
+    print(create_model_response)
