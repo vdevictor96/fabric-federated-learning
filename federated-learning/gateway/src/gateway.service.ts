@@ -7,7 +7,6 @@ import {
   signers,
   Gateway,
   Network,
-  ConnectOptions,
 } from '@hyperledger/fabric-gateway';
 import { Client, credentials } from '@grpc/grpc-js';
 import { promises as fs } from 'fs';
@@ -25,7 +24,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
 
   static readonly CHANNEL_NAME: string = GatewayService.envOrDefault(
     'CHANNEL_NAME',
-    'federationchanneal',
+    'federation-channel',
   );
   static readonly CHAINCODE_NAME: string = GatewayService.envOrDefault(
     'CHAINCODE_NAME',
@@ -66,7 +65,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       'User1@org1.example.com',
       'msp',
       'signcerts',
-      'cert.pem',
+      'User1@org1.example.com-cert.pem'
     ),
   );
   static readonly TLS_CERT_PATH: string = GatewayService.envOrDefault(
@@ -93,37 +92,32 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   private client: Client | undefined;
   private gateway: Gateway | undefined;
 
-  private networkName: string | undefined;
-  // private lastNetworkName: string | undefined;
   private _network: Network | undefined;
 
-  private chaincodeName: string | undefined;
-  // private lastChaincodeName: string | undefined;
   private _contract: Contract | undefined;
 
-  onModuleInit() {
-     // Prepare Fabric
-//     const client = new Client();
-//     const orgInfo = getOrgInfo(shardId);
-//     const connectionProfile = await getConnectionProfile(orgInfo.connectionProfile);
-//     const caClient = buildCAClient(connectionProfile, orgInfo.hostname);
-//     const wallet = await createWallet(expressPort.toString());
-//     await enrollAdmin(caClient, wallet, orgInfo.msp_org);
-//     await registerAndEnrollUser(
-//         caClient,
-//         wallet,
-//         orgInfo.msp_org,
-//         `${USER_ID}${expressPort}`,
-//         USER_AFFILIATION
-//     );
-//     client.connect(connectionProfile, {
-//         wallet,
-//         identity: `${USER_ID}${expressPort}`,
-//         discovery: { enabled: true }
-//     });
+  async onModuleInit() {
+    // Prepare Fabric
+    // const client = new Client();
+    // const orgInfo = getOrgInfo(shardId);
+    // const connectionProfile = await getConnectionProfile(orgInfo.connectionProfile);
+    // const caClient = buildCAClient(connectionProfile, orgInfo.hostname);
+    // const wallet = await createWallet(expressPort.toString());
+    // await enrollAdmin(caClient, wallet, orgInfo.msp_org);
+    // await registerAndEnrollUser(
+    //     caClient,
+    //     wallet,
+    //     orgInfo.msp_org,
+    //     `${USER_ID}${expressPort}`,
+    //     USER_AFFILIATION
+    // );
+    // client.connect(connectionProfile, {
+    //     wallet,
+    //     identity: `${USER_ID}${expressPort}`,
+    //     discovery: { enabled: true }
+    // });
 
-    // TODO remove comment
-    // this.connect();
+    await this.connect();
     console.log(`The module has been initialized.`);
   }
 
@@ -182,8 +176,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   //   }
 
   public async getNetwork(): Promise<Network | undefined> {
-    if (!this.networkName) return;
-    this._network = await this.gateway?.getNetwork(this.networkName);
+    this._network = await this.gateway?.getNetwork(GatewayService.CHANNEL_NAME);
     return this._network;
   }
 
@@ -201,10 +194,9 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   //   }
 
   public async getContract(): Promise<Contract | undefined> {
-    if (!this.networkName || !this.chaincodeName) return;
     if (!this._network) await this.getNetwork();
     if (!this._network) return;
-    this._contract = this._network?.getContract(this.chaincodeName);
+    this._contract = this._network?.getContract(GatewayService.CHAINCODE_NAME);
     return this._contract;
   }
 
