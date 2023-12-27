@@ -13,7 +13,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { Response } from 'express';
-import { ModelDto } from './model.dto'; // Adjust the import path as needed
+import { ModelDto } from './dtos/model.dto'; // Adjust the import path as needed
+import { ModelParams } from './interfaces/model-params';
 
 @Controller('gateway')
 export class GatewayController {
@@ -116,6 +117,43 @@ export class GatewayController {
         .json({ message: 'Model created succesfully' });
     } catch (error: any) {
       console.error('Error creating model', error.message);
+      return response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'Error creating model', error: error.message });
+    }
+  }
+
+  /**
+   * Submit a transaction synchronously, blocking until it has been committed to the ledger.
+   */
+  @Post('local-model')
+  public async submitLocalModel(
+    @Body() modelParams: ModelParams,
+    @Res() response: Response,
+  ) {
+    try {
+      console.log(modelParams);
+
+      for (const [key, value] of Object.entries(modelParams)) {
+        console.log(key);
+        console.log(value);
+        console.log(value.length);
+      }
+
+      console.log(
+        '\n--> Submit Transaction: SubmitLocalModel, submits local trained model',
+      );
+      // TODO Receive the model id in the post request
+      const modelId = 'modelID';
+      const jsonParams = JSON.stringify(modelParams);
+      const contract = await this.gatewayService.getContract();
+      await contract.submitTransaction('SubmitLocalModel', modelId, jsonParams);
+      console.log('*** Transaction committed successfully');
+      return response
+        .status(HttpStatus.OK)
+        .json({ message: 'Model submitted succesfully' });
+    } catch (error: any) {
+      console.error('Error submitting model', error.message);
       return response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: 'Error creating model', error: error.message });

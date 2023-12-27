@@ -1,7 +1,7 @@
 import requests
 import json
 import os
-from ..utils import get_file_path 
+from ..utils import get_file_path, serialize_model
 
 # Base URL of the NestJS server
 BASE_URL = 'http://localhost:3000/gateway'  # Adjust port if needed
@@ -28,6 +28,16 @@ def create_model(model_data):
     response = requests.post(f'{BASE_URL}/model', headers=headers, data=json.dumps(model_data))
     return response.json()
 
+def submit_local_model(model_params):
+    headers = {'Content-Type': 'application/json'}
+    json_data = serialize_model(model_params)
+    response = requests.post(f'{BASE_URL}/local-model', headers=headers, data=json_data)
+    return response.json()
+
+
+
+
+    
 # Example usage:
 if __name__ == "__main__":
     # Call the get_hello endpoint
