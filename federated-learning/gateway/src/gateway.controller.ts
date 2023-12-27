@@ -108,7 +108,7 @@ export class GatewayController {
       await contract.submitTransaction(
         'CreateModel',
         modelDto.id,
-        modelDto.size.toString(),
+        modelDto.modelParams,
         modelDto.owner,
       );
       console.log('*** Transaction committed successfully');
@@ -132,13 +132,13 @@ export class GatewayController {
     @Res() response: Response,
   ) {
     try {
-      console.log(modelParams);
+      // console.log(modelParams);
 
-      for (const [key, value] of Object.entries(modelParams)) {
-        console.log(key);
-        console.log(value);
-        console.log(value.length);
-      }
+      // for (const [key, value] of Object.entries(modelParams)) {
+      //   console.log(key);
+      //   console.log(value);
+      //   console.log(value.length);
+      // }
 
       console.log(
         '\n--> Submit Transaction: SubmitLocalModel, submits local trained model',

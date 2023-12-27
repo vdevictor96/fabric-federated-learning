@@ -1,5 +1,5 @@
 export class ModelDto {
   id: string;
-  size: number;
+  modelParams: string;
   owner: string;
 }

@@ -1,7 +1,7 @@
-import {Context, Contract, Info, Returns, Transaction} from 'fabric-contract-api';
+import {Context, Contract, Info, Returns, Transaction, ClientIdentity } from 'fabric-contract-api';
 import stringify from 'json-stringify-deterministic';
 import sortKeysRecursive from 'sort-keys-recursive';
-import {Model} from './model';
+import {Model, ModelParams} from './model';
 
 @Info({title: 'ModelTransfer', description: 'Smart contract for submitting models'})
 export class ModelTransferContract extends Contract {
@@ -11,22 +11,22 @@ export class ModelTransferContract extends Contract {
         const models: Model[] = [
             {
                 ID: 'model1',
-                Size: 5,
+                ModelParams: "",
                 Owner: 'Tomoko',
             },
             {
                 ID: 'model2',
-                Size: 5,
+                ModelParams: "",
                 Owner: 'Brad',
             },
             {
                 ID: 'model3',
-                Size: 10,
+                ModelParams: "",
                 Owner: 'Jin Soo',
             },
             {
                 ID: 'model4',
-                Size: 10,
+                ModelParams: "",
                 Owner: 'Max',
             },
         ];
@@ -43,7 +43,9 @@ export class ModelTransferContract extends Contract {
 
     // CreateModel issues a new model to the world state with given details.
     @Transaction()
-    public async CreateModel(ctx: Context, id: string, size: number, owner: string): Promise<void> {
+    public async CreateModel(ctx: Context, id: string, modelParams: string, owner: string): Promise<void> {
+        // const clientIdentity = new ClientIdentity(ctx.stub);
+        // const clientId = clientIdentity.getID();
         const exists = await this.ModelExists(ctx, id);
         if (exists) {
             throw new Error(`The model ${id} already exists`);
@@ -51,12 +53,44 @@ export class ModelTransferContract extends Contract {
 
         const model = {
             ID: id,
-            Size: size,
+            modelParams: modelParams,
             Owner: owner,
         };
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(model))));
     }
+
+    // CreateModel issues a new model to the world state with given details.
+    @Transaction()
+    public async SubmitLocalModel(ctx: Context, id: string, jsonParams: string): Promise<void> {
+        // console.log(jsonParams);
+        // const clientIdentity = new ClientIdentity(ctx.stub);
+        // const clientId = clientIdentity.getID();
+
+        const exists = await this.ModelExists(ctx, id);
+        if (exists) {
+            throw new Error(`The model ${id} already exists`);
+        }
+
+        const modelParams: ModelParams = JSON.parse(jsonParams);
+        console.log(modelParams);
+
+        // for (const [key, value] of Object.entries(modelParams)) {
+        //     console.log(key);
+        //     console.log(value);
+        //     console.log(value.length);
+        // }
+
+        const model = {
+            ID: id,
+            ModelParams: jsonParams,
+            Owner: 'Victor'
+        };
+        // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(model))));
+    }
+
+
 
     // ReadModel returns the model stored in the world state with given id.
     @Transaction(false)

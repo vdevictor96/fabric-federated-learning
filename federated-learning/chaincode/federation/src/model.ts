@@ -1,6 +1,3 @@
-/*
- TODO remove - temp file for testing
-*/
 
 import {Object, Property} from 'fabric-contract-api';
 
@@ -11,9 +8,15 @@ export class Model {
     public ID: string;
 
     @Property()
-    public Size: number;
+    public ModelParams: string; // Base64 encoded string of the .pt file
 
     @Property()
     public Owner: string;
 
 }
+
+
+export interface ModelParams {
+    [key: string]: number[][];
+  }
+  
