@@ -73,5 +73,5 @@ def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learni
             print('Validation accuracy is: {} %'.format(100 * correct / total))
 
     # Save the model checkpoint
-    torch.save(model.state_dict(), pjoin(modelpath, modelname, '.ckpt'))
+    torch.save(model.state_dict(), pjoin(modelpath, modelname + '.ckpt'))
     # torch.save(last_model, pjoin(modelpath, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))
