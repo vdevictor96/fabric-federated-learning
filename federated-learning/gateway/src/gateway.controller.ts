@@ -161,8 +161,9 @@ export class GatewayController {
   /**
    * Submit a transaction synchronously, blocking until it has been committed to the ledger.
    */
-  @Post('local-model')
+  @Post('local-model/:id')
   public async submitLocalModel(
+    @Param('id') modelId: string,
     @Body() modelParams: ModelParams,
     @Res() response: Response,
   ) {
@@ -178,8 +179,6 @@ export class GatewayController {
       console.log(
         '\n--> Submit Transaction: SubmitLocalModel, submits local trained model',
       );
-      // TODO Receive the model id in the post request
-      const modelId = 'modelID';
       const jsonParams = JSON.stringify(modelParams);
       const contract = await this.gatewayService.getContract();
       await contract.submitTransaction('SubmitLocalModel', modelId, jsonParams);

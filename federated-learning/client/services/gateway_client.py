@@ -34,10 +34,10 @@ def create_model(model_data):
     response = requests.post(f'{BASE_URL}/model', headers=headers, data=json.dumps(model_data))
     return response.json()
 
-def submit_local_model(model_params):
+def submit_local_model(modelId, model_params):
     headers = {'Content-Type': 'application/json'}
     json_data = serialize_model(model_params)
-    response = requests.post(f'{BASE_URL}/local-model', headers=headers, data=json_data)
+    response = requests.post(f'{BASE_URL}/local-model/{modelId}', headers=headers, data=json_data)
     return response.json()
 
 
