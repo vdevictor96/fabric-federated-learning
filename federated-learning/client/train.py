@@ -7,7 +7,7 @@ import sys
 from os.path import join as pjoin
 
 
-def train(model, dataloaders, modelpath, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
+def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
 
     # Train the model
     lr = learning_rate
@@ -73,5 +73,5 @@ def train(model, dataloaders, modelpath, criterion, optimizer, learning_rate, le
             print('Validation accuracy is: {} %'.format(100 * correct / total))
 
     # Save the model checkpoint
-    torch.save(model.state_dict(), pjoin(modelpath, 'model.ckpt'))
+    torch.save(model.state_dict(), pjoin(modelpath, modelname, '.ckpt'))
     # torch.save(last_model, pjoin(modelpath, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))

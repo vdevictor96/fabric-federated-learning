@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Res,
   UploadedFile,
@@ -36,7 +37,7 @@ export class GatewayController {
     await fs.writeFile(savePath, file.buffer);
 
     // Optionally, send a response to the client
-    return response
+    response
       .status(200)
       .send({ message: 'File uploaded successfully', path: savePath });
   }
@@ -60,7 +61,7 @@ export class GatewayController {
         .json({ message: 'Ledger initialized successfully', data: res });
     } catch (error: any) {
       console.error('Error initializing ledger', error.message);
-      return response
+      response
         .status(400)
         .json({ message: 'Error initializing ledger', error: error.message });
     }
@@ -85,9 +86,43 @@ export class GatewayController {
         .json({ message: 'Models retrieved correctly', data: result });
     } catch (error: any) {
       console.error('Error retreiving models', error.message);
-      return response
+      response
         .status(400)
         .json({ message: 'Error retreiving models', error: error.message });
+    }
+  }
+
+  /**
+   * Evaluate a transaction to query ledger state.
+   */
+  @Get('model/:id')
+  public async getModelById(
+    @Param('id') modelId: string,
+    @Res() response: Response,
+  ) {
+    try {
+      console.log(
+        '\n--> Evaluate Transaction: ReadModel, function returns model attributes',
+      );
+
+      const contract = await this.gatewayService.getContract();
+      const resultBytes = await contract.evaluateTransaction(
+        'ReadModel',
+        modelId,
+      );
+
+      const resultJson = GatewayService.UTF8_DECODER.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+      console.log('*** Result:', result);
+
+      response
+        .status(200)
+        .json({ message: 'Model retrieved correctly', data: result });
+    } catch (error: any) {
+      console.error('Error retreiving model', error.message);
+      response
+        .status(400)
+        .json({ message: 'Error retreiving model', error: error.message });
     }
   }
 
@@ -112,12 +147,12 @@ export class GatewayController {
         modelDto.owner,
       );
       console.log('*** Transaction committed successfully');
-      return response
+      response
         .status(HttpStatus.OK)
         .json({ message: 'Model created succesfully' });
     } catch (error: any) {
       console.error('Error creating model', error.message);
-      return response
+      response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: 'Error creating model', error: error.message });
     }
@@ -149,12 +184,12 @@ export class GatewayController {
       const contract = await this.gatewayService.getContract();
       await contract.submitTransaction('SubmitLocalModel', modelId, jsonParams);
       console.log('*** Transaction committed successfully');
-      return response
+      response
         .status(HttpStatus.OK)
         .json({ message: 'Model submitted succesfully' });
     } catch (error: any) {
       console.error('Error submitting model', error.message);
-      return response
+      response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: 'Error creating model', error: error.message });
     }
