@@ -65,7 +65,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       'User1@org1.example.com',
       'msp',
       'signcerts',
-      'User1@org1.example.com-cert.pem'
+      'User1@org1.example.com-cert.pem',
     ),
   );
   static readonly TLS_CERT_PATH: string = GatewayService.envOrDefault(
@@ -124,7 +124,7 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
   onModuleDestroy() {
     this.disconnect();
   }
-  
+
   getHello(): string {
     console.log('Say hello to the world!');
     return 'Hello World!';

@@ -40,6 +40,11 @@ def submit_local_model(modelId, model_params):
     response = requests.post(f'{BASE_URL}/local-model/{modelId}', headers=headers, data=json_data)
     return response.json()
 
+def aggregate_models(modelIds):
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(f'{BASE_URL}/aggregate', headers=headers, data=json.dumps(modelIds))
+    return response.json()
+
 
 
 

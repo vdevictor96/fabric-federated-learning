@@ -68,3 +68,12 @@ def weights_zero_init(m):
 def update_lr(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def compare_models(model1, model2):
+    for param1, param2 in zip(model1.parameters(), model2.parameters()):
+        if param1.shape != param2.shape or not torch.equal(param1, param2):
+            return False
+    return True
