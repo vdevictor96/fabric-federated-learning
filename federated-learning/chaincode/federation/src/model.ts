@@ -5,18 +5,23 @@ import {Object, Property} from 'fabric-contract-api';
 export class Model {
    
     @Property()
-    public ID: string;
+    public id: string;
 
     @Property()
-    public ModelParams: string; // Base64 encoded string of the .pt file
+    public modelParams: string; // Base64 encoded string of the .pt file
 
     @Property()
-    public Owner: string;
+    public owner: string;
 
 }
 
 
+/*
+ * Interface for model weights, which are n dimensional arrays of numbers
+ */
+export type ModelWeights = number | ModelWeights[];
+
 export interface ModelParams {
-    [key: string]: number[][];
-  }
+  [layer: string]: ModelWeights;
+}
   

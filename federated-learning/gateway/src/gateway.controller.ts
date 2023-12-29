@@ -137,7 +137,7 @@ export class GatewayController {
     try {
       console.log(modelDto);
       console.log(
-        '\n--> Submit Transaction: CreateModel, creates new model with ID, Size, Owner',
+        '\n--> Submit Transaction: CreateModel, creates new model with ID, ModelParams, Owner',
       );
       const contract = await this.gatewayService.getContract();
       await contract.submitTransaction(
@@ -190,15 +190,40 @@ export class GatewayController {
       console.error('Error submitting model', error.message);
       response
         .status(HttpStatus.BAD_REQUEST)
-        .json({ message: 'Error creating model', error: error.message });
+        .json({ message: 'Error submitting model', error: error.message });
+    }
+  }
+
+  @Post('aggregate')
+  public async aggregateModels(
+    @Body() modelIds: string[],
+    @Res() response: Response,
+  ) {
+    try {
+      // TODO make sure the modelIds input is "[\"bcfl_model3\",\"bcfl_model_empty\"]"
+      console.log(
+        '\n--> Submit Transaction: AggregateModels, aggregates list of given models',
+      );
+      const jsonModelIds = JSON.stringify(modelIds);
+      const contract = await this.gatewayService.getContract();
+      await contract.submitTransaction('AggregateModels', jsonModelIds);
+      console.log('*** Transaction committed successfully');
+      response
+        .status(HttpStatus.OK)
+        .json({ message: 'Models aggregated succesfully' });
+    } catch (error: any) {
+      console.error('Error aggregating models', error.message);
+      response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'Error aggregating models', error: error.message });
     }
   }
 
   // TODO temp code to remove
   // used for debugging purposes
   // this code goes into the chaincode
-  @Post('aggregate')
-  public async aggregateModels(
+  @Post('aggregate-stub')
+  public async aggregateModelsStub(
     @Body() modelIds: string[],
     @Res() response: Response,
   ) {
@@ -218,7 +243,7 @@ export class GatewayController {
         throw new Error(`The model ${modelId} does not exist`);
       }
       // fill up modelWeights with all models' weights
-      const modelParams: ModelParams = JSON.parse(modelJSON.ModelParams);
+      const modelParams: ModelParams = JSON.parse(modelJSON.modelParams);
 
       modelWeights.push(modelParams);
     }

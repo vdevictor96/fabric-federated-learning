@@ -21,7 +21,7 @@ def init_ledger():
 
 def get_model(modelId):
     response = requests.get(f'{BASE_URL}/model/{modelId}')
-    json_params = response.json()['data']['ModelParams']
+    json_params = response.json()['data']['modelParams']
     model_params = json.loads(json_params)
     return model_params
 

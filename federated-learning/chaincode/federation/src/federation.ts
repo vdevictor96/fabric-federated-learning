@@ -4,39 +4,40 @@ import {
   Info,
   Returns,
   Transaction,
-  ClientIdentity,
 } from "fabric-contract-api";
 import stringify from "json-stringify-deterministic";
 import sortKeysRecursive from "sort-keys-recursive";
-import { Model, ModelParams } from "./model";
+import { Model, ModelParams, ModelWeights } from "./model";
 
 @Info({
   title: "ModelTransfer",
   description: "Smart contract for submitting models",
 })
 export class ModelTransferContract extends Contract {
+  static readonly UTF8_DECODER = new TextDecoder();
+
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
     const models: Model[] = [
       {
-        ID: "model1",
-        ModelParams: "",
-        Owner: "Tomoko",
+        id: "model1",
+        modelParams: "",
+        owner: "Tomoko",
       },
       {
-        ID: "model2",
-        ModelParams: "",
-        Owner: "Brad",
+        id: "model2",
+        modelParams: "",
+        owner: "Brad",
       },
       {
-        ID: "model3",
-        ModelParams: "",
-        Owner: "Jin Soo",
+        id: "model3",
+        modelParams: "",
+        owner: "Jin Soo",
       },
       {
-        ID: "model4",
-        ModelParams: "",
-        Owner: "Max",
+        id: "model4",
+        modelParams: "",
+        owner: "Max",
       },
     ];
 
@@ -46,10 +47,10 @@ export class ModelTransferContract extends Contract {
       // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
       // when retrieving data, in any lang, the order of data will be the same and consequently also the corresonding hash
       await ctx.stub.putState(
-        model.ID,
+        model.id,
         Buffer.from(stringify(sortKeysRecursive(model)))
       );
-      console.info(`Model ${model.ID} initialized`);
+      console.info(`Model ${model.id} initialized`);
     }
   }
 
@@ -69,9 +70,9 @@ export class ModelTransferContract extends Contract {
     }
 
     const model = {
-      ID: id,
-      modelParams: modelParams,
-      Owner: owner,
+      id,
+      modelParams,
+      owner,
     };
     // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
     await ctx.stub.putState(
@@ -104,17 +105,8 @@ export class ModelTransferContract extends Contract {
     //     console.log(value);
     //     console.log(value.length);
     // }
-
-    const model = {
-      ID: id,
-      ModelParams: jsonParams,
-      Owner: "Victor",
-    };
-    // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-    await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(model)))
-    );
+    await this.CreateModel(ctx, id, jsonParams, "Victor");
+    // return this.ReadModel(ctx, newModelId);
   }
 
   // ReadModel returns the model stored in the world state with given id.
@@ -127,70 +119,71 @@ export class ModelTransferContract extends Contract {
     return modelJSON.toString();
   }
 
-  // @Transaction(true)
-  // public async AggregateModels(ctx: Context, modelIds: string[]): Promise<string> {
-  //     const modelWeights: ModelParams[] = [];
+  @Transaction()
+  public async AggregateModels(
+    ctx: Context,
+    jsonModelIds: string
+  ): Promise<void> {
+    const modelWeights: ModelParams[] = [];
+    const aggregatedWeights: ModelParams = {};
+    const modelIds = JSON.parse(jsonModelIds);
+    // fill up model JSONs with all models
+    // fill up modelWeights with all models' weights
+    for (const modelId of modelIds) {
+      const resultBytes = await ctx.stub.getState(modelId);
+      const resultJson = ModelTransferContract.UTF8_DECODER.decode(resultBytes);
+      const modelJSON = JSON.parse(resultJson);
 
-  //     const modelJSONs = [];
-  //     // fill up model JSONs with all models
-  //     // fill up modelWeights with all models' weights
-  //     for (const modelId of modelIds) {
-  //         const modelJSON = await ctx.stub.getState(modelId);
-  //         if (!modelJSON || modelJSON.length === 0) {
-  //             throw new Error(`The model ${modelId} does not exist`);
-  //         }
-  //         const modelData = JSON.parse(modelJSON.toString());
-  //         const modelParams: ModelParams = JSON.parse(modelData.ModelParams);
-  //         modelWeights.push(modelParams);
-  //     }
-  //     // aggregate the weights
-  //     const aggregatedWeights = this.aggregateWeights(modelWeights);
+      // fill up modelWeights with all models' weights
+      const modelParams: ModelParams = JSON.parse(modelJSON.modelParams);
 
-  //     // save it as a new model using this.CreateModel
+      modelWeights.push(modelParams);
+    }
 
-  //     // convert aggregated weights to JSON and return
-  //     // Convert aggregated weights to JSON
-  //     const aggregatedModelParams = JSON.stringify(aggregatedWeights);
+    // aggregate the weights
+    for (const key in modelWeights[0]) {
+      aggregatedWeights[key] = this.aggregateWeights(
+        modelWeights.map((model) => model[key])
+      );
+    }
 
-  //     const newModelId: string = modelIds[0]+modelIds[1] ;
-  //     // Save the new aggregated model
-  //     await this.CreateModel(ctx, newModelId, aggregatedModelParams, 'Victor');
+    // save it as a new model using this.CreateModel
+    // convert aggregated weights to JSON and return
+    // Convert aggregated weights to JSON
+    const jsonParams = JSON.stringify(aggregatedWeights);
 
-  //     return this.ReadModel(ctx, newModelId);
+    const newModelId: string = modelIds[0] + "and" + modelIds[1];
 
-  // }
+    // Save the new aggregated model
+    await this.CreateModel(ctx, newModelId, jsonParams, "Victor");
 
-  // private aggregateWeights(modelWeights: ModelParams[]): ModelParams {
-  //     const aggWeights: ModelParams = {};
-  //     const modelCount = modelWeights.length;
+    // return this.ReadModel(ctx, newModelId);
+  }
 
-  //     for (const key in modelWeights[0]) {
-  //         // Initialize a 2D array for aggregated weights
-  //         const layerWeightShape = modelWeights[0][key];
-  //         const aggregatedLayerWeights: number[][] = layerWeightShape.map(row => new Array(row.length).fill(0));
+  private aggregateWeights(modelWeights: ModelWeights[]): ModelWeights {
+    if (this.isArrayOfNumbers(modelWeights)) {
+      // Base case: array of numbers
+      return (
+        modelWeights.reduce((sum, num) => Number(sum) + Number(num), 0) /
+        modelWeights.length
+      );
+    } else {
+      // Recursive case: array of arrays
+      const length = (modelWeights[0] as ModelWeights[]).length;
+      const aggregated = new Array(length)
+        .fill(null)
+        .map((_, i) =>
+          this.aggregateWeights(
+            modelWeights.map((array) => (array as ModelWeights[])[i])
+          )
+        );
+      return aggregated;
+    }
+  }
 
-  //         // Aggregate weights for each layer
-  //         for (const weights of modelWeights) {
-  //             const layerWeights = weights[key];
-  //             for (let i = 0; i < layerWeights.length; i++) {
-  //                 for (let j = 0; j < layerWeights[i].length; j++) {
-  //                     aggregatedLayerWeights[i][j] += layerWeights[i][j];
-  //                 }
-  //             }
-  //         }
-
-  //         // Average the weights
-  //         for (let i = 0; i < aggregatedLayerWeights.length; i++) {
-  //             for (let j = 0; j < aggregatedLayerWeights[i].length; j++) {
-  //                 aggregatedLayerWeights[i][j] /= modelCount;
-  //             }
-  //         }
-
-  //         aggWeights[key] = aggregatedLayerWeights;
-  //     }
-
-  //     return aggWeights;
-  // }
+  private isArrayOfNumbers(array: ModelWeights[]): array is number[] {
+    return array.every((element) => typeof element === "number");
+  }
 
   // UpdateModel updates an existing model in the world state with provided parameters.
   @Transaction()
@@ -207,9 +200,9 @@ export class ModelTransferContract extends Contract {
 
     // overwriting original model with new model
     const updatedModel = {
-      ID: id,
+      id: id,
       Size: size,
-      Owner: owner,
+      owner: owner,
     };
     // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
     return ctx.stub.putState(
@@ -245,8 +238,8 @@ export class ModelTransferContract extends Contract {
   ): Promise<string> {
     const modelString = await this.ReadModel(ctx, id);
     const model = JSON.parse(modelString);
-    const oldOwner = model.Owner;
-    model.Owner = newOwner;
+    const oldOwner = model.owner;
+    model.owner = newOwner;
     // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
     await ctx.stub.putState(
       id,
