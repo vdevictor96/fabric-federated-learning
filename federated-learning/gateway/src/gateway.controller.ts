@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -127,6 +128,34 @@ export class GatewayController {
   }
 
   /**
+   * Evaluate a transaction to query ledger state.
+   */
+  @Delete('model/:id')
+  public async deleteModelById(
+    @Param('id') modelId: string,
+    @Res() response: Response,
+  ) {
+    try {
+      console.log(
+        '\n--> Evaluate Transaction: DeleteModel, function deletes model',
+      );
+
+      const contract = await this.gatewayService.getContract();
+      await contract.submitTransaction('DeleteModel', modelId);
+
+      console.log('*** Transaction committed successfully');
+      response
+        .status(HttpStatus.OK)
+        .json({ message: 'Model deleted succesfully' });
+    } catch (error: any) {
+      console.error('Error deleting model', error.message);
+      response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'Error deleting model', error: error.message });
+    }
+  }
+
+  /**
    * Submit a transaction synchronously, blocking until it has been committed to the ledger.
    */
   @Post('model')
@@ -218,6 +247,10 @@ export class GatewayController {
         .json({ message: 'Error aggregating models', error: error.message });
     }
   }
+
+  /**
+   * TEMP CODE --------------------------------------------------------
+   */
 
   // TODO temp code to remove
   // used for debugging purposes
