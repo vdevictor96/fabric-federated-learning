@@ -86,7 +86,7 @@ export class ModelTransferContract extends Contract {
   public async SubmitLocalModel(
     ctx: Context,
     id: string,
-    jsonParams: string
+    modelParams: string
   ): Promise<void> {
     // console.log(jsonParams);
     // const clientIdentity = new ClientIdentity(ctx.stub);
@@ -97,15 +97,12 @@ export class ModelTransferContract extends Contract {
       throw new Error(`The model ${id} already exists`);
     }
 
-    const modelParams: ModelParams = JSON.parse(jsonParams);
-    console.log(modelParams);
-
     // for (const [key, value] of Object.entries(modelParams)) {
     //     console.log(key);
     //     console.log(value);
     //     console.log(value.length);
     // }
-    await this.CreateModel(ctx, id, jsonParams, "Victor");
+    await this.CreateModel(ctx, id, modelParams, "Victor");
     // return this.ReadModel(ctx, newModelId);
   }
 

@@ -1,54 +1,65 @@
 import requests
 import json
 import os
-from ..utils import get_file_path, serialize_model
+from os.path import join as pjoin
+from ..utils import get_file_path, serialize_model_json, serialize_model_msgpack, compress_json_data
 
 # Base URL of the NestJS server
 BASE_URL = 'http://localhost:3000/gateway'  # Adjust port if needed
 
+
 def get_hello():
     response = requests.get(f'{BASE_URL}/hello')
     return response.text
+
 
 def upload_file(file_path):
     files = {'file': open(file_path, 'rb')}
     response = requests.post(f'{BASE_URL}/upload', files=files)
     return response.json()
 
+
 def init_ledger():
     response = requests.get(f'{BASE_URL}/initLedger')
     return response.json()
 
+
 def get_model(modelId):
     response = requests.get(f'{BASE_URL}/model/{modelId}')
-    json_params = response.json()['data']['modelParams']
-    model_params = json.loads(json_params)
-    return model_params
+    model = response.json()['data']
+    return model
+
 
 def get_all_models():
     response = requests.get(f'{BASE_URL}/allModels')
     return response.json()
 
+
 def create_model(model_data):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(f'{BASE_URL}/model', headers=headers, data=json.dumps(model_data))
+    response = requests.post(
+        f'{BASE_URL}/model', headers=headers, data=json.dumps(model_data))
     return response.json()
 
-def submit_local_model(modelId, model_params):
-    headers = {'Content-Type': 'application/json'}
-    json_data = serialize_model(model_params)
-    response = requests.post(f'{BASE_URL}/local-model/{modelId}', headers=headers, data=json_data)
+
+def submit_model(modelId, model_params, first_n=0, last_n=0):
+    # headers = {'Content-Type': 'application/octet-stream'}
+    headers = {'Content-Type': 'text/plain'}
+
+    # json_data = serialize_model_json(model_params, first_n, last_n)
+    encoded_model = serialize_model_msgpack(model_params, first_n, last_n)
+    response = requests.post(
+        f'{BASE_URL}/local-model/{modelId}', headers=headers, data=encoded_model)
     return response.json()
+
 
 def aggregate_models(modelIds):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(f'{BASE_URL}/aggregate', headers=headers, data=json.dumps(modelIds))
+    response = requests.post(
+        f'{BASE_URL}/aggregate', headers=headers, data=json.dumps(modelIds))
     return response.json()
 
 
-
-
-    
 # Example usage:
 if __name__ == "__main__":
     # Call the get_hello endpoint

@@ -114,7 +114,7 @@ export class GatewayController {
 
       const resultJson = GatewayService.UTF8_DECODER.decode(resultBytes);
       const result = JSON.parse(resultJson);
-      console.log('*** Result:', result);
+      // console.log('*** Result:', result);
 
       response
         .status(200)
@@ -193,7 +193,7 @@ export class GatewayController {
   @Post('local-model/:id')
   public async submitLocalModel(
     @Param('id') modelId: string,
-    @Body() modelParams: ModelParams,
+    @Body() encodedModelParams: string,
     @Res() response: Response,
   ) {
     try {
@@ -208,9 +208,12 @@ export class GatewayController {
       console.log(
         '\n--> Submit Transaction: SubmitLocalModel, submits local trained model',
       );
-      const jsonParams = JSON.stringify(modelParams);
       const contract = await this.gatewayService.getContract();
-      await contract.submitTransaction('SubmitLocalModel', modelId, jsonParams);
+      await contract.submitTransaction(
+        'SubmitLocalModel',
+        modelId,
+        encodedModelParams,
+      );
       console.log('*** Transaction committed successfully');
       response
         .status(HttpStatus.OK)
