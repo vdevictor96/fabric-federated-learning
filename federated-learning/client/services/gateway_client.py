@@ -2,8 +2,7 @@ import requests
 import json
 import os
 from os.path import join as pjoin
-from ..utils import get_file_path, serialize_model_json, serialize_model_msgpack, compress_json_data
-
+from ..utils import get_file_path, serialize_model_json, serialize_model_msgpack
 # Base URL of the NestJS server
 BASE_URL = 'http://localhost:3000/gateway'  # Adjust port if needed
 

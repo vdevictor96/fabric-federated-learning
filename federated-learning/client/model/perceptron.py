@@ -32,6 +32,18 @@ class MultiLayerPerceptron(nn.Module):
             layers.append(nn.ReLU())
         layers.append(nn.Linear(hidden_layers[-1], num_classes))
         self.layers = nn.Sequential(*layers)
-
+        # Apply weights initialization
+        self.apply(self.weights_init)
+        
     def forward(self, x):
         return self.layers(x)
+    
+    
+    def weights_init(self, m):
+        if type(m) == nn.Linear:
+            m.weight.data.normal_(0.0, 1e-3)
+            m.bias.data.fill_(0.)
+            
+    def zero_init(self):
+        for param in self.parameters():
+            nn.init.zeros_(param)

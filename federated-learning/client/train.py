@@ -1,4 +1,4 @@
-from .utils import weights_init, update_lr
+from .utils import update_lr
 import torch
 import torch.nn as nn
 import torchvision

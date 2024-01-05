@@ -1,3 +1,5 @@
+import * as zlib from 'zlib';
+import { decode, encode } from '@msgpack/msgpack';
 import {
   Body,
   Controller,
@@ -79,6 +81,32 @@ export class GatewayController {
       );
       const contract = await this.gatewayService.getContract();
       const resultBytes = await contract.evaluateTransaction('GetAllModels');
+      const resultJson = GatewayService.UTF8_DECODER.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+      console.log('*** Result:', result);
+      response
+        .status(200)
+        .json({ message: 'Models retrieved correctly', data: result });
+    } catch (error: any) {
+      console.error('Error retreiving models', error.message);
+      response
+        .status(400)
+        .json({ message: 'Error retreiving models', error: error.message });
+    }
+  }
+
+  /**
+   * Evaluate a transaction to query ledger state.
+   */
+  @Get('allModelNames')
+  public async getAllModelNames(@Res() response: Response) {
+    try {
+      console.log(
+        '\n--> Evaluate Transaction: GetAllModelNames, function returns all the current model names on the ledger',
+      );
+      const contract = await this.gatewayService.getContract();
+      const resultBytes =
+        await contract.evaluateTransaction('GetAllModelNames');
       const resultJson = GatewayService.UTF8_DECODER.decode(resultBytes);
       const result = JSON.parse(resultJson);
       console.log('*** Result:', result);
@@ -232,7 +260,6 @@ export class GatewayController {
     @Res() response: Response,
   ) {
     try {
-      // TODO make sure the modelIds input is "[\"bcfl_model3\",\"bcfl_model_empty\"]"
       console.log(
         '\n--> Submit Transaction: AggregateModels, aggregates list of given models',
       );
@@ -255,10 +282,10 @@ export class GatewayController {
    * TEMP CODE --------------------------------------------------------
    */
 
-  // TODO temp code to remove
+  // temp code to remove
   // used for debugging purposes
   // this code goes into the chaincode
-  @Post('aggregate-stub')
+  @Post('aggregateStub')
   public async aggregateModelsStub(
     @Body() modelIds: string[],
     @Res() response: Response,
@@ -278,9 +305,10 @@ export class GatewayController {
       if (!modelJSON || modelJSON.length === 0) {
         throw new Error(`The model ${modelId} does not exist`);
       }
+      const modelParams: ModelParams = await this.deserializeModelParams(
+        modelJSON.modelParams,
+      );
       // fill up modelWeights with all models' weights
-      const modelParams: ModelParams = JSON.parse(modelJSON.modelParams);
-
       modelWeights.push(modelParams);
     }
     // aggregate the weights
@@ -289,13 +317,24 @@ export class GatewayController {
         modelWeights.map((model) => model[key]),
       );
     }
+    // serialize the aggregated weights
+    const encodedAggregatedParams =
+      await this.serializeModelParams(aggregatedWeights);
     // save it as a new model using this.CreateModel
-    // Convert aggregated weights to JSON
-    const aggregatedModelParams = JSON.stringify(aggregatedWeights);
-
-    const newModelId: string = modelIds[0] + modelIds[1];
+    const newModelId = modelIds[0] + modelIds[1];
     // Save the new aggregated model
-    // await this.CreateModel(ctx, newModelId, aggregatedModelParams, 'Victor');
+    await contract.submitTransaction(
+      'CreateModel',
+      newModelId,
+      encodedAggregatedParams,
+      'Victor',
+    );
+    // return the new model
+    const resultBytes = await contract.evaluateTransaction(
+      'ReadModel',
+      newModelId,
+    );
+    // await this.CreateModel(ctx, newModelId, encodedAggregatedParams, 'Victor');
 
     // return this.ReadModel(ctx, newModelId);
   }
@@ -321,6 +360,39 @@ export class GatewayController {
     }
   }
 
+  private async deserializeModelParams(
+    encodedModelParams: string,
+  ): Promise<ModelParams> {
+    // 1. Decode from base64
+    const decodedData = Buffer.from(encodedModelParams, 'base64');
+    // 2. Decompress from zlib
+    const decompressedData = await new Promise<Buffer>((resolve, reject) => {
+      zlib.unzip(decodedData, (err, buffer) => {
+        if (err) reject(err);
+        else resolve(buffer);
+      });
+    });
+    // 3. Deserialize using MessagePack
+    const unpackedData: ModelParams = decode(decompressedData) as ModelParams;
+    return unpackedData;
+  }
+
+  private async serializeModelParams(
+    modelParams: ModelParams,
+  ): Promise<string> {
+    // 1. Serialize using MessagePack
+    const packedData = encode(modelParams);
+    // 2. Compress using zlib
+    const compressedData = await new Promise<Buffer>((resolve, reject) => {
+      zlib.deflate(packedData, (err, buffer) => {
+        if (err) reject(err);
+        else resolve(buffer);
+      });
+    });
+    // 3. Encode to base64
+    const encodedData = compressedData.toString('base64');
+    return encodedData;
+  }
   private isArrayOfNumbers(array: ModelWeights[]): array is number[] {
     return array.every((element) => typeof element === 'number');
   }
