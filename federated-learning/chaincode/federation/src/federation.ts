@@ -1,5 +1,5 @@
-import * as zlib from 'zlib';
-import { decode, encode } from '@msgpack/msgpack';
+import * as zlib from "zlib";
+import { decode, encode } from "@msgpack/msgpack";
 import {
   Context,
   Contract,
@@ -133,7 +133,9 @@ export class ModelTransferContract extends Contract {
       const resultJson = ModelTransferContract.UTF8_DECODER.decode(resultBytes);
       const modelJSON = JSON.parse(resultJson);
 
-      const modelParams: ModelParams = await this.deserializeModelParams(modelJSON.modelParams);
+      const modelParams: ModelParams = await this.deserializeModelParams(
+        modelJSON.modelParams
+      );
       // fill up modelWeights with all models' weights
       modelWeights.push(modelParams);
     }
@@ -146,22 +148,25 @@ export class ModelTransferContract extends Contract {
     }
 
     // serialize the aggregated weights
-    const encodedAggregatedParams =
-      await this.serializeModelParams(aggregatedWeights);
+    const encodedAggregatedParams = await this.serializeModelParams(
+      aggregatedWeights
+    );
+    console.log('aggregated successfully')
     // create the new model id
-    const newModelId = modelIds[0] + 'and' + modelIds[1];
-
+    const newModelId = modelIds[0] + "and" + modelIds[1];
+    console.log('creating model')
     // save it as a new model using this.CreateModel
     await this.CreateModel(ctx, newModelId, encodedAggregatedParams, "Victor");
+    console.log('model created')
 
     // return this.ReadModel(ctx, newModelId);
   }
 
   private async deserializeModelParams(
-    encodedModelParams: string,
+    encodedModelParams: string
   ): Promise<ModelParams> {
     // 1. Decode from base64
-    const decodedData = Buffer.from(encodedModelParams, 'base64');
+    const decodedData = Buffer.from(encodedModelParams, "base64");
     // 2. Decompress from zlib
     const decompressedData = await new Promise<Buffer>((resolve, reject) => {
       zlib.unzip(decodedData, (err, buffer) => {
@@ -174,9 +179,8 @@ export class ModelTransferContract extends Contract {
     return unpackedData;
   }
 
-
   private async serializeModelParams(
-    modelParams: ModelParams,
+    modelParams: ModelParams
   ): Promise<string> {
     // 1. Serialize using MessagePack
     const packedData = encode(modelParams);
@@ -188,10 +192,9 @@ export class ModelTransferContract extends Contract {
       });
     });
     // 3. Encode to base64
-    const encodedData = compressedData.toString('base64');
+    const encodedData = compressedData.toString("base64");
     return encodedData;
   }
-
 
   private aggregateWeights(modelWeights: ModelWeights[]): ModelWeights {
     if (this.isArrayOfNumbers(modelWeights)) {
@@ -306,28 +309,28 @@ export class ModelTransferContract extends Contract {
     return JSON.stringify(allResults);
   }
 
-   // GetAllModels returns all models found in the world state.
-   @Transaction(false)
-   @Returns("string")
-   public async GetAllModelNames(ctx: Context): Promise<string> {
-     const allResults = [];
-     // range query with empty string for startKey and endKey does an open-ended query of all models in the chaincode namespace.
-     const iterator = await ctx.stub.getStateByRange("", "");
-     let result = await iterator.next();
-     while (!result.done) {
-       const strValue = Buffer.from(result.value.value.toString()).toString(
-         "utf8"
-       );
-       let record;
-       try {
-         record = JSON.parse(strValue).id;
-       } catch (err) {
-         console.log(err);
-         record = strValue;
-       }
-       allResults.push(record);
-       result = await iterator.next();
-     }
-     return JSON.stringify(allResults);
-   }
+  // GetAllModels returns all models found in the world state.
+  @Transaction(false)
+  @Returns("string")
+  public async GetAllModelNames(ctx: Context): Promise<string> {
+    const allResults = [];
+    // range query with empty string for startKey and endKey does an open-ended query of all models in the chaincode namespace.
+    const iterator = await ctx.stub.getStateByRange("", "");
+    let result = await iterator.next();
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
+      );
+      let record;
+      try {
+        record = JSON.parse(strValue).id;
+      } catch (err) {
+        console.log(err);
+        record = strValue;
+      }
+      allResults.push(record);
+      result = await iterator.next();
+    }
+    return JSON.stringify(allResults);
+  }
 }
