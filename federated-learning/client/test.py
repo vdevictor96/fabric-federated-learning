@@ -1,13 +1,50 @@
-from .utils import update_lr
 import torch
-import torch.nn as nn
-import torchvision
-import torchvision.transforms as transforms
-import sys
-from os.path import join as pjoin
+import numpy as np
 
+def test_reddit_dep(model, test_loader, device='cuda'):
+    # In test phase, we don't need to compute gradients (for memory efficiency)
+    model.eval()
+    correct = 0
+    total = 0
+    
+    # Initialize lists to store predictions and actual labels
+    # predictions = []
+    # true_labels = []
+    
+    with torch.no_grad():
+        for batch in test_loader:
+            # Move batch to GPU
+            ids = batch['ids'].to(device=device, dtype=torch.long)
+            mask = batch['mask'].to(device=device, dtype=torch.long)
+            targets = batch['target'].to(device=device, dtype=torch.long)
 
-def test(model, input_size, test_loader, device='cuda'):
+            # Get model predictions
+            outputs = model(ids, mask)
+            logits = outputs.logits
+            predicted = torch.argmax(logits, dim=-1)
+            total += targets.size(0)
+            correct += (predicted == targets).sum().item()
+            # Convert predictions to CPU and numpy for metric calculation
+            # predictions.extend(logits.detach().cpu().numpy())
+            # true_labels.extend(targets.detach().cpu().numpy())
+
+    
+    
+
+    test_accuracy = (correct / total) * 100
+    print('Accuracy of the network on the {} test sentences: {} %'.format(
+        total, test_accuracy))
+
+    # Other alternative: Calculating accuracy
+    # predicted_labels = np.argmax(predictions, axis=1)
+    # accuracy = np.mean(predicted_labels == true_labels)
+    # print(f"Test Accuracy: {accuracy}")
+        
+    return test_accuracy
+
+    
+    
+def test_cifar(model, input_size, test_loader, device='cuda'):
     # Test the model
     # In test phase, we don't need to compute gradients (for memory efficiency)
     with torch.no_grad():

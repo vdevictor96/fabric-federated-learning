@@ -26,7 +26,7 @@ def get_cifar10(root='./data'):
     return cifar_dataset, test_dataset
 
 
-def prepare_train_val(dataset, num_training=45000, num_validation=5000):
+def prepare_cifar_train_val(dataset, num_training=45000, num_validation=5000):
     mask = list(range(num_training))
     train_dataset = torch.utils.data.Subset(dataset, mask)
     mask = list(range(num_training, num_training + num_validation))
@@ -36,14 +36,14 @@ def prepare_train_val(dataset, num_training=45000, num_validation=5000):
 
 def get_cifar10_datasets(root, num_training=45000, num_validation=5000):
     cifar, test_dataset = get_cifar10(root)
-    train_dataset, val_dataset = prepare_train_val(
+    train_dataset, val_dataset = prepare_cifar_train_val(
         cifar, num_training, num_validation)
     return train_dataset, val_dataset, test_dataset
 
 
 def get_cifar10_dataloaders(root, batch_size=200, num_training=45000, num_validation=5000, device='cuda'):
     cifar, test_dataset = get_cifar10(root)
-    train_dataset, val_dataset = prepare_train_val(
+    train_dataset, val_dataset = prepare_cifar_train_val(
         cifar, num_training, num_validation)
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
