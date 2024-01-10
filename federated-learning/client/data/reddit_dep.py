@@ -4,9 +4,9 @@ import transformers
 from torch.utils.data import Dataset, DataLoader
 
 
-def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, train_batch_size=4, eval_batch_size=2, test_batch_size=2, max_len=512, device='cuda'):
+def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, train_batch_size=4, eval_batch_size=2, test_batch_size=2, max_len=512, seed=200, device='cuda'):
     train_dataset, eval_dataset, test_dataset = get_reddit_dep_datasets(
-        root, tokenizer, train_size, eval_size, test_size, max_len)
+        root, tokenizer, train_size, eval_size, test_size, max_len, seed)
 
     train_params = {'batch_size': train_batch_size,
                     # 'generator': torch.Generator(device=device),
@@ -32,16 +32,16 @@ def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, t
     return train_loader, eval_loader, test_loader
 
 
-def get_reddit_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, max_len=512):
+def get_reddit_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, max_len=512, seed=200):
     train_dataframe, eval_dataframe, test_dataframe = get_reddit_dep_dataframes(
-        root, train_size, eval_size, test_size)
+        root, train_size, eval_size, test_size, seed)
     train_dataset = RedditDepression(train_dataframe, tokenizer, max_len)
     eval_dataset = RedditDepression(eval_dataframe, tokenizer, max_len)
     test_dataset = RedditDepression(test_dataframe, tokenizer, max_len)
     return train_dataset, eval_dataset, test_dataset
 
 
-def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.1, test_size=0.1):
+def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.1, test_size=0.1, seed=200):
     # Check if the sizes add up to 1
     if train_size + eval_size + test_size != 1:
         raise ValueError(
@@ -54,10 +54,10 @@ def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.1, test_size=0.1
     # Load the dataset
     df = pd.read_csv(root)
     # Create train, eval, test splits
-    train_eval_split = df.sample(frac=train_size+eval_size, random_state=200)
+    train_eval_split = df.sample(frac=train_size+eval_size, random_state=seed)
     test_dataframe = df.drop(train_eval_split.index).reset_index(drop=True)
     train_dataframe = train_eval_split.sample(
-        frac=train_size/(train_size+eval_size), random_state=200)
+        frac=train_size/(train_size+eval_size), random_state=seed)
     eval_dataframe = train_eval_split.drop(
         train_dataframe.index).reset_index(drop=True)
     train_dataframe = train_dataframe.reset_index(drop=True)
