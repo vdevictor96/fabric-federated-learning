@@ -91,9 +91,12 @@ class RedditDepression(Dataset):
         mask = inputs['attention_mask']
 
         return {
-            'ids': torch.tensor(ids, dtype=torch.long),
-            'mask': torch.tensor(mask, dtype=torch.long),
-            'target': torch.tensor(self.data.target[index])
+            # TODO changed from 'ids' to 'input_ids'
+            # TODO changed from 'mask' to 'attention_mask'
+            # TODO changed from 'target' to 'label'
+            'input_ids': torch.tensor(ids, dtype=torch.long),
+            'attention_mask': torch.tensor(mask, dtype=torch.long),
+            'label': torch.tensor(self.data.target[index])
             # , dtype=torch.long)
         }
 

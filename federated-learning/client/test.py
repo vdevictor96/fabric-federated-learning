@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def test_reddit_dep(model, test_loader, device='cuda'):
+def test_text_class(model, test_loader, device='cuda'):
     # In test phase, we don't need to compute gradients (for memory efficiency)
     model.eval()
     correct = 0
