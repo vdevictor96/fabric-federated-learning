@@ -9,18 +9,18 @@ def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, t
         root, tokenizer, train_size, eval_size, test_size, max_len)
 
     train_params = {'batch_size': train_batch_size,
-                    'generator': torch.Generator(device=device),
+                    # 'generator': torch.Generator(device=device),
                     'shuffle': True,
                     'num_workers': 0
                     }
     eval_params = {'batch_size': eval_batch_size,
-                   'generator': torch.Generator(device=device),
+                #    'generator': torch.Generator(device=device),
                    'shuffle': False,
                    'num_workers': 0
                    }
 
     test_params = {'batch_size': test_batch_size,
-                   'generator': torch.Generator(device=device),
+                #    'generator': torch.Generator(device=device),
                    'shuffle': False,
                    'num_workers': 0
                    }
@@ -51,7 +51,6 @@ def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.1, test_size=0.1
     if train_size + eval_size == 0:
         raise ValueError("The sum of train_size and eval_size must not be 0 to avoid division by zero.")
 
-    # Load the dataset
     # Load the dataset
     df = pd.read_csv(root)
     # Create train, eval, test splits
@@ -91,9 +90,6 @@ class RedditDepression(Dataset):
         mask = inputs['attention_mask']
 
         return {
-            # TODO changed from 'ids' to 'input_ids'
-            # TODO changed from 'mask' to 'attention_mask'
-            # TODO changed from 'target' to 'label'
             'input_ids': torch.tensor(ids, dtype=torch.long),
             'attention_mask': torch.tensor(mask, dtype=torch.long),
             'label': torch.tensor(self.data.target[index])

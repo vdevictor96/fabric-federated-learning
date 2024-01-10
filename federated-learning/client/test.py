@@ -14,9 +14,9 @@ def test_text_class(model, test_loader, device='cuda'):
     with torch.no_grad():
         for batch in test_loader:
             # Move batch to GPU
-            ids = batch['ids'].to(device=device, dtype=torch.long)
-            mask = batch['mask'].to(device=device, dtype=torch.long)
-            targets = batch['target'].to(device=device, dtype=torch.long)
+            ids = batch['input_ids'].to(device=device, dtype=torch.long)
+            mask = batch['attention_mask'].to(device=device, dtype=torch.long)
+            targets = batch['label'].to(device=device, dtype=torch.long)
 
             # Get model predictions
             outputs = model(ids, mask)
