@@ -2,8 +2,8 @@ from .utils import update_lr
 import torch
 import torch.nn as nn
 import torchvision
-import torchvision.transforms as transforms
 import sys
+import os
 from os.path import join as pjoin
 # progress bar
 from tqdm.auto import tqdm
@@ -84,15 +84,18 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                 best_epoch = epoch + 1
     # ---------------------- Saving Models ----------------------
     # Save the best model at the end
+    if not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
+
     if best_model_state is not None:
         torch.save(best_model_state, pjoin(modelpath, modelname + '_best.ckpt'))
         print(f"Best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
-        return best_model_state
+        # return best_model_state
     else: 
         # Save the last model checkpoint
         torch.save(model.state_dict(), pjoin(modelpath, modelname + '_last.ckpt'))
         print(f"Last model in Epoch {epoch+1} saved with Training Accuracy: {accuracy_epoch:.2f} %")
-        return model.state_dict()
+        # return model.state_dict()
 
 
 
