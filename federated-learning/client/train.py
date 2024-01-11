@@ -21,10 +21,13 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         correct = 0
         total = 0
         for i, batch in enumerate(train_loader):
+            ids = batch['input_ids']
+            mask = batch['attention_mask']
+            targets = batch['label']
             # Move batch to GPU
-            ids = batch['input_ids'].to(device=device, dtype=torch.long)
-            mask = batch['attention_mask'].to(device=device, dtype=torch.long)
-            targets = batch['label'].to(device=device, dtype=torch.long)
+            # ids = batch['input_ids'].to(device=device, dtype=torch.long)
+            # mask = batch['attention_mask'].to(device=device, dtype=torch.long)
+            # targets = batch['label'].to(device=device, dtype=torch.long)
 
             optimizer.zero_grad()
             
