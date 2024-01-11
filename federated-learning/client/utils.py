@@ -225,3 +225,10 @@ def print_layer_size(state_dict, first_n=10, last_n=2, size_type='bytes', format
         elif (size_type == 'kb'):
             size = size / 1024
         print(f"Size of value for key '{key}': {size} {size_type}")
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
