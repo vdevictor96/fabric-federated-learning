@@ -35,7 +35,7 @@ def test_text_class(model, test_loader, device='cuda'):
     
 
     test_accuracy = (correct / total) * 100
-    print('Accuracy of the network on the {} test sentences: {} %'.format(
+    print('Accuracy of the network on the {} test sentences: {:.2f} %'.format(
         total, test_accuracy))
 
     # Other alternative: Calculating accuracy

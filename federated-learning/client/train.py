@@ -8,18 +8,18 @@ from os.path import join as pjoin
 # progress bar
 from tqdm.auto import tqdm
 
-def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device, progress_bar_flag=True):
-    model.train()
+def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True):
     total_steps_per_epoch = len(train_loader)
     total_steps = num_epochs * total_steps_per_epoch
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
-    
+    # Initialize variables to track the best model
+    best_val_accuracy = 0.0
+    best_model_state = None
+    best_epoch = 1
     for epoch in range(num_epochs):
-        accumulated_loss = 0
-        steps = 0
-        correct = 0
-        total = 0
+        model.train()
+        accumulated_loss, steps, correct, total = 0, 0, 0, 0
         for i, batch in enumerate(train_loader):
             # ids = batch['input_ids']
             # mask = batch['attention_mask']
@@ -39,8 +39,8 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             loss.backward()
             optimizer.step()
             lr_scheduler.step()
-            # if progress_bar_flag:
-            #     progress_bar.update(1)
+            if progress_bar_flag:
+                progress_bar.update(1)
             accumulated_loss += loss.item()
             total += targets.size(0)
             correct += (predicted == targets).cpu().sum().item()
@@ -53,13 +53,48 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                         .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
-        print('Epoch [{}/{}], Loss is: {} %'.format(epoch+1, num_epochs, loss_epoch))
-        print('Epoch [{}/{}], Train accuracy is: {:.2f} %'.format(epoch+1, num_epochs, accuracy_epoch))
         print("-------------------------------")
+        print('Epoch [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'.format(epoch+1, num_epochs, loss_epoch, accuracy_epoch))
+        print("-------------------------------")
+        # ---------------------- Validation ----------------------
+        if eval_flag:
+            model.eval()
+            val_loss, val_correct, val_total = 0, 0, 0
+            with torch.no_grad():
+                for i, batch in enumerate(eval_loader):
+                    ids = batch['input_ids'].to(device=device, dtype=torch.long)
+                    mask = batch['attention_mask'].to(device=device, dtype=torch.long)
+                    targets = batch['label'].to(device=device, dtype=torch.long)
 
-    # Save the model checkpoint
-    torch.save(model.state_dict(), pjoin(modelpath, modelname + '.ckpt'))
-    # torch.save(last_model, pjoin(modelpath, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))
+                    outputs = model(ids, mask, labels=targets)
+                    loss = outputs.loss
+                    predicted = torch.argmax(outputs.logits, dim=-1)
+
+                    val_loss += loss.item()
+                    val_total += targets.size(0)
+                    val_correct += (predicted == targets).cpu().sum().item()
+
+            val_accuracy = 100 * val_correct / val_total
+            print('Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(val_loss / len(eval_loader), val_accuracy))
+            print("-------------------------------")
+            # Check if this is the best model based on validation accuracy
+            if val_accuracy > best_val_accuracy:
+                best_val_accuracy = val_accuracy
+                best_model_state = model.state_dict().copy()
+                best_epoch = epoch + 1
+    # ---------------------- Saving Models ----------------------
+    # Save the best model at the end
+    if best_model_state is not None:
+        torch.save(best_model_state, pjoin(modelpath, modelname + '_best.ckpt'))
+        print(f"Best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+        return best_model_state
+    else: 
+        # Save the last model checkpoint
+        torch.save(model.state_dict(), pjoin(modelpath, modelname + '_last.ckpt'))
+        print(f"Last model in Epoch {epoch+1} saved with Training Accuracy: {accuracy_epoch:.2f} %")
+        return model.state_dict()
+
+
 
 def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
 
