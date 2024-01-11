@@ -21,13 +21,13 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         correct = 0
         total = 0
         for i, batch in enumerate(train_loader):
-            ids = batch['input_ids']
-            mask = batch['attention_mask']
-            targets = batch['label']
+            # ids = batch['input_ids']
+            # mask = batch['attention_mask']
+            # targets = batch['label']
             # Move batch to GPU
-            # ids = batch['input_ids'].to(device=device, dtype=torch.long)
-            # mask = batch['attention_mask'].to(device=device, dtype=torch.long)
-            # targets = batch['label'].to(device=device, dtype=torch.long)
+            ids = batch['input_ids'].to(device=device, dtype=torch.long)
+            mask = batch['attention_mask'].to(device=device, dtype=torch.long)
+            targets = batch['label'].to(device=device, dtype=torch.long)
 
             optimizer.zero_grad()
             
@@ -43,7 +43,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             #     progress_bar.update(1)
             accumulated_loss += loss.item()
             total += targets.size(0)
-            correct += (predicted == targets).sum().item()
+            correct += (predicted == targets).cpu().sum().item()
             steps += 1
             # track train accuracy
             if (i+1) % 100 == 0:

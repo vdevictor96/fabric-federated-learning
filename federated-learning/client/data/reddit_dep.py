@@ -9,18 +9,18 @@ def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, t
         root, tokenizer, train_size, eval_size, test_size, max_len, seed)
 
     train_params = {'batch_size': train_batch_size,
-                    'generator': torch.Generator(device=device),
+                    # 'generator': torch.Generator(device=device),
                     'shuffle': True,
                     'num_workers': 0
                     }
     eval_params = {'batch_size': eval_batch_size,
-                   'generator': torch.Generator(device=device),
-                   'shuffle': False,
+                #    'generator': torch.Generator(device=device),
+                   'shuffle': True,
                    'num_workers': 0
                    }
 
     test_params = {'batch_size': test_batch_size,
-                   'generator': torch.Generator(device=device),
+                #    'generator': torch.Generator(device=device),
                    'shuffle': False,
                    'num_workers': 0
                    }
