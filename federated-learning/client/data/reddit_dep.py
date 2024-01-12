@@ -4,9 +4,9 @@ import transformers
 from torch.utils.data import Dataset, DataLoader
 
 
-def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, train_batch_size=4, eval_batch_size=2, test_batch_size=2, max_len=512, seed=200, device='cuda'):
-    train_dataset, eval_dataset, test_dataset = get_reddit_dep_datasets(
-        root, tokenizer, train_size, eval_size, test_size, max_len, seed)
+def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.2, train_batch_size=4, eval_batch_size=2, max_len=512, seed=200):
+    train_dataset, eval_dataset = get_reddit_dep_datasets(
+        root, tokenizer, train_size, eval_size, max_len, seed)
 
     train_params = {'batch_size': train_batch_size,
                     # 'generator': torch.Generator(device=device),
@@ -14,55 +14,63 @@ def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.1, t
                     'num_workers': 0
                     }
     eval_params = {'batch_size': eval_batch_size,
-                #    'generator': torch.Generator(device=device),
-                   'shuffle': True,
-                   'num_workers': 0
-                   }
-
-    test_params = {'batch_size': test_batch_size,
-                #    'generator': torch.Generator(device=device),
+                   #    'generator': torch.Generator(device=device),
                    'shuffle': False,
                    'num_workers': 0
                    }
 
     train_loader = DataLoader(train_dataset, **train_params)
     eval_loader = DataLoader(eval_dataset, **eval_params)
-    test_loader = DataLoader(test_dataset, **test_params)
 
-    return train_loader, eval_loader, test_loader
-
-
-def get_reddit_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.1, test_size=0.1, max_len=512, seed=200):
-    train_dataframe, eval_dataframe, test_dataframe = get_reddit_dep_dataframes(
-        root, train_size, eval_size, test_size, seed)
-    train_dataset = RedditDepression(train_dataframe, tokenizer, max_len)
-    eval_dataset = RedditDepression(eval_dataframe, tokenizer, max_len)
-    test_dataset = RedditDepression(test_dataframe, tokenizer, max_len)
-    return train_dataset, eval_dataset, test_dataset
+    return train_loader, eval_loader
 
 
-def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.1, test_size=0.1, seed=200):
+def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.2, seed=200):
     # Check if the sizes add up to 1
-    if train_size + eval_size + test_size != 1:
+    if train_size + eval_size != 1:
         raise ValueError(
-            "The sum of train_size, eval_size, and test_size must be 1.")
-        
-    # Check if train_size and eval_size sum up to 0, which would cause division by zero
-    if train_size + eval_size == 0:
-        raise ValueError("The sum of train_size and eval_size must not be 0 to avoid division by zero.")
+            "The sum of train_size and eval_size must be 1.")
 
     # Load the dataset
     df = pd.read_csv(root)
-    # Create train, eval, test splits
-    train_eval_split = df.sample(frac=train_size+eval_size, random_state=seed)
-    test_dataframe = df.drop(train_eval_split.index).reset_index(drop=True)
-    train_dataframe = train_eval_split.sample(
-        frac=train_size/(train_size+eval_size), random_state=seed)
-    eval_dataframe = train_eval_split.drop(
+    # Create train, eval splits
+    train_dataframe = df.sample(
+        frac=train_size, random_state=seed)
+    eval_dataframe = df.drop(
         train_dataframe.index).reset_index(drop=True)
     train_dataframe = train_dataframe.reset_index(drop=True)
 
-    return train_dataframe, eval_dataframe, test_dataframe
+    return train_dataframe, eval_dataframe
+
+
+def get_reddit_dep_test_dataloader(root, tokenizer, test_batch_size=2, max_len=512, seed=200):
+    test_dataset = get_reddit_dep_test_dataset(
+        root, tokenizer, max_len, seed)
+
+    test_params = {'batch_size': test_batch_size,
+                   #    'generator': torch.Generator(device=device),
+                   'shuffle': False,
+                   'num_workers': 0
+                   }
+    test_loader = DataLoader(test_dataset, **test_params)
+    return test_loader
+
+
+def get_reddit_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.2, max_len=512, seed=200):
+    train_dataframe, eval_dataframe = get_reddit_dep_dataframes(
+        root, train_size, eval_size, seed)
+    train_dataset = RedditDepression(train_dataframe, tokenizer, max_len)
+    eval_dataset = RedditDepression(eval_dataframe, tokenizer, max_len)
+    return train_dataset, eval_dataset
+
+
+def get_reddit_dep_test_dataset(root, tokenizer, max_len=512, seed=200):
+    # Load the dataset
+    test_df = pd.read_csv(root)
+    test_dataframe = test_df.reset_index(drop=True)
+
+    test_dataset = RedditDepression(test_dataframe, tokenizer, max_len)
+    return test_dataset
 
 
 # credits for the dataset to https://github.com/whopriyam/Benchmarking-Differential-Privacy-and-Federated-Learning-for-BERT-Models

@@ -4,6 +4,7 @@ import torch.nn as nn
 import torchvision
 import sys
 import os
+from datetime import datetime
 from os.path import join as pjoin
 # progress bar
 from tqdm.auto import tqdm
@@ -13,10 +14,14 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     total_steps = num_epochs * total_steps_per_epoch
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
+    # Save the best model at the end
+    if eval_flag and not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
     best_epoch = 0
+    current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
     for epoch in range(num_epochs):
         model.train()
         accumulated_loss, steps, correct, total = 0, 0, 0, 0
@@ -80,23 +85,42 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             if val_accuracy > best_val_accuracy:
                 best_val_accuracy = val_accuracy
                 best_model_state = model.state_dict().copy()
+                best_model = {
+                    'epoch': epoch+1,
+                    'lr': lr,
+                    'optimizer': optimizer.__class__.__name__,
+                    'tr_acc': accuracy_epoch,
+                    'val_acc': best_val_accuracy,
+                    'date': current_date,
+                    'model_state_dict': model.state_dict().copy(),
+                    'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
+                    'optimizer_dict': optimizer.state_dict().copy(),
+                    
+                }
                 best_epoch = epoch + 1
                 print(f"Updated best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
                 print("-------------------------------")
-                torch.save(best_model_state, pjoin(modelpath, modelname + '_best.ckpt'))
+                torch.save(best_model, pjoin(modelpath, modelname + '_best.ckpt'))
                 
     # ---------------------- Saving Models ----------------------
-    # Save the best model at the end
-    if not os.path.isdir(modelpath):
-        os.makedirs(modelpath)
 
     if best_model_state is not None:
-        torch.save(best_model_state, pjoin(modelpath, modelname + '_best.ckpt'))
         print(f"Best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else: 
         # Save the last model checkpoint
-        torch.save(model.state_dict(), pjoin(modelpath, modelname + '_last.ckpt'))
+        last_model = {
+            'epoch': epoch+1,
+            'lr': lr,
+            'optimizer': optimizer.__class__.__name__,
+            'tr_acc': accuracy_epoch,
+            'val_acc': best_val_accuracy,
+            'date': current_date,
+            'model_state_dict': model.state_dict().copy(),
+            'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
+            'optimizer_dict': optimizer.state_dict().copy(),
+        }
+        torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
         print(f"Last model in Epoch {epoch+1} saved with Training Accuracy: {accuracy_epoch:.2f} %")
         # return model.state_dict()
 
