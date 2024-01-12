@@ -9,12 +9,15 @@ import base64
 import io
 import msgpack
 import numpy as np
+import warnings
+from .model.bert_tiny import get_bert_tiny_tokenizer, get_bert_tiny_model
 
 
+# --- Gateway Utils ---
+# TODO move to gateway/utils.py
 def get_file_path(relative_path):
     # Get the directory of the script
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-
     # Join the relative path with the script directory
     return os.path.abspath(os.path.join(script_dir, relative_path))
 
@@ -226,9 +229,62 @@ def print_layer_size(state_dict, first_n=10, last_n=2, size_type='bytes', format
             size = size / 1024
         print(f"Size of value for key '{key}': {size} {size_type}")
 
+# --- Run utils ---
 def set_seed(seed):
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    
+
+def set_device(device_name):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        device = torch.device('cpu')
+        if (device_name == 'cuda'):
+            try:
+                if torch.cuda.is_available():
+                    device = torch.device('cuda')
+                    print('CUDA device selected and available.')
+                else:
+                    print('CUDA device selected but not available. Using CPU instead.')
+            except:
+                    print('CUDA device selected but not working. Using CPU instead.')
+
+        else:
+            print('CPU device selected.')
+    return device
+
+def create_model(model_type, device):
+    if model_type == 'bert_tiny':
+        return get_bert_tiny_model(device)
+    else:
+        raise ValueError(f"Unknown model type {model_type}.")
+    
+def create_tokenizer(model_type):
+    if model_type == 'bert_tiny':
+        return get_bert_tiny_tokenizer()
+    else:
+        raise ValueError(f"Unknown tokenizer for model type {model_type}.")
+    
+
+def get_dir_path():
+    # Get the directory of the current script
+    return os.path.dirname(os.path.realpath(__file__))
+
+def get_dataset_path(dataset_name, dataset_type='train'):
+    # Get the directory of the current script
+    dir_path = get_dir_path()
+    if (dataset_type == 'train'):
+        dataset_path = os.path.join(dir_path, "data", "datasets", dataset_name, dataset_name + "_train.csv")
+    elif (dataset_type == 'test'): 
+        dataset_path = os.path.join(dir_path, "data", "datasets", dataset_name, dataset_name + "_test.csv")
+    else:
+        raise ValueError(f"Unknown dataset type {dataset_type}.")
+    # Check if the file exists
+    if not os.path.exists(dataset_path):
+        raise FileNotFoundError(f"The dataset file does not exist: {dataset_path}")
+    
+    return dataset_path
+
