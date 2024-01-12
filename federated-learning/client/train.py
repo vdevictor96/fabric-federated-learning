@@ -16,7 +16,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
-    best_epoch = 1
+    best_epoch = 0
     for epoch in range(num_epochs):
         model.train()
         accumulated_loss, steps, correct, total = 0, 0, 0, 0
@@ -54,7 +54,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
         print("-------------------------------")
-        print('Epoch [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'.format(epoch+1, num_epochs, loss_epoch, accuracy_epoch))
+        print('Epoch [{}/{}] finished, Loss: {:.4f}, Accuracy: {:.2f} %'.format(epoch+1, num_epochs, loss_epoch, accuracy_epoch))
         print("-------------------------------")
         # ---------------------- Validation ----------------------
         if eval_flag:
@@ -73,7 +73,6 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                     val_loss += loss.item()
                     val_total += targets.size(0)
                     val_correct += (predicted == targets).cpu().sum().item()
-
             val_accuracy = 100 * val_correct / val_total
             print('Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(val_loss / len(eval_loader), val_accuracy))
             print("-------------------------------")
@@ -82,6 +81,10 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                 best_val_accuracy = val_accuracy
                 best_model_state = model.state_dict().copy()
                 best_epoch = epoch + 1
+                print(f"Updated best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+                print("-------------------------------")
+                torch.save(best_model_state, pjoin(modelpath, modelname + '_best.ckpt'))
+                
     # ---------------------- Saving Models ----------------------
     # Save the best model at the end
     if not os.path.isdir(modelpath):
