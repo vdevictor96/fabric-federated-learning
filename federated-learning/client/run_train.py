@@ -7,6 +7,8 @@ import os
 import warnings
 from .data.reddit_dep import get_reddit_dep_dataloaders
 from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
+from .data.dreaddit import get_dreaddit_dataloaders
+from .data.mixed_depression import get_mixed_depression_dataloaders
 from .train import train_text_class
 from torch.optim import AdamW
 from transformers import get_scheduler
@@ -132,6 +134,12 @@ def create_dataloaders(dataset_type, tokenizer, train_size, eval_size, train_bat
     elif dataset_type == 'acl_dep_sad':
         dataset_path = get_dataset_path(dataset_type)
         return get_acl_dep_sad_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
+    elif dataset_type == 'dreaddit':
+        dataset_path = get_dataset_path(dataset_type)
+        return get_dreaddit_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
+    elif dataset_type == 'mixed_depression':
+        dataset_path = get_dataset_path(dataset_type)
+        return get_mixed_depression_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
     else:
         raise ValueError(f"Unknown dataset {dataset_type}.")
                  
