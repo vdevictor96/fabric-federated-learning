@@ -29,7 +29,7 @@ def parse_args():
     return args
 
 def print_config_help():
-    default_config_info = load_default_config()
+    default_config_info = load_default_config(True)
     print("Configurable parameters and their current settings:")
     for key, param_info in default_config_info.items():
         print(f"\nParameter: {key}")
@@ -43,22 +43,24 @@ def print_config_help():
     print(pretty_default_config)
     
     
-def load_default_config():
+def load_default_config(info=False):
     # Construct the absolute path to the default config file
     dir_path = get_dir_path()
     default_config_path = os.path.join(dir_path, DEFAULT_CONFIG_FILE)
     
     # Default values
     with open(default_config_path, 'r') as default_file:
-        default_config = json.load(default_file)
+        default_config_info = json.load(default_file)
+    if info:
+        return default_config_info
+    # Extract only the 'value' field from each entry
+    default_config = {key: value_info["default_value"] for key, value_info in default_config_info.items()}
     return default_config
 
 def load_config(config_file):
     config = {}  # Initialize empty config
     # Load default config
-    default_config = load_default_config()
-    # Extract only the 'value' field from each entry
-    config = {key: value_info["default_value"] for key, value_info in default_config.items()}
+    config = load_default_config(info=False)
         
     # Override defaults with values from JSON file
     if config_file is not None:
@@ -83,7 +85,10 @@ def main():
     args = parse_args()
     
     print('\n-------- Loading configuration --------')
-    config = load_config(args.config_file)
+    if args.config_file == DEFAULT_CONFIG_FILE:
+        config = load_default_config(False)
+    else:
+        config = load_config(args.config_file)
     print_config(config)
     print('-------- Configuration loaded --------')
     
