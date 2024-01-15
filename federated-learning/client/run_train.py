@@ -6,6 +6,7 @@ import torch
 import os
 import warnings
 from .data.reddit_dep import get_reddit_dep_dataloaders
+from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
 from .train import train_text_class
 from torch.optim import AdamW
 from transformers import get_scheduler
@@ -128,6 +129,9 @@ def create_dataloaders(dataset_type, tokenizer, train_size, eval_size, train_bat
     if dataset_type == 'reddit_dep':
         dataset_path = get_dataset_path(dataset_type)
         return get_reddit_dep_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
+    elif dataset_type == 'acl_dep_sad':
+        dataset_path = get_dataset_path(dataset_type)
+        return get_acl_dep_sad_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
     else:
         raise ValueError(f"Unknown dataset {dataset_type}.")
                  
