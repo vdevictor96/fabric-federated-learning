@@ -20,8 +20,8 @@ def split_csv_dataset_train_test(csv_root, train_val_path, test_path, test_size=
 
 
     # Splitting each subset into training/validation and test sets for each target value
-    train_val_0, test_0 = __split_data(df_0, test_size=0.2, seed=seed)
-    train_val_1, test_1 = __split_data(df_1, test_size=0.2, seed=seed)
+    train_val_0, test_0 = split_data(df_0, test_size=0.2, seed=seed)
+    train_val_1, test_1 = split_data(df_1, test_size=0.2, seed=seed)
 
     # Combining the training/validation sets and the test sets from both subsets
     train_val = pd.concat([train_val_0, train_val_1])
@@ -37,7 +37,7 @@ def split_csv_dataset_train_test(csv_root, train_val_path, test_path, test_size=
 
 
 # Function to split data into training/validation and test sets
-def __split_data(df, test_size=0.2, seed=200):
+def split_data(df, test_size=0.2, seed=200):
     # Shuffle the data
     shuffled_df = df.sample(frac=1, random_state=seed).reset_index(drop=True)
     # Calculate the number of test samples
