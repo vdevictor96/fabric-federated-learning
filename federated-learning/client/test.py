@@ -1,12 +1,15 @@
 import torch
 import numpy as np
+# progress bar
+from tqdm.auto import tqdm
 
-def test_text_class(model, test_loader, device='cuda'):
+def test_text_class(model, test_loader, device='cuda', progress_bar_flag=True):
     # In test phase, we don't need to compute gradients (for memory efficiency)
     model.eval()
     correct = 0
     total = 0
-    
+    if progress_bar_flag:
+        progress_bar = tqdm(range(len(test_loader)))
     # Initialize lists to store predictions and actual labels
     # predictions = []
     # true_labels = []
@@ -30,6 +33,8 @@ def test_text_class(model, test_loader, device='cuda'):
             # Convert predictions to CPU and numpy for metric calculation
             # predictions.extend(logits.detach().cpu().numpy())
             # true_labels.extend(targets.detach().cpu().numpy())
+            if progress_bar_flag:
+                progress_bar.update(1)
 
     
     

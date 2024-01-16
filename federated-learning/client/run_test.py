@@ -126,7 +126,7 @@ def main():
     print('-------- Train and Eval Dataloaders created --------')
 
     print('\n-------- Testing --------')
-    test_text_class(model, test_loader, device)
+    test_text_class(model, test_loader, device, config['progress_bar_flag'])
     print('-------- Testing finished --------')
     return
 
