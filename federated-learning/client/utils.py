@@ -2,6 +2,8 @@ import os
 import torch
 import torch.nn as nn
 import warnings
+import numpy as np
+import random
 from .model.bert_tiny import get_bert_tiny_tokenizer, get_bert_tiny_model, load_bert_tiny_model
 from .model.albert_base import get_albert_base_tokenizer, get_albert_base_model, load_albert_base_model
 from .model.bert_mini import get_bert_mini_tokenizer, get_bert_mini_model, load_bert_mini_model
@@ -57,9 +59,11 @@ def compare_weights(model1, model2):
 # --- Run utils ---
 
 
-def set_seed(seed):
+def set_seed(seed, device='cuda'):
+    random.seed(seed)
+    np.random.seed(seed)
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
+    if device == 'cuda' and torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
@@ -119,6 +123,15 @@ def load_model(model_type, model_path, device):
 def create_tokenizer(model_type):
     if model_type == 'bert_tiny':
         return get_bert_tiny_tokenizer()
+    elif model_type == 'albert_base':
+        return get_albert_base_tokenizer()
+    elif model_type == 'bert_mini':
+        return get_bert_mini_tokenizer()
+    elif model_type == 'distilbert_base':
+        return get_distilbert_base_tokenizer()
+    # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
+    # elif model_type == 'bert_base':
+    #     return get_bert_base_tokenizer()
     else:
         raise ValueError(f"Unknown tokenizer for model type {model_type}.")
 

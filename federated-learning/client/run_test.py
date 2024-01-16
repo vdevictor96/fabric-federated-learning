@@ -107,7 +107,7 @@ def main():
     print('-------- Device set --------')
 
     print('\n-------- Setting seed --------')
-    set_seed(config['seed'])
+    set_seed(config['seed'], device)
     print('-------- Seed set --------')
 
     print('\n-------- Loading model from model_path --------')
