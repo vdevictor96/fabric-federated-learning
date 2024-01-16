@@ -5,10 +5,13 @@ import warnings
 import numpy as np
 import random
 from .model.bert_tiny import get_bert_tiny_tokenizer, get_bert_tiny_model, load_bert_tiny_model
-from .model.albert_base import get_albert_base_tokenizer, get_albert_base_model, load_albert_base_model
 from .model.bert_mini import get_bert_mini_tokenizer, get_bert_mini_model, load_bert_mini_model
+from .model.bert_small import get_bert_small_tokenizer, get_bert_small_model, load_bert_small_model
+from .model.bert_medium import get_bert_medium_tokenizer, get_bert_medium_model, load_bert_medium_model
 from .model.distilbert_base import get_distilbert_base_tokenizer, get_distilbert_base_model, load_distilbert_base_model
+from .model.albert_base import get_albert_base_tokenizer, get_albert_base_model, load_albert_base_model
 from .model.bert_base import get_bert_base_tokenizer, get_bert_base_model, load_bert_base_model
+
 
 
 # --- Model utils ---
@@ -91,13 +94,17 @@ def set_device(device_name):
 def create_model(model_type, device):
     if model_type == 'bert_tiny':
         return get_bert_tiny_model(device)
-    elif model_type == 'albert_base':
-        return get_albert_base_model(device)
     elif model_type == 'bert_mini':
         return get_bert_mini_model(device)
-    elif model_type == 'distilbert_base':
-        return get_distilbert_base_model(device)
+    elif model_type == 'bert_small':
+        return get_bert_small_model(device)
+    elif model_type == 'bert_medium':
+        return get_bert_medium_model(device)
     # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
+    # elif model_type == 'distilbert_base':
+    #     return get_distilbert_base_model(device)
+    # elif model_type == 'albert_base':
+    #     return get_albert_base_model(device)
     # elif model_type == 'bert_base':
     #     return get_bert_base_model(device)
     else:
@@ -107,13 +114,17 @@ def create_model(model_type, device):
 def load_model(model_type, model_path, device):
     if model_type == 'bert_tiny':
         return load_bert_tiny_model(model_path, device)
-    elif model_type == 'albert_base':
-        return load_albert_base_model(model_path, device)
     elif model_type == 'bert_mini':
         return load_bert_mini_model(model_path, device)
-    elif model_type == 'distilbert_base':
-        return load_distilbert_base_model(model_path, device)
+    elif model_type == 'bert_small':
+        return load_bert_small_model(model_path, device)
+    elif model_type == 'bert_medium':
+        return load_bert_medium_model(model_path, device)
     # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
+    # elif model_type == 'distilbert_base':
+    #     return load_distilbert_base_model(model_path, device)
+    # elif model_type == 'albert_base':
+    #     return load_albert_base_model(model_path, device)
     # elif model_type == 'bert_base':
     #     return load_bert_base_model(model_path, device)
     else:
@@ -123,13 +134,17 @@ def load_model(model_type, model_path, device):
 def create_tokenizer(model_type):
     if model_type == 'bert_tiny':
         return get_bert_tiny_tokenizer()
-    elif model_type == 'albert_base':
-        return get_albert_base_tokenizer()
     elif model_type == 'bert_mini':
         return get_bert_mini_tokenizer()
-    elif model_type == 'distilbert_base':
-        return get_distilbert_base_tokenizer()
+    elif model_type == 'bert_small':
+        return get_bert_small_tokenizer()
+    elif model_type == 'bert_medium':
+        return get_bert_medium_tokenizer()
     # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
+    # elif model_type == 'distilbert_base':
+    #     return get_distilbert_base_tokenizer()
+    # elif model_type == 'albert_base':
+    #     return get_albert_base_tokenizer()
     # elif model_type == 'bert_base':
     #     return get_bert_base_tokenizer()
     else:
