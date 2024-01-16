@@ -4,10 +4,10 @@ Master thesis\
 M.Sc. Data Science and Artificial Intelligence (DSAI)\
 Saarland University
 
-Title: 'Decentralised AI: A Blockchain-Based Federated Learning Implementation'\
-Author: Víctor Martínez Palomares
+Title: **Decentralised AI: A Blockchain-Based Federated Learning Implementation**\
+Author: **Víctor Martínez Palomares**
 
-In collaboration with the Max Planck Institute for Software Systems (MPI-SWS), supervised by Prof. Dr. Krishna P. Gummadi.
+Project done in collaboration with the **Max Planck Institute for Software Systems (MPI-SWS)**, supervised by Prof. Dr. Krishna P. Gummadi.
 
 This project implements a Blockchain-Based Federated Learning framework using [Hyperledger Fabric](https://www.hyperledger.org/use/fabric) as permissioned blockchain and BERT-based models for binary text classification.
 
@@ -15,6 +15,7 @@ This project implements a Blockchain-Based Federated Learning framework using [H
 - [Structure](#structure)
 - [Getting Started](#getting-started)
   - [Blockchain Network](#blockchain-network)
+  - [Chaincode](#chaincode)
   - [Gateway](#gateway)
   - [Client](#client)
 - [Standalone Machine Learning](#standalone-machine-learning)
@@ -23,7 +24,6 @@ This project implements a Blockchain-Based Federated Learning framework using [H
   - [Debug](#debug)
 - [Centralised Federated Learning](#centralised-federated-learning)
 - [Blockchain-Based Federated Learning](#blockchain-based-federated-learning)
-- [Debugging](#debugging)
 
 
 ## Structure 
@@ -50,22 +50,34 @@ Bring up the blockchain test network with Docker:
 cd test-network
 ./launchNetwork.sh 
 ```
-This script will deploy a Fabric network with Docker Compose The [Hyperledger Fabric network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/test_network.html) will consist of two peer organizations and an ordering organization with Raft ordering service.
+This script will deploy a Fabric network with Docker . The [Hyperledger Fabric network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/test_network.html) will consist of two peer organizations and an ordering organization with Raft ordering service.
 
 It will also install the npm libraries required by the smart contracts (chaincode), specified in the package.json files, before compiling them and adding them to the blockchain nodes.
 
 The network is meant to be used only as a tool for education and testing and not as a model for how to set up a network. To learn how to use Fabric in production, see [Deploying a production network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/deployment_guide_overview.html).
 
+### Chaincode
+
+
+You can debug the chaincode with the help of [Hyperledger Fabric Debugger Plugin](https://github.com/spydra-tech/fabric-debugger) by Spydra.
+
+Follow these steps:
+1. Install the [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Spydra.hyperledger-fabric-debugger).
+2. Launch the Local Fabric Network provided in the extension menu.
+3. Go to [test.fabric](federated-learning/chaincode/federation/test.fabric) file inside the [federation](federated-learning/chaincode/federation/) smart contract.
+4. Create a request and invoke it. It will run in debug mode and trigger the added breakpoints.
 
 ### Gateway
 
-Execute the following commands to run the gateway in the local machine:
+Execute the following command to run the gateway in the local machine.
+
+This command installs the required dependencies for the NestJS framework and the Fabric Gateway library.
 
 ```sh
 cd federated-learning/gateway/
 npm install 
 ```
-This command installs the required dependencies for the NestJS framework and the Fabric Gateway library.
+
 
 To start the NestJS server in http://localhost:3000.
 ```sh
@@ -78,7 +90,7 @@ npm run start:dev
 
 ### Client
 
-To execute the Python client you need to install the python libraries in the requirements.txt file
+To execute the Python client you need to install the Python libraries in the requirements.txt file.
 
 First, activate your python environment where you will be running the BERT model training. 
 
@@ -86,13 +98,13 @@ You can do that using conda with the following command:
 ```sh
 conda activate your-existing-environment
 ```
-or create a new one 
+or create a new environment:
 ```sh
 conda create --name my-new-environment
 conda activate my-new-environment
 ```
 
-You can alternatively manage your environment with venv
+You can alternatively manage your environment with venv:
 ```sh
 python3 -m venv my-new-environment
 source my-new-environment/bin/activate
@@ -107,7 +119,7 @@ pip install -r requirements.txt
 
 ## Standalone Machine Learning
 ### Train
-To run the finetuning of the BERT model in a standalone centralised approach, execute the following command:
+To run the fine-tuning of the BERT model in a standalone centralised approach, execute the following command:
 
 ```sh
 cd federated-learning
@@ -149,15 +161,7 @@ To debug the code you can use the Jupyter Notebooks [train.ipynb](federated-lear
 
 ## Blockchain-Based Federated Learning
 
-## Debugging
 
-You can debug the chaincode with the help of [Hyperledger Fabric Debugger Plugin](https://github.com/spydra-tech/fabric-debugger) by Spydra.
-
-Follow these steps:
-1. Install the [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Spydra.hyperledger-fabric-debugger).
-2. Launch the Local Fabric Network provided in the extension menu.
-3. Go to [test.fabric](federated-learning/chaincode/federation/test.fabric) file inside the [federation](federated-learning/chaincode/federation/) smart contract.
-4. Create a request and invoke it. It will run in debug mode and trigger the added breakpoints.
 
 
 
