@@ -167,6 +167,10 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
     best_round = 0
     current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
 
+    # Initialize dictionaries to store optimizer and scheduler for each client
+    optimizers = {client: None for client in range(num_clients)}
+    schedulers = {client: None for client in range(num_clients)}
+    
     global_model = model
     # outer training loop
     for round in range(num_rounds):
@@ -178,12 +182,14 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
             print("-------------------------------")
             print(f"Client {client+1} of {num_clients}")
             # train the local model on the partitioned dataset
-            c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                global_model, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
+            c_weights, c_local_loss, c_local_acc, c_optimizer, c_scheduler = train_text_class_fl_inner(
+                global_model, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar, optimizers[client], schedulers[client])
             # append the weights, local loss and local accuracy
             weights.append(copy.deepcopy(c_weights))
             local_loss.append(c_local_loss)
             local_acc.append(c_local_acc)
+            optimizers[client] = c_optimizer
+            schedulers[client] = c_scheduler
         # loss and accuracy metrics from average of local loss and accuracy
         loss_avg = sum(local_loss) / len(local_loss)
         acc_avg = sum(local_acc) / len(local_acc)
@@ -272,7 +278,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         # return model.state_dict()
 
 
-def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None, optimizer=None, scheduler=None):
     # Make a deep copy of the global model to ensure the original global model is not modified
     model = copy.deepcopy(global_model).to(device)
 
@@ -281,14 +287,19 @@ def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_typ
     train_loader_subset = DataLoader(
         train_loader.dataset, batch_size=train_loader.batch_size, sampler=sampler, drop_last=train_loader.drop_last)
 
-    # Initialize the optimizer for the new local model
-    optimizer = create_optimizer(
-        optimizer_type, model, lr)
+    if optimizer is None:
+        # Initialize the optimizer for the new local model
+        optimizer = create_optimizer(
+            optimizer_type, model, lr)
 
-    # Initialize the learning rate scheduler for the new local optimizer
-    num_training_steps = num_epochs * len(train_loader_subset)
-    lr_scheduler = create_scheduler(
-        scheduler_type, optimizer, num_training_steps, scheduler_warmup_steps)
+    lr_scheduler = scheduler
+    if lr_scheduler is None:
+        # Initialize the learning rate scheduler for the new local optimizer
+        num_training_steps = num_epochs * len(train_loader_subset)
+        lr_scheduler = create_scheduler(
+            scheduler_type, optimizer, num_training_steps, scheduler_warmup_steps)
+
+    
     # inner training loop
     for epoch in range(num_epochs):
         model.train()
@@ -326,8 +337,9 @@ def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_typ
         accuracy_epoch = 100 * correct / total
         print('Local Epoch [{}/{}] finished, Loss: {:.4f}, Accuracy: {:.2f} %'.format(
             epoch+1, num_epochs, loss_epoch, accuracy_epoch))
-    # return the last epoch weights, local loss and local accuracy
-    return model.state_dict(), loss_epoch, accuracy_epoch
+
+    # Return the last epoch weights, local loss and local accuracy along with the saved states
+    return model.state_dict(), loss_epoch, accuracy_epoch, optimizer, lr_scheduler
 
 # TRAINING FOR CIFAR DATASETS
 
