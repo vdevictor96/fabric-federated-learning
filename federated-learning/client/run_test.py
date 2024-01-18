@@ -111,7 +111,7 @@ def main():
     print('-------- Seed set --------')
 
     print('\n-------- Loading model from model_path --------')
-    model = load_model(config['model'], config['model_path'], device)
+    model = load_model(config['model'], config['model_path'], config['ml_mode'], device)
     print('-------- Model loaded --------')
 
     print('\n-------- Creating Tokenizer --------')

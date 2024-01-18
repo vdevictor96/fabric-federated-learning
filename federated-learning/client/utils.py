@@ -4,6 +4,8 @@ import torch.nn as nn
 import warnings
 import numpy as np
 import random
+from torch.optim import AdamW
+from transformers import get_scheduler
 from .model.bert_tiny import get_bert_tiny_tokenizer, get_bert_tiny_model, load_bert_tiny_model
 from .model.bert_mini import get_bert_mini_tokenizer, get_bert_mini_model, load_bert_mini_model
 from .model.bert_small import get_bert_small_tokenizer, get_bert_small_model, load_bert_small_model
@@ -11,7 +13,6 @@ from .model.bert_medium import get_bert_medium_tokenizer, get_bert_medium_model,
 from .model.distilbert_base import get_distilbert_base_tokenizer, get_distilbert_base_model, load_distilbert_base_model
 from .model.albert_base import get_albert_base_tokenizer, get_albert_base_model, load_albert_base_model
 from .model.bert_base import get_bert_base_tokenizer, get_bert_base_model, load_bert_base_model
-
 
 
 # --- Model utils ---
@@ -111,15 +112,15 @@ def create_model(model_type, device):
         raise ValueError(f"Unknown model type {model_type}.")
 
 
-def load_model(model_type, model_path, device):
+def load_model(model_type, model_path, ml_mode, device):
     if model_type == 'bert_tiny':
-        return load_bert_tiny_model(model_path, device)
+        return load_bert_tiny_model(model_path, ml_mode, device)
     elif model_type == 'bert_mini':
-        return load_bert_mini_model(model_path, device)
+        return load_bert_mini_model(model_path, ml_mode, device)
     elif model_type == 'bert_small':
-        return load_bert_small_model(model_path, device)
+        return load_bert_small_model(model_path, ml_mode, device)
     elif model_type == 'bert_medium':
-        return load_bert_medium_model(model_path, device)
+        return load_bert_medium_model(model_path, ml_mode, device)
     # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
     # elif model_type == 'distilbert_base':
     #     return load_distilbert_base_model(model_path, device)
@@ -151,6 +152,21 @@ def create_tokenizer(model_type):
         raise ValueError(f"Unknown tokenizer for model type {model_type}.")
 
 
+def create_optimizer(optimizer_type, model, lr):
+    if optimizer_type.lower() == 'adamw':
+        return AdamW(model.parameters(), lr=lr)
+    else:
+        raise ValueError(f"Unknown optimizer {optimizer_type}.")
+
+
+def create_scheduler(scheduler_type, optimizer, num_training_steps, num_warmup_steps):
+    if scheduler_type.lower() == 'linear':
+        return get_scheduler(name='linear', optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
+    else:
+        raise ValueError(f"Unknown scheduler {scheduler_type}.")
+
+
+
 def get_dir_path():
     # Get the directory of the current script
     return os.path.dirname(os.path.realpath(__file__))
@@ -173,3 +189,83 @@ def get_dataset_path(dataset_name, dataset_type='train'):
             f"The dataset file does not exist: {dataset_path}")
 
     return dataset_path
+
+
+def iid_partition(dataset, clients):
+    dataset_length = len(dataset)
+
+    # Create an array of indexes from 0 to dataset_length and shuffle it
+    indexes = list(range(dataset_length))
+    random.shuffle(indexes)
+
+    # Calculate the size of each partition
+    partition_size = dataset_length // clients
+
+    # Initialize the dictionary to hold the partitions
+    partitions = {}
+
+    for i in range(clients):
+        # For each client, assign a slice of the indexes array
+        start_index = i * partition_size
+        end_index = start_index + partition_size
+
+        # If it's the last client, include any remaining indexes
+        if i == clients - 1:
+            end_index = dataset_length
+
+        partitions[i] = indexes[start_index:end_index]
+
+    return partitions
+
+def non_iid_partition(dataset, clients, min_label_ratio=0.2):
+    # Retrieve the labels for the dataset
+    labels = np.array(dataset.get_labels())
+
+    # Identify indices of data points for each label
+    indices_label_0 = np.where(labels == 0)[0]
+    indices_label_1 = np.where(labels == 1)[0]
+
+    # Shuffle the indices
+    np.random.shuffle(indices_label_0)
+    np.random.shuffle(indices_label_1)
+
+    # Initialize the dictionary to hold the partitions
+    partitions = {i: [] for i in range(clients)}
+
+    # Calculate the minimum number of samples per label per client
+    min_samples_label_0 = int(min_label_ratio * len(indices_label_0) / clients)
+    min_samples_label_1 = int(min_label_ratio * len(indices_label_1) / clients)
+
+    # Distribute the minimum required samples of each label to each client
+    for i in range(clients):
+        partitions[i].extend(indices_label_0[i * min_samples_label_0 : (i + 1) * min_samples_label_0])
+        partitions[i].extend(indices_label_1[i * min_samples_label_1 : (i + 1) * min_samples_label_1])
+
+    # Distribute remaining samples in a non-IID manner
+    remaining_label_0 = indices_label_0[clients * min_samples_label_0 :]
+    remaining_label_1 = indices_label_1[clients * min_samples_label_1 :]
+
+    np.random.shuffle(remaining_label_0)
+    np.random.shuffle(remaining_label_1)
+
+    extra_per_client = len(remaining_label_0) // clients
+    for i in range(clients):
+        start_index = i * extra_per_client
+        end_index = start_index + extra_per_client
+        if i == clients - 1:
+            end_index = len(remaining_label_0)
+        partitions[i].extend(remaining_label_0[start_index:end_index])
+
+    extra_per_client = len(remaining_label_1) // clients
+    for i in range(clients):
+        start_index = i * extra_per_client
+        end_index = start_index + extra_per_client
+        if i == clients - 1:
+            end_index = len(remaining_label_1)
+        partitions[i].extend(remaining_label_1[start_index:end_index])
+
+    # Optionally shuffle the indices for each client
+    for client in partitions:
+        random.shuffle(partitions[client])
+
+    return partitions

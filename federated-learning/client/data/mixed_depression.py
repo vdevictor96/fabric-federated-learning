@@ -79,6 +79,12 @@ class MixedDepression(Dataset):
         self.tokenizer = tokenizer
         self.max_len = max_len
 
+    def get_labels(self):
+        labels = []
+        for i in range(self.len):
+            labels.append(self.data.iloc[i].target)
+        return labels
+    
     def __getitem__(self, index):
         text = str(self.data.text[index])
         text = " ".join(text.split())

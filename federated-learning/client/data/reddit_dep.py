@@ -75,14 +75,20 @@ def get_reddit_dep_test_dataset(root, tokenizer, max_len=512, seed=200):
 
 # credits for the dataset to https://github.com/whopriyam/Benchmarking-Differential-Privacy-and-Federated-Learning-for-BERT-Models
 class RedditDepression(Dataset):
-    def __init__(self, dataframe, tokenizer, max_len):
-        self.len = len(dataframe)
-        self.data = dataframe
+    def __init__(self, dataframe, tokenizer, max_len, indexes=None):
+        self.data = dataframe.iloc[indexes] if indexes is not None else dataframe
+        self.len = len(self.data)
         self.tokenizer = tokenizer
         self.max_len = max_len
 
+    def get_labels(self):
+        labels = []
+        for i in range(self.len):
+            labels.append(self.data.iloc[i].target)
+        return labels
+    
     def __getitem__(self, index):
-        text = str(self.data.tweet[index])
+        text = str(self.data.iloc[index].tweet)
         text = " ".join(text.split())
         inputs = self.tokenizer(
             text,
@@ -100,7 +106,7 @@ class RedditDepression(Dataset):
         return {
             'input_ids': torch.tensor(ids, dtype=torch.long),
             'attention_mask': torch.tensor(mask, dtype=torch.long),
-            'label': torch.tensor(self.data.target[index])
+            'label': torch.tensor(self.data.iloc[index].target)
             # , dtype=torch.long)
         }
 

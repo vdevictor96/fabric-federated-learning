@@ -1,4 +1,9 @@
 {
+  "ml_mode": {
+    "default_value": "standalone",
+    "description": "Machine learning mode",
+    "valid_values": ["standalone", "fl", "bcfl"]
+  },
   "model": {
     "default_value": "bert_tiny",
     "description": "Model to use for training",
@@ -88,5 +93,25 @@
     "default_value": true,
     "description": "Flag to show progress bar during training",
     "valid_values": [true, false]
+  },
+  "num_rounds": {
+    "default_value": 10,
+    "description": "(Only with learning FL or BCFL) Number of rounds for federated learning",
+    "valid_values": "Any valid positive integer"
+  },
+  "num_clients": {
+    "default_value": 5,
+    "description": "(Only with learning FL or BCFL) Number of clients for federated learning",
+    "valid_values": "Any valid positive integer"
+  },
+  "dp_epsilon": {
+    "default_value": 0.0,
+    "description": "(Only with learning FL or BCFL) Epsilon for differential privacy. 0 means no differential privacy",
+    "valid_values": "Any valid positive float"
+  },
+  "data_distribution": {
+    "default_value": "iid",
+    "description": "(Only with learning FL or BCFL) Data distribution for federated learning",
+    "valid_values": ["iid", "non_iid"]
   }
 }

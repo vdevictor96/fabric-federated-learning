@@ -9,10 +9,8 @@ from .data.reddit_dep import get_reddit_dep_dataloaders
 from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
 from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
-from .train import train_text_class
-from torch.optim import AdamW
-from transformers import get_scheduler
-from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path
+from .train import train_text_class, train_text_class_fl
+from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler
 
 
 DEFAULT_CONFIG_FILE = "config/default_config.json"
@@ -95,7 +93,6 @@ def print_config(config):
 
 def main():
     args = parse_args()
-
     print('\n-------- Loading configuration --------')
     config = load_config(args.config_file)
     print_config(config)
@@ -126,20 +123,45 @@ def main():
         f'Eval Loader: {len(eval_loader.dataset)} total sentences. {len(eval_loader)} batches of size {config["eval_batch_size"]}.')
     print('-------- Train and Eval Dataloaders created --------')
 
-    print('\n-------- Creating Optimizer --------')
-    optimizer = create_optimizer(
-        config['optimizer'], model, config['learning_rate'])
-    print('-------- Optimizer created --------')
+    ml_mode = config['ml_mode']
 
-    print('\n-------- Creating Scheduler --------')
-    num_training_steps = config['num_epochs'] * len(train_loader)
-    scheduler = create_scheduler(
-        config['scheduler'], optimizer, num_training_steps, config['scheduler_warmup_steps'])
-    print('-------- Scheduler created --------')
+    if ml_mode == 'standalone':
+        print('\n-------- Creating Optimizer --------')
+        optimizer = create_optimizer(
+            config['optimizer'], model, config['learning_rate'])
+        print('-------- Optimizer created --------')
+    else:
+        # optimizer will be created for each local client
+        pass
+
+    if ml_mode == 'standalone':
+        print('\n-------- Creating Scheduler --------')
+        num_training_steps = config['num_epochs'] * len(train_loader)
+        scheduler = create_scheduler(
+            config['scheduler'], optimizer, num_training_steps, config['scheduler_warmup_steps'])
+        print('-------- Scheduler created --------')
+    else:
+        # scheduler will be created for each local client
+        pass
 
     print('\n-------- Training --------')
-    train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
-                     config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
+    if ml_mode == 'standalone':
+        train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
+                         config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
+
+    elif ml_mode == 'fl':
+        train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
+                            config['learning_rate'], config['scheduler'], config[
+                                'scheduler_warmup_steps'], config['num_epochs'], device, config['eval_flag'],
+                            config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
+                            config['dp_epsilon'], config['data_distribution'])
+
+    elif ml_mode == 'bcfl':
+        # TODO blockchain-based federated learning
+        pass
+    else:
+        raise ValueError(f"Unknown learning mode {ml_mode}.")
+
     print('-------- Training finished --------')
     return
 
@@ -159,20 +181,6 @@ def create_dataloaders(dataset_type, tokenizer, train_size, eval_size, train_bat
         return get_mixed_depression_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
     else:
         raise ValueError(f"Unknown dataset {dataset_type}.")
-
-
-def create_optimizer(optimizer_type, model, lr):
-    if optimizer_type.lower() == 'adamw':
-        return AdamW(model.parameters(), lr=lr)
-    else:
-        raise ValueError(f"Unknown optimizer {optimizer_type}.")
-
-
-def create_scheduler(scheduler_type, optimizer, num_training_steps, num_warmup_steps):
-    if scheduler_type.lower() == 'linear':
-        return get_scheduler(name='linear', optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
-    else:
-        raise ValueError(f"Unknown scheduler {scheduler_type}.")
 
 
 if __name__ == "__main__":
