@@ -5,6 +5,7 @@ import sys
 import torch
 import os
 import warnings
+import torch.multiprocessing as mp
 from .data.reddit_dep import get_reddit_dep_dataloaders
 from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
 from .data.dreaddit import get_dreaddit_dataloaders
@@ -93,6 +94,9 @@ def print_config(config):
 
 
 def main():
+    # mp.set_start_method('spawn')
+    print("Running main()...")
+    
     args = parse_args()
     print('\n-------- Loading configuration --------')
     config = load_config(args.config_file)
@@ -195,4 +199,6 @@ def create_dataloaders(dataset_type, tokenizer, train_size, eval_size, train_bat
 
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn')
+    print("Running main()...")
     main()

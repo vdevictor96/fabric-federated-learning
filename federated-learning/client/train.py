@@ -257,7 +257,8 @@ def train_text_class_fl_parallel(model, modelpath, modelname, train_loader, eval
 
         # Create a process for each client
         for client_id in range(num_clients):
-            p = mp.Process(target=train_text_class_fl_parallel_inner, args=(client_id, return_dict, global_model, train_loader, partitioned_indexes,
+            local_model = copy.deepcopy(global_model).to(device)
+            p = mp.Process(target=train_text_class_fl_parallel_inner, args=(client_id, return_dict, local_model, train_loader, partitioned_indexes,
                            optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar))
             p.start()
             processes.append(p)
@@ -311,9 +312,9 @@ def train_text_class_fl_parallel_inner(client_id, return_dict, global_model, tra
         c_weights), c_local_loss, c_local_acc)
 
 
-def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # Make a deep copy of the global model to ensure the original global model is not modified
-    model = copy_model_to_device(global_model, device)
+    # model = copy_model_to_device(global_model, device)
     # copy.deepcopy(global_model).to(device)
 
     # Create a new DataLoader that only samples from the specified indexes
