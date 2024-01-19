@@ -9,7 +9,7 @@ Author: **Víctor Martínez Palomares**
 
 Project done in collaboration with the **Max Planck Institute for Software Systems (MPI-SWS)**, supervised by Prof. Dr. Krishna P. Gummadi.
 
-This project implements a Blockchain-Based Federated Learning framework using [Hyperledger Fabric](https://www.hyperledger.org/use/fabric) as permissioned blockchain and BERT-based models for binary text classification.
+This project implements a Blockchain-Based Federated Learning framework using [Hyperledger Fabric](https://www.hyperledger.org/use/fabric) as permissioned blockchain and BERT-based models for binary text classification on depression (as a mental health condition) datasets.
 
 ## Index
 - [Structure](#structure)
