@@ -6,6 +6,7 @@ import torchvision
 import sys
 import os
 import copy
+import torch.multiprocessing as mp
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from datetime import datetime
 from os.path import join as pjoin
@@ -209,6 +210,100 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
     else:
         save_model_text_class_fl(global_model, modelpath, modelname,
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
+
+
+def train_text_class_fl_parallel(model, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, data_distribution='iid'):
+    # Set the progress bar
+    total_steps = num_rounds * num_epochs * len(train_loader)
+    if eval_flag:
+        total_steps += num_rounds * len(eval_loader)
+    if progress_bar_flag:
+        progress_bar = tqdm(range(total_steps))
+    else:
+        progress_bar = None
+
+    # partition the training dataset
+    if data_distribution == 'iid':
+        partitioned_indexes = iid_partition(train_loader.dataset, num_clients)
+    else:  # non-iid
+        partitioned_indexes = non_iid_partition(
+            train_loader.dataset, num_clients)
+
+    # Save the best model at the end
+    if eval_flag and not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
+    # Initialize variables to track the best model
+    best_val_accuracy = 0.0
+    best_model_state = None
+    best_round = 0
+    current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
+
+    global_model = model
+    # outer training loop
+    for round in range(num_rounds):
+        weights, local_loss, local_acc = [], [], []
+        print("-------------------------------")
+        print(f"Round {round+1} of {num_rounds}")
+        # inner training loop
+
+        processes = []
+        manager = mp.Manager()
+        return_dict = manager.dict()
+
+        # Create a process for each client
+        for client_id in range(num_clients):
+            p = mp.Process(target=train_text_class_fl_parallel_inner, args=(client_id, return_dict, global_model, train_loader, partitioned_indexes,
+                           optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar))
+            p.start()
+            processes.append(p)
+
+        # Wait for all processes to complete
+        for p in processes:
+            p.join()
+
+        # Aggregate results
+        weights, local_loss, local_acc = zip(*return_dict.values())
+        
+        # # Aggregate results
+        # weights, local_loss, local_acc = [], [], []
+        # for i in range(num_processes):
+        #     w, l, a = return_dict[i]
+        #     weights.extend(w)
+        #     local_loss.extend(l)
+        #     local_acc.extend(a)
+
+        # loss and accuracy metrics from average of local loss and accuracy
+        loss_avg = sum(local_loss) / len(local_loss)
+        acc_avg = sum(local_acc) / len(local_acc)
+        print("-------------------------------")
+        print('Round [{}/{}] finished, Average Local Loss: {:.4f}, Average Local Accuracy: {:.2f} %'.format(
+            round+1, num_rounds, loss_avg, acc_avg))
+        print("-------------------------------")
+        # aggregate the models and update the global model
+        global_weights = {}
+        global_weights = federated_aggregate(weights)
+        global_model.load_state_dict(global_weights)
+        # ---------------------- Validation ----------------------
+        if eval_flag:
+            eval_text_class_fl(global_model, eval_loader,
+                               device, progress_bar_flag, progress_bar)
+    # ---------------------- Saving Models ----------------------
+    if best_model_state is not None:
+        print(
+            f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+        # return best_model_state
+    else:
+        save_model_text_class_fl(global_model, modelpath, modelname,
+                                 num_rounds, lr, optimizer_type, acc_avg, current_date, device)
+
+
+def train_text_class_fl_parallel_inner(client_id, return_dict, global_model, train_loader, partitioned_indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+    # Train the local model on the partitioned dataset for this client
+    c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
+        global_model, train_loader, partitioned_indexes[client_id], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
+    # Store the results in the return dictionary
+    return_dict[client_id] = (copy.deepcopy(
+        c_weights), c_local_loss, c_local_acc)
 
 
 def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):

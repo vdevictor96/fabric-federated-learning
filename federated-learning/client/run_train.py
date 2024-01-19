@@ -10,7 +10,7 @@ from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
 from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
 from .data.deptweet import get_deptweet_dataloaders
-from .train import train_text_class, train_text_class_fl
+from .train import train_text_class, train_text_class_fl, train_text_class_fl_parallel
 from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler
 
 
@@ -151,11 +151,18 @@ def main():
                          config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
 
     elif ml_mode == 'fl':
-        train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
-                            config['learning_rate'], config['scheduler'], config[
+        if config['concurrency_flag']:
+            train_text_class_fl_parallel(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
+                                         config['learning_rate'], config['scheduler'], config[
+                'scheduler_warmup_steps'], config['num_epochs'], device, config['eval_flag'],
+                config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
+                config['dp_epsilon'], config['data_distribution'])
+        else:  # sequential
+            train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
+                                config['learning_rate'], config['scheduler'], config[
                                 'scheduler_warmup_steps'], config['num_epochs'], device, config['eval_flag'],
-                            config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
-                            config['dp_epsilon'], config['data_distribution'])
+                                config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
+                                config['dp_epsilon'], config['data_distribution'])
 
     elif ml_mode == 'bcfl':
         # TODO blockchain-based federated learning
