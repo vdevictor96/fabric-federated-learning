@@ -18,7 +18,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     total_steps = num_epochs * total_steps_per_epoch
     if eval_flag:
         total_steps += num_epochs * len(eval_loader)
-        
+
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
     # Save the best model at the end
@@ -199,79 +199,16 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            # validation loss and accuracy of the global model
-            global_model.eval()
-            val_loss, val_correct, val_total = 0, 0, 0
-            with torch.no_grad():
-                for i, batch in enumerate(eval_loader):
-                    ids = batch['input_ids'].to(
-                        device=device, dtype=torch.long)
-                    mask = batch['attention_mask'].to(
-                        device=device, dtype=torch.long)
-                    targets = batch['label'].to(
-                        device=device, dtype=torch.long)
-
-                    outputs = global_model(ids, mask, labels=targets)
-                    loss = outputs.loss
-                    predicted = torch.argmax(outputs.logits, dim=-1)
-
-                    val_loss += loss.item()
-                    val_total += targets.size(0)
-                    val_correct += (predicted == targets).cpu().sum().item()
-                    if progress_bar_flag:
-                        progress_bar.update(1)
-            val_accuracy = 100 * val_correct / val_total
-            print("-------------------------------")
-            print('Round [{}/{}] finished, Global Model Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
-                round+1, num_rounds, val_loss / len(eval_loader), val_accuracy))
-            print("-------------------------------")
-            # Check if this is the best model based on validation accuracy
-            if val_accuracy >= best_val_accuracy:
-                best_val_accuracy = val_accuracy
-                best_model_state = global_model.state_dict().copy()
-                best_model = {
-                    'round': round+1,
-                    'lr': lr,
-                    'optimizer': optimizer_type,
-                    'tr_acc': acc_avg,
-                    'val_acc': best_val_accuracy,
-                    'date': current_date,
-                    'model_state_dict': global_model.state_dict().copy(),
-                    # could be averaged as the model_state_dict
-                    # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
-                    # 'optimizer_dict': optimizer.state_dict().copy(),
-
-                }
-                best_round = round + 1
-                print(
-                    f"Updated best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
-                print("-------------------------------")
-                torch.save(best_model, pjoin(
-                    modelpath, modelname + '_best.ckpt'))
-
+            eval_text_class_fl(global_model, eval_loader,
+                               device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_model_state is not None:
         print(
             f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else:
-        # Save the last model checkpoint
-        last_model = {
-            'round': round+1,
-            'lr': lr,
-            'optimizer': optimizer_type,
-            'tr_acc': acc_avg,
-            'val_acc': best_val_accuracy,
-            'date': current_date,
-            'model_state_dict': global_model.state_dict().copy(),
-            # could be averaged as the model_state_dict
-            # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
-            # 'optimizer_dict': optimizer.state_dict().copy(),
-        }
-        torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
-        print(
-            f"Last model in round {round+1} saved with Training Accuracy: {acc_avg:.2f} %")
-        # return model.state_dict()
+        save_model_text_class_fl(global_model, modelpath, modelname,
+                                 num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
 def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
@@ -331,9 +268,80 @@ def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_typ
     # return the last epoch weights, local loss and local accuracy
     return model.state_dict(), loss_epoch, accuracy_epoch
 
+
+def eval_text_class_fl(model, eval_loader, device='cuda', progress_bar_flag=True, progress_bar=None):
+    # validation loss and accuracy of the model
+    model.eval()
+    val_loss, val_correct, val_total = 0, 0, 0
+    with torch.no_grad():
+        for i, batch in enumerate(eval_loader):
+            ids = batch['input_ids'].to(
+                device=device, dtype=torch.long)
+            mask = batch['attention_mask'].to(
+                device=device, dtype=torch.long)
+            targets = batch['label'].to(
+                device=device, dtype=torch.long)
+
+            outputs = model(ids, mask, labels=targets)
+            loss = outputs.loss
+            predicted = torch.argmax(outputs.logits, dim=-1)
+
+            val_loss += loss.item()
+            val_total += targets.size(0)
+            val_correct += (predicted == targets).cpu().sum().item()
+            if progress_bar_flag:
+                progress_bar.update(1)
+    val_accuracy = 100 * val_correct / val_total
+    print("-------------------------------")
+    print('Round [{}/{}] finished, Global Model Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
+        round+1, num_rounds, val_loss / len(eval_loader), val_accuracy))
+    print("-------------------------------")
+    # Check if this is the best model based on validation accuracy
+    if val_accuracy >= best_val_accuracy:
+        best_val_accuracy = val_accuracy
+        best_model_state = model.state_dict().copy()
+        best_model = {
+            'round': round+1,
+            'lr': lr,
+            'optimizer': optimizer_type,
+            'tr_acc': acc_avg,
+            'val_acc': best_val_accuracy,
+            'date': current_date,
+            'model_state_dict': best_model_state,
+            # TODO could be averaged as the model_state_dict
+            # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
+            # 'optimizer_dict': optimizer.state_dict().copy(),
+
+        }
+        best_round = round + 1
+        print(
+            f"Updated best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+        print("-------------------------------")
+        torch.save(best_model, pjoin(
+            modelpath, modelname + '_best.ckpt'))
+
+
+def save_model_text_class_fl(model, modelpath, modelname, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
+    # Save the last model checkpoint
+    last_model = {
+        'round': num_rounds,
+        'lr': lr,
+        'optimizer': optimizer_type,
+        'tr_acc': acc_avg,
+        'val_acc': 0.0,
+        'date': current_date,
+        'model_state_dict': model.state_dict().copy(),
+        # could be averaged as the model_state_dict
+        # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
+        # 'optimizer_dict': optimizer.state_dict().copy(),
+    }
+    torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
+    print(
+        f"Last model in round {num_rounds} saved with Training Accuracy: {acc_avg:.2f} %")
+    # return model.state_dict()
+
+
 # TRAINING FOR CIFAR DATASETS
-
-
 def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
 
     # Train the model
