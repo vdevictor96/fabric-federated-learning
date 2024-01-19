@@ -6,6 +6,7 @@ import torchvision
 import sys
 import os
 import copy
+import concurrent.futures
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from datetime import datetime
 from os.path import join as pjoin
@@ -143,7 +144,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         # return model.state_dict()
 
 
-def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, data_distribution='iid'):
+def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
@@ -176,16 +177,25 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         print("-------------------------------")
         print(f"Round {round+1} of {num_rounds}")
         # inner training loop
-        for client in range(num_clients):
-            print("-------------------------------")
-            print(f"Client {client+1} of {num_clients}")
-            # train the local model on the partitioned dataset
-            c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                global_model, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
-            # append the weights, local loss and local accuracy
-            weights.append(copy.deepcopy(c_weights))
-            local_loss.append(c_local_loss)
-            local_acc.append(c_local_acc)
+        # Parallel training for each client
+        local_model = copy.deepcopy(global_model)
+        if concurrency_flag:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(train_text_class_fl_inner, local_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
+                for future in concurrent.futures.as_completed(futures):
+                    c_weights, c_local_loss, c_local_acc = future.result()
+                    # TODO Now check if needed
+                    weights.append(copy.deepcopy(c_weights))
+                    local_loss.append(c_local_loss)
+                    local_acc.append(c_local_acc)
+        else:  # sequential
+            for client in range(num_clients):
+                c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
+                    local_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
+                # TODO Now check if needed
+                weights.append(copy.deepcopy(c_weights))
+                local_loss.append(c_local_loss)
+                local_acc.append(c_local_acc)
         # loss and accuracy metrics from average of local loss and accuracy
         loss_avg = sum(local_loss) / len(local_loss)
         acc_avg = sum(local_acc) / len(local_acc)
@@ -211,15 +221,16 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+    print("-------------------------------")
+    print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
-    model = copy.deepcopy(global_model).to(device)
+    # model = copy.deepcopy(global_model).to(device)
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
     train_loader_subset = DataLoader(
         train_loader.dataset, batch_size=train_loader.batch_size, sampler=sampler, drop_last=train_loader.drop_last)
-
     # Initialize the optimizer for the new local model
     optimizer = create_optimizer(
         optimizer_type, model, lr)

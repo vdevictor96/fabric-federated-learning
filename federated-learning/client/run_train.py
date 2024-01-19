@@ -153,7 +153,7 @@ def main():
     elif ml_mode == 'fl':
         train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
-                                'scheduler_warmup_steps'], config['num_epochs'], device, config['eval_flag'],
+                                'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
                             config['dp_epsilon'], config['data_distribution'])
 
