@@ -523,7 +523,7 @@ def copy_model_to_device(model, device):
     config = model.config
 
     # Create a new instance of the same model class with the same configuration
-    local_model = AutoModelForSequenceClassification(config)
+    local_model = AutoModelForSequenceClassification.from_config(config)
 
     # Manually copy the parameters and buffers
     local_model.load_state_dict(model.state_dict())
