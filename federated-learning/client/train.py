@@ -308,7 +308,8 @@ def train_text_class_fl_parallel_inner(client_id, return_dict, global_model, tra
 
 def train_text_class_fl_inner(global_model, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # Make a deep copy of the global model to ensure the original global model is not modified
-    model = copy.deepcopy(global_model).to(device)
+    model = copy_model_to_device(global_model, device)
+    # copy.deepcopy(global_model).to(device)
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
@@ -505,3 +506,21 @@ def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learni
     # Save the model checkpoint
     torch.save(model.state_dict(), pjoin(modelpath, modelname + '.ckpt'))
     # torch.save(last_model, pjoin(modelpath, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))
+
+
+# TODO move to utils
+def copy_model_to_device(model, device):
+    """
+    Copies a PyTorch model to the specified device (CPU or GPU) without using deepcopy.
+    This avoids issues when copying CUDA tensors in multiprocessing.
+    """
+    # Create a new instance of the same model class
+    local_model = type(model)()
+
+    # Manually copy the parameters and buffers
+    local_model.load_state_dict(model.state_dict())
+
+    # Move the model to the specified device
+    local_model.to(device)
+
+    return local_model
