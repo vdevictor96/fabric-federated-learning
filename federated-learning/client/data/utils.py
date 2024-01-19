@@ -1,22 +1,28 @@
 import pandas as pd
 import numpy as np
+import os
 
 
-# Load your dataset into the DataFrame 'df'
-# df = pd.read_csv('your_dataset.csv')
-
-def split_csv_dataset_train_test(csv_root, train_val_path, test_path, test_size=0.2, seed=200):
+def split_csv_dataset_train_test(file_path, train_val_path, test_path, test_size=0.2, seed=200):
     # Check if the sizes add up to 1
     if test_size < 0 or test_size > 1:
         raise ValueError(
             "The test_size must be between 0 and 1.")
 
-    # Load the dataset
-    df = pd.read_csv(csv_root)
+    # Determine the file extension
+    _, ext = os.path.splitext(file_path)
+
+    # Load the dataset based on file extension
+    if ext.lower() in ['.xls', '.xlsx']:
+        df = pd.read_excel(file_path)
+    elif ext.lower() == '.csv':
+        df = pd.read_csv(file_path)
+    else:
+        raise ValueError("Unsupported file type. Please provide a .csv or .xlsx file.")
     
     # Separating the data based on the 'target' values
     df_0 = df[df['target'] == 0]
-    df_1 = df[df['target'] == 1]
+    df_1 = df[df['target'] >= 1]
 
 
     # Splitting each subset into training/validation and test sets for each target value

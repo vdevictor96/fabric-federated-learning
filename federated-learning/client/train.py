@@ -14,9 +14,11 @@ from tqdm.auto import tqdm
 
 
 def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True):
-    total_steps = num_epochs * len(train_loader)
+    total_steps_per_epoch = len(train_loader)
+    total_steps = num_epochs * total_steps_per_epoch
     if eval_flag:
         total_steps += num_epochs * len(eval_loader)
+        
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
     # Save the best model at the end

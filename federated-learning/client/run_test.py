@@ -9,6 +9,7 @@ from .data.reddit_dep import get_reddit_dep_test_dataloader
 from .data.acl_dep_sad import get_acl_dep_sad_test_dataloader
 from .data.dreaddit import get_dreaddit_test_dataloader
 from .data.mixed_depression import get_mixed_depression_test_dataloader
+from .data.deptweet import get_deptweet_test_dataloader
 from .test import test_text_class
 from .utils import set_seed, set_device, create_tokenizer, get_dir_path, get_dataset_path, load_model
 
@@ -163,6 +164,9 @@ def create_test_dataloader(dataset_type, tokenizer, test_batch_size, max_length,
     elif dataset_type == 'mixed_depression':
         dataset_path = get_dataset_path(dataset_type, 'test')
         return get_mixed_depression_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)
+    elif dataset_type == 'deptweet':
+        dataset_path = get_dataset_path(dataset_type, 'test')
+        return get_deptweet_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)
     else:
         raise ValueError(f"Unknown dataset {dataset_type}.")
 
