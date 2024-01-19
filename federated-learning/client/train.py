@@ -10,6 +10,11 @@ import torch.multiprocessing as mp
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from datetime import datetime
 from os.path import join as pjoin
+
+from transformers import AutoModelForSequenceClassification
+
+
+
 # progress bar
 from tqdm.auto import tqdm
 
@@ -511,11 +516,14 @@ def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learni
 # TODO move to utils
 def copy_model_to_device(model, device):
     """
-    Copies a PyTorch model to the specified device (CPU or GPU) without using deepcopy.
+    Copies a BERT model from Hugging Face to the specified device (CPU or GPU) without using deepcopy.
     This avoids issues when copying CUDA tensors in multiprocessing.
     """
-    # Create a new instance of the same model class
-    local_model = type(model)()
+    # Extract the config from the existing model
+    config = model.config
+
+    # Create a new instance of the same model class with the same configuration
+    local_model = AutoModelForSequenceClassification(config)
 
     # Manually copy the parameters and buffers
     local_model.load_state_dict(model.state_dict())
