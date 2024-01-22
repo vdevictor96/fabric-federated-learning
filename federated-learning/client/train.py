@@ -213,7 +213,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            best_val_accuracy, best_round = eval_text_class_fl(global_model, modelpath, modelname, eval_loader, best_val_accuracy, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
+            best_val_accuracy, best_round = eval_text_class_fl(global_model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
                                device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
@@ -285,7 +285,7 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
     return model.state_dict(), loss_epoch, accuracy_epoch
 
 
-def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accuracy, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
+def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
     # validation loss and accuracy of the model
     model.eval()
     print('-------- Validation --------')
