@@ -126,7 +126,7 @@ def main():
 
     ml_mode = config['ml_mode']
 
-    if ml_mode == 'standalone':
+    if ml_mode == 'ml':
         print('\n-------- Creating Optimizer --------')
         optimizer = create_optimizer(
             config['optimizer'], model, config['learning_rate'])
@@ -135,7 +135,7 @@ def main():
         # optimizer will be created for each local client
         pass
 
-    if ml_mode == 'standalone':
+    if ml_mode == 'ml':
         print('\n-------- Creating Scheduler --------')
         num_training_steps = config['num_epochs'] * len(train_loader)
         scheduler = create_scheduler(
@@ -146,7 +146,10 @@ def main():
         pass
 
     print('\n-------- Training --------')
-    if ml_mode == 'standalone':
+    if ml_mode == 'ml':
+        if config['concurrency_flag']:
+            print(
+                "Concurrency flag is set to True, but ml mode is selected. Concurrency flag will be ignored.")
         train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
                          config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
 

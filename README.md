@@ -18,7 +18,7 @@ This project implements a Blockchain-Based Federated Learning framework using [H
   - [Chaincode](#chaincode)
   - [Gateway](#gateway)
   - [Client](#client)
-- [Standalone Machine Learning](#standalone-machine-learning)
+- [Centralised Machine Learning](#centralised-machine-learning)
   - [Train](#train)
   - [Test](#test)
   - [Debug](#debug)
@@ -117,9 +117,9 @@ pip install -r requirements.txt
 ```
 
 
-## Standalone Machine Learning
+## Centralised Machine Learning
 ### Train
-To run the fine-tuning of the BERT model in a standalone centralised approach, execute the following command:
+To run the fine-tuning of the BERT model in a centralised approach, execute the following command:
 
 ```sh
 cd federated-learning

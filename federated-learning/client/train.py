@@ -67,7 +67,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
         print("-------------------------------")
-        print('Epoch [{}/{}] finished, Loss: {:.4f}, Accuracy: {:.2f} %'.format(
+        print('Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
             epoch+1, num_epochs, loss_epoch, accuracy_epoch))
         print("-------------------------------")
         # ---------------------- Validation ----------------------
@@ -149,9 +149,14 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
         total_steps += num_rounds * len(eval_loader)
-    if progress_bar_flag:
-        progress_bar = tqdm(range(total_steps))
-    else:
+        
+    if concurrency_flag is False:
+        if progress_bar_flag:
+            progress_bar = tqdm(range(total_steps))
+        else:
+            progress_bar = None
+    else: # deactivate progress bar if concurrency is enabled
+        progress_bar_flag = False
         progress_bar = None
 
     # partition the training dataset
@@ -174,14 +179,13 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
     # outer training loop
     for round in range(num_rounds):
         weights, local_loss, local_acc = [], [], []
-        print("-------------------------------")
         print(f"Round {round+1} of {num_rounds}")
+        print("-------------------------------")
         # inner training loop
         # Parallel training for each client
-        local_model = copy.deepcopy(global_model)
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, local_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
+                futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
                     # TODO Now check if needed
@@ -191,7 +195,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    local_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
                 # TODO Now check if needed
                 weights.append(copy.deepcopy(c_weights))
                 local_loss.append(c_local_loss)
@@ -200,7 +204,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         loss_avg = sum(local_loss) / len(local_loss)
         acc_avg = sum(local_acc) / len(local_acc)
         print("-------------------------------")
-        print('Round [{}/{}] finished, Average Local Loss: {:.4f}, Average Local Accuracy: {:.2f} %'.format(
+        print('Round [{}/{}] Average Local Loss: {:.4f}, Average Local Accuracy: {:.2f} %'.format(
             round+1, num_rounds, loss_avg, acc_avg))
         print("-------------------------------")
         # aggregate the models and update the global model
@@ -209,10 +213,10 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            eval_text_class_fl(global_model, eval_loader,
+            best_val_accuracy, best_round = eval_text_class_fl(global_model, modelpath, modelname, eval_loader, best_val_accuracy, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
                                device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
-    if best_model_state is not None:
+    if best_val_accuracy != 0.0:
         print(
             f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
@@ -221,9 +225,10 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
-    print("-------------------------------")
-    print(f"Client {client+1} of {num_clients}")
+def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+    model = copy.deepcopy(global_model).to(device)
+    # print("-------------------------------")
+    # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
     # model = copy.deepcopy(global_model).to(device)
 
@@ -274,15 +279,16 @@ def train_text_class_fl_inner(model, client, num_clients, train_loader, indexes,
             #             .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
-        print('Local Epoch [{}/{}] finished, Loss: {:.4f}, Accuracy: {:.2f} %'.format(
-            epoch+1, num_epochs, loss_epoch, accuracy_epoch))
+        print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
+            client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch))
     # return the last epoch weights, local loss and local accuracy
     return model.state_dict(), loss_epoch, accuracy_epoch
 
 
-def eval_text_class_fl(model, eval_loader, device='cuda', progress_bar_flag=True, progress_bar=None):
+def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accuracy, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
     # validation loss and accuracy of the model
     model.eval()
+    print('-------- Validation --------')
     val_loss, val_correct, val_total = 0, 0, 0
     with torch.no_grad():
         for i, batch in enumerate(eval_loader):
@@ -303,10 +309,9 @@ def eval_text_class_fl(model, eval_loader, device='cuda', progress_bar_flag=True
             if progress_bar_flag:
                 progress_bar.update(1)
     val_accuracy = 100 * val_correct / val_total
-    print("-------------------------------")
-    print('Round [{}/{}] finished, Global Model Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
+    print('Round [{}/{}] Global Model Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
         round+1, num_rounds, val_loss / len(eval_loader), val_accuracy))
-    print("-------------------------------")
+    print('-------- Validation finished --------')
     # Check if this is the best model based on validation accuracy
     if val_accuracy >= best_val_accuracy:
         best_val_accuracy = val_accuracy
@@ -330,6 +335,7 @@ def eval_text_class_fl(model, eval_loader, device='cuda', progress_bar_flag=True
         print("-------------------------------")
         torch.save(best_model, pjoin(
             modelpath, modelname + '_best.ckpt'))
+    return best_val_accuracy, best_round
 
 
 def save_model_text_class_fl(model, modelpath, modelname, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
