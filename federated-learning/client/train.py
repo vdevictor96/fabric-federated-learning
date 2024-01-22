@@ -188,16 +188,16 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
                 futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
-                    # TODO Now check if needed
-                    weights.append(copy.deepcopy(c_weights))
+                    # weights.append(copy.deepcopy(c_weights))
+                    weights.append(c_weights)
                     local_loss.append(c_local_loss)
                     local_acc.append(c_local_acc)
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
                     global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
-                # TODO Now check if needed
-                weights.append(copy.deepcopy(c_weights))
+                # weights.append(copy.deepcopy(c_weights))
+                weights.append(c_weights)
                 local_loss.append(c_local_loss)
                 local_acc.append(c_local_acc)
         # loss and accuracy metrics from average of local loss and accuracy
@@ -226,11 +226,10 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
 
 
 def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
-    model = copy.deepcopy(global_model).to(device)
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
-    # model = copy.deepcopy(global_model).to(device)
+    model = copy.deepcopy(global_model).to(device)
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
