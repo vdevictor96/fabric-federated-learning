@@ -16,7 +16,7 @@ def load_bert_small_model(model_path, device='cuda'):
     "prajjwal1/bert-small")  # v1 and v2
     # Load the saved best model state
     model_info = torch.load(model_path)
-    if ml_mode == 'standalone':
+    if ml_mode == 'ml':
         print(f"Loaded model from date {model_info['date']}. Epoch {model_info['epoch']}, lr: {model_info['lr']}, optimizer: {model_info['optimizer']}\nTrain accuracy: {model_info['tr_acc']:.2f} %, Validation accuracy: {model_info['val_acc']:.2f} %")
     else:
         print(f"Loaded model from date {model_info['date']}. Round {model_info['round']}, lr: {model_info['lr']}, optimizer: {model_info['optimizer']}\nTrain accuracy: {model_info['tr_acc']:.2f} %, Validation accuracy: {model_info['val_acc']:.2f} %")
