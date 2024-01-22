@@ -101,6 +101,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                 best_val_accuracy = val_accuracy
                 best_model_state = model.state_dict().copy()
                 best_model = {
+                    'ml_mode': 'ml',
                     'epoch': epoch+1,
                     'lr': lr,
                     'optimizer': optimizer.__class__.__name__,
@@ -121,13 +122,14 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
 
     # ---------------------- Saving Models ----------------------
 
-    if best_model_state is not None:
+    if best_val_accuracy != 0.0:
         print(
             f"Best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else:
         # Save the last model checkpoint
         last_model = {
+            'ml_mode': 'ml',
             'epoch': epoch+1,
             'lr': lr,
             'optimizer': optimizer.__class__.__name__,
@@ -316,6 +318,7 @@ def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accura
         best_val_accuracy = val_accuracy
         best_model_state = model.state_dict().copy()
         best_model = {
+            'ml_mode': 'fl',
             'round': round+1,
             'lr': lr,
             'optimizer': optimizer_type,
@@ -340,6 +343,7 @@ def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accura
 def save_model_text_class_fl(model, modelpath, modelname, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
     # Save the last model checkpoint
     last_model = {
+        'ml_mode': 'fl',
         'round': num_rounds,
         'lr': lr,
         'optimizer': optimizer_type,

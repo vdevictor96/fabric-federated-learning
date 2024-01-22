@@ -112,15 +112,15 @@ def create_model(model_type, device):
         raise ValueError(f"Unknown model type {model_type}.")
 
 
-def load_model(model_type, model_path, ml_mode, device):
+def load_model(model_type, model_path, device):
     if model_type == 'bert_tiny':
-        return load_bert_tiny_model(model_path, ml_mode, device)
+        return load_bert_tiny_model(model_path, device)
     elif model_type == 'bert_mini':
-        return load_bert_mini_model(model_path, ml_mode, device)
+        return load_bert_mini_model(model_path, device)
     elif model_type == 'bert_small':
-        return load_bert_small_model(model_path, ml_mode, device)
+        return load_bert_small_model(model_path, device)
     elif model_type == 'bert_medium':
-        return load_bert_medium_model(model_path, ml_mode, device)
+        return load_bert_medium_model(model_path, device)
     # NOT SUPPORTED. TOO LARGE FOR BLOCKCHAIN-BASED FL
     # elif model_type == 'distilbert_base':
     #     return load_distilbert_base_model(model_path, device)

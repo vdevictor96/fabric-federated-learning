@@ -112,7 +112,7 @@ def main():
     print('-------- Seed set --------')
 
     print('\n-------- Loading model from model_path --------')
-    model = load_model(config['model'], config['model_path'], config['ml_mode'], device)
+    model = load_model(config['model'], config['model_path'], device)
     print('-------- Model loaded --------')
 
     print('\n-------- Creating Tokenizer --------')
@@ -124,7 +124,7 @@ def main():
         config['dataset'], tokenizer, config['test_batch_size'], config['max_length'], config['seed'])
     print(
         f'Test Loader: {len(test_loader.dataset)} total sentences. {len(test_loader)} batches of size {config["test_batch_size"]}.')
-    print('-------- Train and Eval Dataloaders created --------')
+    print('-------- Test Dataloader created --------')
 
     print('\n-------- Testing --------')
     test_text_class(model, test_loader, device, config['progress_bar_flag'])
