@@ -146,6 +146,8 @@ def main():
         pass
 
     print('\n-------- Training --------')
+    ml_mode_string = 'Centralised Machine Learning' if ml_mode == 'ml' else 'Federated Learning' if ml_mode == 'fl' else 'Blockchain-Based Federated Learning'
+    print("Training with {} technology.".format(ml_mode_string))
     if ml_mode == 'ml':
         if config['concurrency_flag']:
             print(
@@ -154,6 +156,19 @@ def main():
                          config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
 
     elif ml_mode == 'fl':
+        if config['dp_epsilon'] == 0:
+            print('Training without differential privacy.')
+        elif config['dp_epsilon'] < 0 :
+            print('Epsilon value must be positive. Training without differential privacy.')
+        else:
+            print('Training with differential privacy.')
+            # Suppress specific warnings when using Opacus
+            warnings.filterwarnings('ignore', message="Secure RNG turned off.*")
+            warnings.filterwarnings('ignore', message="Optimal order is the largest alpha.*")
+            warnings.filterwarnings('ignore', message="invalid value encountered in log")
+            warnings.filterwarnings('ignore', message="Using a non-full backward hook.*")
+
+        
         train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
                                 'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],

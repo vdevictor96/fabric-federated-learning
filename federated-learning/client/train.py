@@ -1,4 +1,4 @@
-from .utils import iid_partition, non_iid_partition, create_optimizer, create_scheduler
+from .utils import iid_partition, non_iid_partition, create_optimizer, create_scheduler, translate_state_dict_keys
 from .aggregators import federated_aggregate
 import torch
 import torch.nn as nn
@@ -7,6 +7,7 @@ import sys
 import os
 import copy
 import concurrent.futures
+from opacus import PrivacyEngine
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from datetime import datetime
 from os.path import join as pjoin
@@ -187,7 +188,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         # Parallel training for each client
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
+                futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
                     # weights.append(copy.deepcopy(c_weights))
@@ -197,7 +198,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device, progress_bar_flag, progress_bar)
                 # weights.append(copy.deepcopy(c_weights))
                 weights.append(c_weights)
                 local_loss.append(c_local_loss)
@@ -212,6 +213,10 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         # aggregate the models and update the global model
         global_weights = {}
         global_weights = federated_aggregate(weights)
+        # Translate the layers name back to the original model
+        # This is needed when applying DP with Opacus because the layer keys are modified
+        if (dp_epsilon > 0.0):
+            global_weights = translate_state_dict_keys(global_weights, '_module.', '')
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
@@ -227,19 +232,50 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
     model = copy.deepcopy(global_model).to(device)
+    model.train()
+    # freeze non-compatible layers with Opacus for differential privacy
+    non_trainable_layers = [model.bert.embeddings.position_embeddings]
+    for layer in non_trainable_layers:
+        for p in layer.parameters():
+            p.requires_grad = False
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
+    delta = 1 / len(train_loader.dataset)
     train_loader_subset = DataLoader(
         train_loader.dataset, batch_size=train_loader.batch_size, sampler=sampler, drop_last=train_loader.drop_last)
     # Initialize the optimizer for the new local model
     optimizer = create_optimizer(
         optimizer_type, model, lr)
+
+    # Initialize the differential privacy engine for the new local optimizer
+    if dp_epsilon > 0.0:
+        # Create differential privacy engine if differential privacy is enabled
+        privacy_engine = PrivacyEngine()
+        # Integrate the privacy engine with the model, optimizer and data loader
+        model, optimizer, train_loader_subset = privacy_engine.make_private_with_epsilon(
+            module=model,
+            optimizer=optimizer,
+            data_loader=train_loader_subset,
+            target_delta=delta,
+            target_epsilon=dp_epsilon,
+            epochs=num_epochs,
+            max_grad_norm=0.1,
+            poisson_sampling=False,
+        )
+        # model, optimizer, train_loader_subset = privacy_engine.make_private(
+        #     module=model,
+        #     optimizer=optimizer,
+        #     data_loader=train_loader_subset,
+        #     noise_multiplier=dp_sigma,
+        #     max_grad_norm=0.1,
+        #     poisson_sampling=False,
+        # )
 
     # Initialize the learning rate scheduler for the new local optimizer
     num_training_steps = num_epochs * len(train_loader_subset)
@@ -280,8 +316,17 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
             #             .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
-        print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
-            client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch))
+        if dp_epsilon > 0.0:
+            eps = privacy_engine.get_epsilon(delta)
+            print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %, Epsilon: {:.2f}, Delta: {:.4f}'.format(
+                client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch, eps, delta))
+        else:
+            print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
+                client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch))
+        
+    if dp_epsilon > 0.0:
+        model.remove_hooks()
+        
     # return the last epoch weights, local loss and local accuracy
     return model.state_dict(), loss_epoch, accuracy_epoch
 

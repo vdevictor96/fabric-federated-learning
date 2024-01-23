@@ -32,6 +32,32 @@ def update_lr(optimizer, lr):
         param_group['lr'] = lr
 
 
+# def translate_state_dict_keys(state_dict, keyword="_module.", replacement=""):
+#     # replace the names in a state dict for all the keys that contain the keyword
+#     new_state_dict = {}
+#     for key in state_dict:
+#         if keyword in key:
+#             new_state_dict[key.replace(keyword, replacemente)] = state_dict[key]
+#         else:
+#             new_state_dict[key] = state_dict[key]
+#     return new_state_dict
+
+def translate_state_dict_keys(state_dict, keyword="_module.", replacement=""):
+    keys_to_replace = [key for key in state_dict if keyword in key]
+
+    for key in keys_to_replace:
+        new_key = key.replace(keyword, replacement)
+        state_dict[new_key] = state_dict.pop(key)
+
+    return state_dict
+
+
+
+def print_parameters(model):
+    for param in model.parameters():
+        if param.grad is not None:
+            print(param.grad.shape)
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -43,8 +69,6 @@ def compare_models(model1, model2):
     return True
 
 # Function to compare two state_dicts
-
-
 def compare_state_dicts(dict1, dict2):
     for key in dict1:
         if key not in dict2:
@@ -154,7 +178,7 @@ def create_tokenizer(model_type):
 
 def create_optimizer(optimizer_type, model, lr):
     if optimizer_type.lower() == 'adamw':
-        return AdamW(model.parameters(), lr=lr)
+        return AdamW(model.parameters(), lr=lr, eps=1e-8)
     else:
         raise ValueError(f"Unknown optimizer {optimizer_type}.")
 
