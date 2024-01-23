@@ -147,18 +147,18 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         # return model.state_dict()
 
 
-def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, data_distribution='iid'):
+def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
         total_steps += num_rounds * len(eval_loader)
-        
+
     if concurrency_flag is False:
         if progress_bar_flag:
             progress_bar = tqdm(range(total_steps))
         else:
             progress_bar = None
-    else: # deactivate progress bar if concurrency is enabled
+    else:  # deactivate progress bar if concurrency is enabled
         progress_bar_flag = False
         progress_bar = None
 
@@ -182,13 +182,14 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
     # outer training loop
     for round in range(num_rounds):
         weights, local_loss, local_acc = [], [], []
-        print(f"Round {round+1} of {num_rounds}")
+        print(f"\nRound {round+1} of {num_rounds}")
         print("-------------------------------")
         # inner training loop
         # Parallel training for each client
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
+                futures = [executor.submit(train_text_class_fl_inner, global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
+                                           scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
                     # weights.append(copy.deepcopy(c_weights))
@@ -198,7 +199,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
                 # weights.append(copy.deepcopy(c_weights))
                 weights.append(c_weights)
                 local_loss.append(c_local_loss)
@@ -216,12 +217,13 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
         # Translate the layers name back to the original model
         # This is needed when applying DP with Opacus because the layer keys are modified
         if (dp_epsilon > 0.0):
-            global_weights = translate_state_dict_keys(global_weights, '_module.', '')
+            global_weights = translate_state_dict_keys(
+                global_weights, '_module.', '')
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
             best_val_accuracy, best_round = eval_text_class_fl(global_model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
-                               device, progress_bar_flag, progress_bar)
+                                                               device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
         print(
@@ -232,7 +234,7 @@ def train_text_class_fl(model, modelpath, modelname, train_loader, eval_loader, 
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
@@ -246,7 +248,7 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
-    delta = 1 / len(train_loader.dataset)
+
     train_loader_subset = DataLoader(
         train_loader.dataset, batch_size=train_loader.batch_size, sampler=sampler, drop_last=train_loader.drop_last)
     # Initialize the optimizer for the new local model
@@ -262,7 +264,7 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
             module=model,
             optimizer=optimizer,
             data_loader=train_loader_subset,
-            target_delta=delta,
+            target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             epochs=num_epochs,
             max_grad_norm=0.1,
@@ -272,7 +274,7 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
         #     module=model,
         #     optimizer=optimizer,
         #     data_loader=train_loader_subset,
-        #     noise_multiplier=dp_sigma,
+        #     noise_multiplier=0.2,
         #     max_grad_norm=0.1,
         #     poisson_sampling=False,
         # )
@@ -317,16 +319,16 @@ def train_text_class_fl_inner(global_model, client, num_clients, train_loader, i
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
         if dp_epsilon > 0.0:
-            eps = privacy_engine.get_epsilon(delta)
+            eps = privacy_engine.get_epsilon(dp_delta)
             print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %, Epsilon: {:.2f}, Delta: {:.4f}'.format(
-                client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch, eps, delta))
+                client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch, eps, dp_delta))
         else:
             print('Client {} of {}: Local Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
                 client+1, num_clients, epoch+1, num_epochs, loss_epoch, accuracy_epoch))
-        
+
     if dp_epsilon > 0.0:
         model.remove_hooks()
-        
+
     # return the last epoch weights, local loss and local accuracy
     return model.state_dict(), loss_epoch, accuracy_epoch
 
