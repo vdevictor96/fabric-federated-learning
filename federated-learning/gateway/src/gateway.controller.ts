@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -279,18 +280,18 @@ export class GatewayController {
     }
   }
 
-  @Post('aggregate')
+  @Post('aggregate/:id')
   public async aggregateModels(
-    @Body() modelIds: string[],
+    @Param('id') modelId: string,
+    @Query('round') round: string,
     @Res() response: Response,
   ) {
     try {
       console.log(
-        '\n--> Submit Transaction: AggregateModels, aggregates list of given models',
+        '\n--> Submit Transaction: AggregateModels, aggregate existing local models of the given model Id',
       );
-      const jsonModelIds = JSON.stringify(modelIds);
       const contract = await this.gatewayService.getContract();
-      await contract.submitTransaction('AggregateModels', jsonModelIds);
+      await contract.submitTransaction('AggregateModels', modelId, round);
       console.log('*** Transaction committed successfully');
       response
         .status(HttpStatus.OK)

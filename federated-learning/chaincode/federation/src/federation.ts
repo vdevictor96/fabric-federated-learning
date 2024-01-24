@@ -17,6 +17,7 @@ import { Model, ModelParams, ModelWeights } from "./model";
 })
 export class ModelTransferContract extends Contract {
   static readonly UTF8_DECODER = new TextDecoder();
+  static readonly END_KEY = "\uFFFF";
 
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
@@ -121,44 +122,68 @@ export class ModelTransferContract extends Contract {
   @Transaction()
   public async AggregateModels(
     ctx: Context,
-    jsonModelIds: string
+    // jsonModelIds: string
+    globalModelId: string,
+    round: number
   ): Promise<void> {
     const modelWeights: ModelParams[] = [];
     const aggregatedWeights: ModelParams = {};
-    const modelIds = JSON.parse(jsonModelIds);
-    // fill up model JSONs with all models
-    // fill up modelWeights with all models' weights
-    for (const modelId of modelIds) {
-      const resultBytes = await ctx.stub.getState(modelId);
-      const resultJson = ModelTransferContract.UTF8_DECODER.decode(resultBytes);
-      const modelJSON = JSON.parse(resultJson);
-
-      const modelParams: ModelParams = await this.deserializeModelParams(
-        modelJSON.modelParams
+    // Query the ledger for models with the specified prefix
+    // Define the start and end key for the range query
+    const prefix = globalModelId + "_client_";
+    const iterator = await ctx.stub.getStateByRange(
+      prefix,
+      prefix + ModelTransferContract.END_KEY
+    );
+    let result = await iterator.next();
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
       );
-      // fill up modelWeights with all models' weights
-      modelWeights.push(modelParams);
+      let modelJSON;
+      let modelParams: ModelParams;
+      try {
+        modelJSON = JSON.parse(strValue);
+        console.log(modelJSON.id);
+        // Deserialize the model params and add them to the array
+        modelParams = await this.deserializeModelParams(modelJSON.modelParams);
+        modelWeights.push(modelParams);
+        // Deletes the model from the chaincode state one it has been read
+        // asynchronusly
+        ctx.stub.deleteState(modelJSON.id);
+      } catch (err) {
+        console.log(err);
+      }
+      result = await iterator.next();
     }
 
-    // aggregate the weights
+    // aggregates the weights
     for (const key in modelWeights[0]) {
       aggregatedWeights[key] = this.aggregateWeights(
         modelWeights.map((model) => model[key])
       );
     }
 
-    // serialize the aggregated weights
+    // serializes the aggregated weights
     const encodedAggregatedParams = await this.serializeModelParams(
       aggregatedWeights
     );
     console.log("aggregated successfully");
-    // create the new model id
-    const newModelId = modelIds[0] + "and" + modelIds[1];
     console.log("creating model");
-    // save it as a new model using this.CreateModel
-    await this.CreateModel(ctx, newModelId, encodedAggregatedParams, "Victor");
+    // saves it as a new model using this.CreateModel
+    const newGlobalModelId = globalModelId + "_round_" + round;
+    await this.CreateModel(
+      ctx,
+      newGlobalModelId,
+      encodedAggregatedParams,
+      "Victor"
+    );
     console.log("model created");
-
+    // const newModel = {
+    //   id: newModelId,
+    //   modelParams: en,
+    //   owner,
+    // };
     // return this.ReadModel(ctx, newModelId);
   }
 

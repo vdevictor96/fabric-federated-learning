@@ -155,31 +155,33 @@ def main():
         train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
                          config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
 
-    elif ml_mode == 'fl':
+    elif ml_mode == 'fl' or ml_mode == 'bcfl':
         if config['dp_epsilon'] == 0:
             print('Training without differential privacy.')
-        elif config['dp_epsilon'] < 0 :
-            print('Epsilon value must be positive. Training without differential privacy.')
+        elif config['dp_epsilon'] < 0:
+            print(
+                'Epsilon value must be positive. Training without differential privacy.')
         else:
             # Suppress specific warnings when using Opacus
-            warnings.filterwarnings('ignore', message="Secure RNG turned off.*")
-            warnings.filterwarnings('ignore', message="Optimal order is the largest alpha.*")
-            warnings.filterwarnings('ignore', message="invalid value encountered in log")
-            warnings.filterwarnings('ignore', message="Using a non-full backward hook.*")
+            warnings.filterwarnings(
+                'ignore', message="Secure RNG turned off.*")
+            warnings.filterwarnings(
+                'ignore', message="Optimal order is the largest alpha.*")
+            warnings.filterwarnings(
+                'ignore', message="invalid value encountered in log")
+            warnings.filterwarnings(
+                'ignore', message="Using a non-full backward hook.*")
             print('Training with differential privacy.')
             if config['dp_epsilon'] > 10:
                 print('Epsilon value is too large. Reducing its value to 10.')
                 config['dp_epsilon'] = 10
-        
-        train_text_class_fl(model, config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
+
+        train_text_class_fl(model, config['ml_mode'], config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
-                                'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
+                            'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
                             config['dp_epsilon'], config['dp_delta'], config['data_distribution'])
 
-    elif ml_mode == 'bcfl':
-        # TODO blockchain-based federated learning
-        pass
     else:
         raise ValueError(f"Unknown learning mode {ml_mode}.")
 

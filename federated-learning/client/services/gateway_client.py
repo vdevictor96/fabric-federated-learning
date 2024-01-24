@@ -23,8 +23,8 @@ def init_ledger():
     return response.json()
 
 
-def get_model(modelId):
-    response = requests.get(f'{BASE_URL}/model/{modelId}')
+def get_model(model_id):
+    response = requests.get(f'{BASE_URL}/model/{model_id}')
     model = response.json()['data']
     return model
 
@@ -41,21 +41,20 @@ def create_model(model_data):
     return response.json()
 
 
-def submit_model(modelId, model_params, first_n=0, last_n=0):
+def submit_model(model_id, model_params, first_n=0, last_n=0):
     # headers = {'Content-Type': 'application/octet-stream'}
     headers = {'Content-Type': 'text/plain'}
 
     # json_data = serialize_model_json(model_params, first_n, last_n)
     encoded_model = serialize_model_msgpack(model_params, first_n, last_n)
     response = requests.post(
-        f'{BASE_URL}/local-model/{modelId}', headers=headers, data=encoded_model)
+        f'{BASE_URL}/local-model/{model_id}', headers=headers, data=encoded_model)
     return response.json()
 
 
-def aggregate_models(modelIds):
-    headers = {'Content-Type': 'application/json'}
+def aggregate_models(model_id, round_number):
     response = requests.post(
-        f'{BASE_URL}/aggregate', headers=headers, data=json.dumps(modelIds))
+        f'{BASE_URL}/aggregate/{model_id}', params={'round': round_number})
     return response.json()
 
 
