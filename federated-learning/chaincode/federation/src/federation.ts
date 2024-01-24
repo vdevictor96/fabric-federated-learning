@@ -300,7 +300,6 @@ export class ModelTransferContract extends Contract {
         await ctx.stub.deleteState(record);
       } catch (err) {
         console.log(err);
-        record = strValue;
       }
       allResults.push(record);
       result = await iterator.next();
@@ -352,7 +351,6 @@ export class ModelTransferContract extends Contract {
         record = JSON.parse(strValue);
       } catch (err) {
         console.log(err);
-        record = strValue;
       }
       allResults.push(record);
       result = await iterator.next();
@@ -377,7 +375,6 @@ export class ModelTransferContract extends Contract {
         record = JSON.parse(strValue).id;
       } catch (err) {
         console.log(err);
-        record = strValue;
       }
       allResults.push(record);
       result = await iterator.next();

@@ -343,7 +343,7 @@ def train_text_class_fl_inner(global_model, modelname, fl_mode, client, num_clie
 
     if fl_mode == 'bcfl':
         # send the local weights to the blockchain
-        submit_model(modelname + '_client_' + str(client+1), model.state_dict(), last_n=4)
+        submit_model(modelname + '_client_' + str(client+1), model.state_dict())
         return None, loss_epoch, accuracy_epoch
     
     # return the last epoch weights, local loss and local accuracy
