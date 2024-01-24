@@ -158,6 +158,31 @@ export class GatewayController {
   /**
    * Evaluate a transaction to query ledger state.
    */
+  @Delete('allModels')
+  public async deleteAllModels(@Res() response: Response) {
+    try {
+      console.log(
+        '\n--> Evaluate Transaction: DeleteAllModels, function deletes all the current models on the ledger',
+      );
+      const contract = await this.gatewayService.getContract();
+      const resultBytes = await contract.submitTransaction('DeleteAllModels');
+      const resultJson = GatewayService.UTF8_DECODER.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+      console.log('*** Result:', result);
+      response
+        .status(200)
+        .json({ message: 'All models deleted correctly', data: result });
+    } catch (error: any) {
+      console.error('Error deleting all models', error.message);
+      response
+        .status(400)
+        .json({ message: 'Error deleting all models', error: error.message });
+    }
+  }
+
+  /**
+   * Evaluate a transaction to query ledger state.
+   */
   @Delete('model/:id')
   public async deleteModelById(
     @Param('id') modelId: string,

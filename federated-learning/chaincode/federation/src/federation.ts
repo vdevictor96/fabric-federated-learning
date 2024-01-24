@@ -151,13 +151,13 @@ export class ModelTransferContract extends Contract {
     const encodedAggregatedParams = await this.serializeModelParams(
       aggregatedWeights
     );
-    console.log('aggregated successfully')
+    console.log("aggregated successfully");
     // create the new model id
     const newModelId = modelIds[0] + "and" + modelIds[1];
-    console.log('creating model')
+    console.log("creating model");
     // save it as a new model using this.CreateModel
     await this.CreateModel(ctx, newModelId, encodedAggregatedParams, "Victor");
-    console.log('model created')
+    console.log("model created");
 
     // return this.ReadModel(ctx, newModelId);
   }
@@ -255,6 +255,32 @@ export class ModelTransferContract extends Contract {
       throw new Error(`The model ${id} does not exist`);
     }
     return ctx.stub.deleteState(id);
+  }
+
+  // DeleteAllModels deletes all models from the world state.
+  @Transaction()
+  public async DeleteAllModels(ctx: Context): Promise<string> {
+    const allResults = [];
+    // range query with empty string for startKey and endKey does an open-ended query of all models in the chaincode namespace.
+    const iterator = await ctx.stub.getStateByRange("", "");
+    let result = await iterator.next();
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
+      );
+      let record;
+      try {
+        record = JSON.parse(strValue).id;
+        // Delete the key from the state in ledger
+        await ctx.stub.deleteState(record);
+      } catch (err) {
+        console.log(err);
+        record = strValue;
+      }
+      allResults.push(record);
+      result = await iterator.next();
+    }
+    return JSON.stringify(allResults);
   }
 
   // ModelExists returns true when model with given ID exists in world state.
