@@ -194,17 +194,19 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, train_loader, eval
                                            scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
-                    # weights.append(copy.deepcopy(c_weights))
-                    weights.append(c_weights)
+                    if fl_mode == 'fl':
+                        # if fl_mode is bcfl, the local weights have been sent to the blockchain
+                        # weights.append(copy.deepcopy(c_weights))
+                        weights.append(c_weights)
                     local_loss.append(c_local_loss)
                     local_acc.append(c_local_acc)
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
                     global_model, modelname, fl_mode, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
-                # weights.append(copy.deepcopy(c_weights))
                 if fl_mode == 'fl':
                     # if fl_mode is bcfl, the local weights have been sent to the blockchain
+                    # weights.append(copy.deepcopy(c_weights))            
                     weights.append(c_weights)
                 local_loss.append(c_local_loss)
                 local_acc.append(c_local_acc)
@@ -343,7 +345,7 @@ def train_text_class_fl_inner(global_model, modelname, fl_mode, client, num_clie
 
     if fl_mode == 'bcfl':
         # send the local weights to the blockchain
-        submit_model(modelname + '_client_' + str(client+1), model.state_dict())
+        submit_model(modelname + '_client_' + str(client+1), model.state_dict(), last_n=9)
         return None, loss_epoch, accuracy_epoch
     
     # return the last epoch weights, local loss and local accuracy
