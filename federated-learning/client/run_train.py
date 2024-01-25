@@ -11,7 +11,7 @@ from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
 from .data.deptweet import get_deptweet_dataloaders
 from .train import train_text_class, train_text_class_fl
-from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler
+from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements
 
 
 DEFAULT_CONFIG_FILE = "config/default_config.json"
@@ -111,6 +111,50 @@ def main():
     model = create_model(config['model'], device)
     print('-------- Model created --------')
 
+    print('\n-------- Setting Trainable Layers --------')
+    total_params = sum(p.numel() for p in model.parameters())
+    # Train only the last 'trainable_layers' layers
+    total_params = sum(p.numel() for p in model.parameters())
+    if config['trainable_layers'] > 0:
+        print(
+            f'Training only the last {config["trainable_layers"]} layers. Not including embeddings.')
+        trainable_params, trainable_layers = freeze_layers(
+            model, config['trainable_layers'])
+    else:
+        trainable_layers = None
+        print('Training all layers, including embeddings.')
+        trainable_params = total_params
+
+    # Freeze non-compatible layers with Opacus for differential privacy
+    print('-------- Freezing non-compatible layers with Opacus --------')
+    non_trainable_layers = [
+        ('bert.embeddings.position_embeddings', model.bert.embeddings.position_embeddings)]
+    filtered_non_trainable_layers = non_trainable_layers
+    if trainable_layers is not None:
+        # Filter out layers from trainable_layers that are in non_trainable_layers
+        trainable_layers = [
+            (name, layer) for name, layer in trainable_layers
+            if not any(layer is ntl[1] for ntl in non_trainable_layers)
+        ]
+        # Update filtered_non_trainable_layers
+        filtered_non_trainable_layers = [
+            (name, layer) for name, layer in non_trainable_layers if any(layer is tl[1] for tl in trainable_layers)
+        ]
+
+    # Freeze non-trainable layers
+    for name, layer in filtered_non_trainable_layers:
+        print(f'Freezing layer {name}: {layer}')
+        for p in layer.parameters():
+            p.requires_grad = False
+            trainable_params -= p.numel()
+
+    print('-------- Non-compatible layers with Opacus frozen --------')
+
+    print(f"\nTotal parameters count: {total_params}")
+    print(f"Trainable parameters count: {trainable_params}")
+
+    print('-------- Trainable Layers set --------')
+
     print('\n-------- Creating Tokenizer --------')
     tokenizer = create_tokenizer(config['model'])
     print('-------- Tokenizer created --------')
@@ -176,7 +220,7 @@ def main():
                 print('Epsilon value is too large. Reducing its value to 10.')
                 config['dp_epsilon'] = 10
 
-        train_text_class_fl(model, config['ml_mode'], config['models_path'], config['model_name'], train_loader, eval_loader, config['optimizer'],
+        train_text_class_fl(model, config['ml_mode'], config['models_path'], config['model_name'], trainable_layers, train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
                             'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],

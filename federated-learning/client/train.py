@@ -1,4 +1,4 @@
-from .utils import iid_partition, non_iid_partition, create_optimizer, create_scheduler, translate_state_dict_keys
+from .utils import iid_partition, non_iid_partition, create_optimizer, create_scheduler, translate_state_dict_keys, filter_trainable_weights
 from .services.utils import deserialize_model_msgpack
 from .services.gateway_client import submit_model, aggregate_models, get_model
 from .aggregators import federated_aggregate
@@ -149,7 +149,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         # return model.state_dict()
 
 
-def train_text_class_fl(model, fl_mode, modelpath, modelname, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
+def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
@@ -183,31 +183,31 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, train_loader, eval
     global_model = model
     # outer training loop
     for round in range(num_rounds):
-        weights, local_loss, local_acc = [], [], []
+        trainable_weights, local_loss, local_acc = [], [], []
         print(f"\nRound {round+1} of {num_rounds}")
         print("-------------------------------")
         # inner training loop
         # Parallel training for each client
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, global_model, modelname, fl_mode, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
+                futures = [executor.submit(train_text_class_fl_inner, global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
                                            scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
                     if fl_mode == 'fl':
                         # if fl_mode is bcfl, the local weights have been sent to the blockchain
-                        # weights.append(copy.deepcopy(c_weights))
-                        weights.append(c_weights)
+                        # trainable_weights.append(copy.deepcopy(c_weights))
+                        trainable_weights.append(c_weights)
                     local_loss.append(c_local_loss)
                     local_acc.append(c_local_acc)
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    global_model, modelname, fl_mode, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
                 if fl_mode == 'fl':
                     # if fl_mode is bcfl, the local weights have been sent to the blockchain
-                    # weights.append(copy.deepcopy(c_weights))            
-                    weights.append(c_weights)
+                    # trainable_weights.append(copy.deepcopy(c_weights))
+                    trainable_weights.append(c_weights)
                 local_loss.append(c_local_loss)
                 local_acc.append(c_local_acc)
         # loss and accuracy metrics from average of local loss and accuracy
@@ -217,22 +217,29 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, train_loader, eval
         print('Round [{}/{}] Average Local Loss: {:.4f}, Average Local Accuracy: {:.2f} %'.format(
             round+1, num_rounds, loss_avg, acc_avg))
         print("-------------------------------")
+
         # aggregate the models and update the global model
-        global_weights = {}
+        global_trainable_weights = {}
         if fl_mode == 'fl':
-            global_weights = federated_aggregate(weights)
-        else: # bcfl
+            global_trainable_weights = federated_aggregate(trainable_weights)
+        else:  # bcfl
             # the local weights have been sent to the blockchain
             # triggering the federated aggregation
             aggregate_models(modelname, round+1)
             global_model_data = get_model(modelname + '_round_' + str(round+1))
-            global_weights = deserialize_model_msgpack(global_model_data['modelParams'])
-        
-        # Translate the layers name back to the original model
-        # This is needed when applying DP with Opacus because the layer keys are modified
-        if (dp_epsilon > 0.0):
-            global_weights = translate_state_dict_keys(
-                global_weights, '_module.', '')
+            global_trainable_weights = deserialize_model_msgpack(
+                global_model_data['modelParams'])
+
+        # Overwrite the trainable layers of the global weights with the global trainable weights before loading the state dict
+        global_weights = global_model.state_dict()
+        for layer in global_trainable_weights:
+            if layer in global_weights:
+                global_weights[layer] = global_trainable_weights[layer]
+            else:
+                print(
+                    f"Warning: '{layer}' not found in global model's state_dict.")
+
+        # Load the updated state dict back into the model
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
@@ -248,17 +255,12 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, train_loader, eval
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(global_model, modelname, fl_mode, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
     model = copy.deepcopy(global_model).to(device)
     model.train()
-    # freeze non-compatible layers with Opacus for differential privacy
-    non_trainable_layers = [model.bert.embeddings.position_embeddings]
-    for layer in non_trainable_layers:
-        for p in layer.parameters():
-            p.requires_grad = False
 
     # Create a new DataLoader that only samples from the specified indexes
     sampler = SubsetRandomSampler(indexes)
@@ -343,13 +345,18 @@ def train_text_class_fl_inner(global_model, modelname, fl_mode, client, num_clie
     if dp_epsilon > 0.0:
         model.remove_hooks()
 
+    # Only the trainable layers are added to the weights array
+    trainable_weights = {}
+    trainable_weights = filter_trainable_weights(
+        model.state_dict(), trainable_layers, dp_epsilon > 0.0)
+
     if fl_mode == 'bcfl':
         # send the local weights to the blockchain
-        submit_model(modelname + '_client_' + str(client+1), model.state_dict(), last_n=9)
+        submit_model(modelname + '_client_' + str(client+1), trainable_weights)
         return None, loss_epoch, accuracy_epoch
-    
+
     # return the last epoch weights, local loss and local accuracy
-    return model.state_dict(), loss_epoch, accuracy_epoch
+    return trainable_weights, loss_epoch, accuracy_epoch
 
 
 def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):

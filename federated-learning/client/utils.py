@@ -52,11 +52,98 @@ def translate_state_dict_keys(state_dict, keyword="_module.", replacement=""):
     return state_dict
 
 
+def freeze_layers(model, trainable_layers_count):
+    trainable_layers = []
+    # Retrieve the last layers keys
+    if hasattr(model, 'classifier'):
+        trainable_layers.append(('classifier', model.classifier))
+        trainable_layers_count -= 1
+    if trainable_layers_count > 0 and hasattr(model.bert, 'pooler'):
+        trainable_layers.append(('bert.pooler', model.bert.pooler))
+        trainable_layers_count -= 1
+    if trainable_layers_count > 0:
+        total_encoder_layers = len(model.bert.encoder.layer)
+        encoder_layers_to_add = min(
+            trainable_layers_count, total_encoder_layers)
+        start_index = total_encoder_layers - encoder_layers_to_add
+        trainable_layers.extend([
+            (f'bert.encoder.layer.{i}', layer)
+            for i, layer in enumerate(model.bert.encoder.layer[-encoder_layers_to_add:], start=start_index)
+        ])
+    # trainable_layers_count -= encoder_layers_to_add
+    # TODO TRAIN EMBEDDINGS?
+    # while trainable_layers_count > 0:
+    # if trainable_layers_count > 0:
+    #     trainable_layers.append(model.bert.embeddings.LayerNorm)
+    #     tra
+    #     embedding_layers = [model.bert.embeddings.word_embeddings, model.bert.embeddings.position_embeddings, model.bert.embeddings.token_type_embeddings, model.bert.embeddings.LayerNorm]
+    #     embeddings_layers_to_add = min(trainable_layers_count, len(embedding_layers))
+    #     trainable_layers.extend(model.bert.embeddings[-embeddings_layers_to_add:])
+
+    trainable_params = 0
+    # Set requires_grad to False for all layers except the last ones
+    for param in model.parameters():
+        param.requires_grad = False
+    for _, layer in trainable_layers:
+        for param in layer.parameters():
+            param.requires_grad = True
+            trainable_params += param.numel()
+
+    return trainable_params, trainable_layers
+
+
+def filter_trainable_weights(state_dict, trainable_layers, dp):
+    dp_prefix = '_module.'
+    if trainable_layers is None:
+        return state_dict
+
+    # Extract layer names from the trainable_layers
+    trainable_layer_names = [
+        dp_prefix+name if dp else name for name, _ in trainable_layers]
+
+    # Filter the state_dict to include only weights from the trainable layers
+    trainable_state_dict = {name: weight for name, weight in state_dict.items()
+                            if any(name.startswith(trainable_name) for trainable_name in trainable_layer_names)}
+
+    # This is needed when applying DP with Opacus because the layer keys are modified
+    # Translate the layers name back to the original model
+    if dp:
+        trainable_state_dict = translate_state_dict_keys(
+            trainable_state_dict, dp_prefix, '')
+    return trainable_state_dict
+
+
+def get_trainable_state_dict_elements(model, num_trainable_layers):
+    # Function to get parameter names for a given layer
+    def get_param_names(key, layer):
+        return [key+'.'+name for name, _ in layer.named_parameters()]
+
+    # Collecting all layers' parameter names in reverse order
+    all_layers = list(model.named_children())
+    param_names = []
+    layer_keys = []
+    for key, layer in reversed(all_layers):
+        if key not in layer_keys:
+            layer_keys.append(key)
+        param_names.extend(get_param_names(key, layer))
+        if len(layer_keys) >= num_trainable_layers:
+            break
+
+    # Filtering the state_dict for the last N trainable layers
+    trainable_state_dict = {
+        name: param for name, param in model.state_dict().items() if name in param_names}
+
+    return trainable_state_dict
+
+# Example usage:
+# trainable_state_dict = get_trainable_state_dict_elements(model, trainable_layers)
+
 
 def print_parameters(model):
     for param in model.parameters():
         if param.grad is not None:
             print(param.grad.shape)
+
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -69,6 +156,8 @@ def compare_models(model1, model2):
     return True
 
 # Function to compare two state_dicts
+
+
 def compare_state_dicts(dict1, dict2):
     for key in dict1:
         if key not in dict2:
@@ -190,7 +279,6 @@ def create_scheduler(scheduler_type, optimizer, num_training_steps, num_warmup_s
         raise ValueError(f"Unknown scheduler {scheduler_type}.")
 
 
-
 def get_dir_path():
     # Get the directory of the current script
     return os.path.dirname(os.path.realpath(__file__))
@@ -241,6 +329,7 @@ def iid_partition(dataset, clients):
 
     return partitions
 
+
 def non_iid_partition(dataset, clients, min_label_ratio=0.2):
     # Retrieve the labels for the dataset
     labels = np.array(dataset.get_labels())
@@ -262,12 +351,14 @@ def non_iid_partition(dataset, clients, min_label_ratio=0.2):
 
     # Distribute the minimum required samples of each label to each client
     for i in range(clients):
-        partitions[i].extend(indices_label_0[i * min_samples_label_0 : (i + 1) * min_samples_label_0])
-        partitions[i].extend(indices_label_1[i * min_samples_label_1 : (i + 1) * min_samples_label_1])
+        partitions[i].extend(
+            indices_label_0[i * min_samples_label_0: (i + 1) * min_samples_label_0])
+        partitions[i].extend(
+            indices_label_1[i * min_samples_label_1: (i + 1) * min_samples_label_1])
 
     # Distribute remaining samples in a non-IID manner
-    remaining_label_0 = indices_label_0[clients * min_samples_label_0 :]
-    remaining_label_1 = indices_label_1[clients * min_samples_label_1 :]
+    remaining_label_0 = indices_label_0[clients * min_samples_label_0:]
+    remaining_label_1 = indices_label_1[clients * min_samples_label_1:]
 
     np.random.shuffle(remaining_label_0)
     np.random.shuffle(remaining_label_1)
