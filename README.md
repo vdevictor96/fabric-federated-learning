@@ -81,7 +81,8 @@ To execute the Python client you need to install the Python libraries in the req
 
 First, activate your python environment where you will be running the BERT model training. 
 
-You can do that using conda with the following command:
+
+You can do that using conda with the following command: [(Install conda following these instructions)](https://docs.anaconda.com/free/anaconda/install/linux/)
 ```sh
 conda activate your-existing-environment
 ```
