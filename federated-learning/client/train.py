@@ -17,7 +17,7 @@ from os.path import join as pjoin
 from tqdm.auto import tqdm
 
 
-def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True):
+def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
     total_steps_per_epoch = len(train_loader)
     total_steps = num_epochs * total_steps_per_epoch
     if eval_flag:
@@ -33,13 +33,28 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     best_model_state = None
     best_epoch = 0
     current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
+
+    model.train()
+    # Initialize the differential privacy engine for the new local optimizer
+    if dp_epsilon > 0.0:
+        # Create differential privacy engine if differential privacy is enabled
+        privacy_engine = PrivacyEngine()
+        # Integrate the privacy engine with the model, optimizer and data loader
+        model, optimizer, train_loader = privacy_engine.make_private_with_epsilon(
+            module=model,
+            optimizer=optimizer,
+            data_loader=train_loader,
+            target_delta=dp_delta,
+            target_epsilon=dp_epsilon,
+            epochs=num_epochs,
+            max_grad_norm=0.1,
+            poisson_sampling=False,
+        )
+
     for epoch in range(num_epochs):
         model.train()
         accumulated_loss, steps, correct, total = 0, 0, 0, 0
         for i, batch in enumerate(train_loader):
-            # ids = batch['input_ids']
-            # mask = batch['attention_mask']
-            # targets = batch['label']
             # Move batch to GPU
             ids = batch['input_ids'].to(device=device, dtype=torch.long)
             mask = batch['attention_mask'].to(device=device, dtype=torch.long)
@@ -75,6 +90,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         print("-------------------------------")
         # ---------------------- Validation ----------------------
         if eval_flag:
+            print('-------- Validation --------')
             model.eval()
             val_loss, val_correct, val_total = 0, 0, 0
             with torch.no_grad():
@@ -98,7 +114,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             val_accuracy = 100 * val_correct / val_total
             print('Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
                 val_loss / len(eval_loader), val_accuracy))
-            print("-------------------------------")
+            print('-------- Validation finished --------')
             # Check if this is the best model based on validation accuracy
             if val_accuracy >= best_val_accuracy:
                 best_val_accuracy = val_accuracy
@@ -137,11 +153,11 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             'lr': lr,
             'optimizer': optimizer.__class__.__name__,
             'tr_acc': accuracy_epoch,
-            'val_acc': best_val_accuracy,
+            'val_acc': best_val_accuracy,  # 0.0
             'date': current_date,
             'model_state_dict': model.state_dict().copy(),
-            'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
-            'optimizer_dict': optimizer.state_dict().copy(),
+            # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
+            # 'optimizer_dict': optimizer.state_dict().copy(),
         }
         torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
         print(
@@ -149,7 +165,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
         # return model.state_dict()
 
 
-def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
+def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, trainable_layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
@@ -164,6 +180,10 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, 
         progress_bar_flag = False
         progress_bar = None
 
+    # Save the best model at the end
+    if eval_flag and not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
+
     # partition the training dataset
     if data_distribution == 'iid':
         partitioned_indexes = iid_partition(train_loader.dataset, num_clients)
@@ -171,9 +191,6 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, 
         partitioned_indexes = non_iid_partition(
             train_loader.dataset, num_clients)
 
-    # Save the best model at the end
-    if eval_flag and not os.path.isdir(modelpath):
-        os.makedirs(modelpath)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
@@ -190,7 +207,7 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, 
         # Parallel training for each client
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
+                futures = [executor.submit(train_text_class_fl_inner, global_model, modelname, fl_mode, fed_alg, mu, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
                                            scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
@@ -203,7 +220,7 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, 
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, modelname, fl_mode, fed_alg, mu, trainable_layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
                 if fl_mode == 'fl':
                     # if fl_mode is bcfl, the local weights have been sent to the blockchain
                     # trainable_weights.append(copy.deepcopy(c_weights))
@@ -255,7 +272,7 @@ def train_text_class_fl(model, fl_mode, modelpath, modelname, trainable_layers, 
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
 
 
-def train_text_class_fl_inner(global_model, modelname, fl_mode, trainable_layers, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, modelname, fl_mode, fed_alg, mu, trainable_layers, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
@@ -318,6 +335,20 @@ def train_text_class_fl_inner(global_model, modelname, fl_mode, trainable_layers
             predicted = torch.argmax(logits, dim=-1)
             # backpropagation
             loss.backward()
+
+            # FedProx Modification
+            if fed_alg == 'fedprox':
+                # Calculate the proximal term
+                proximal_term = 0
+                for param, global_param in zip(model.parameters(), global_model.parameters()):
+                    proximal_term += (param - global_param).norm(2)
+                proximal_term = (mu / 2.0) * proximal_term
+
+                # Include proximal term in the loss
+                loss += proximal_term
+            else:  # fedavg
+                pass
+
             optimizer.step()
             lr_scheduler.step()
             if progress_bar_flag:

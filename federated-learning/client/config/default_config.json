@@ -47,22 +47,32 @@
   "train_size": {
     "default_value": 0.8,
     "description": "Fraction of dataset to use for training",
-    "valid_values": "Any valid float between 0.1 and 1"
+    "valid_values": "Any valid float between 0 and 1"
   },
   "eval_size": {
     "default_value": 0.2,
     "description": "Fraction of dataset to use for evaluation",
-    "valid_values": "Any valid float between 0.1 and 1"
+    "valid_values": "Any valid float between 0 and 1"
   },
   "num_epochs": {
     "default_value": 10,
-    "description": "Number of epochs to train for",
+    "description": "Number of training epochs (per round in FL and BCFL)",
     "valid_values": "Any valid positive integer"
   },
   "learning_rate": {
     "default_value": 6e-5,
     "description": "Learning rate for training",
     "valid_values": "Any valid positive float"
+  },
+  "dp_epsilon": {
+    "default_value": 0.0,
+    "description": "Epsilon for differential privacy. 0 means no differential privacy",
+    "valid_values": "Any valid positive float between 0 and 15"
+  },
+  "dp_delta": {
+    "default_value": 3e-3,
+    "description": "Delta for differential privacy. If epsilon is 0, delta is ignored",
+    "valid_values": "Any small positive float between 1e-6 and 1e-2"
   },
   "seed": {
     "default_value": 200,
@@ -99,34 +109,34 @@
     "description": "Flag to show progress bar during training",
     "valid_values": [true, false]
   },
+  "fed_alg": {
+    "default_value": "fedavg",
+    "description": "(Only with ml_mode == FL or BCFL) Federated learning algorithm",
+    "valid_values": ["fedavg", "fedprox", "fedopt"]
+  },
+  "mu": {
+    "default_value": 0.5,
+    "description": "(Only with fed_alg == fedprox) Mu value for FedProx",
+    "valid_values": "Any valid positive float between 0 and 10"
+  },
   "num_rounds": {
     "default_value": 10,
-    "description": "(Only with learning FL or BCFL) Number of rounds for federated learning",
+    "description": "(Only with ml_mode == FL or BCFL) Number of rounds for federated learning",
     "valid_values": "Any valid positive integer"
   },
   "num_clients": {
     "default_value": 5,
-    "description": "(Only with learning FL or BCFL) Number of clients for federated learning",
+    "description": "(Only with ml_mode == FL or BCFL) Number of clients for federated learning",
     "valid_values": "Any valid positive integer"
-  },
-  "dp_epsilon": {
-    "default_value": 0.0,
-    "description": "(Only with learning FL or BCFL) Epsilon for differential privacy. 0 means no differential privacy",
-    "valid_values": "Any valid positive float between 0 and 15"
-  },
-  "dp_delta": {
-    "default_value": 3e-3,
-    "description": "(Only with learning FL or BCFL) Delta for differential privacy. If epsilon is 0, delta is ignored",
-    "valid_values": "Any small positive float between 1e-6 and 1e-2"
   },
   "data_distribution": {
     "default_value": "iid",
-    "description": "(Only with learning FL or BCFL) Data distribution for federated learning",
+    "description": "(Only with ml_mode == FL or BCFL) Data distribution for federated learning",
     "valid_values": ["iid", "non_iid"]
   },
   "concurrency_flag": {
     "default_value": false,
-    "description": "(Only with learning FL or BCFL) Flag to enable concurrency during federated learning",
+    "description": "(Only with ml_mode == FL or BCFL) Flag to enable concurrency during federated learning",
     "valid_values": [true, false]
   }
 }

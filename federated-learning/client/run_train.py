@@ -190,37 +190,58 @@ def main():
         pass
 
     print('\n-------- Training --------')
+    # Setting ML mode
     ml_mode_string = 'Centralised Machine Learning' if ml_mode == 'ml' else 'Federated Learning' if ml_mode == 'fl' else 'Blockchain-Based Federated Learning'
     print("Training with {} technology.".format(ml_mode_string))
+
+    # Setting federated algorithm
+    if config['fed_alg'] == 'fedavg':
+        print("Federated averaging algorithm selected.")
+    elif config['fed_alg'] == 'fedprox':
+        print("Federated proximal algorithm selected.")
+        if config['mu'] <= 0:
+            print("Mu value must be positive. Using value of 0.001.")
+            config['mu'] = 0.001
+        elif config['mu'] > 10:
+            print("Mu value must be less than or equal to 10. Using value of 10.")
+            config['mu'] = 1
+        else:
+            print("Using mu value of {}.".format(config['mu']))
+    else:
+        print("Unknown federated algorithm selected. Using federated averaging.")
+        config['fed_alg'] = 'fedavg'
+
+    # Setting differential privacy
+    if config['dp_epsilon'] == 0:
+        print('Training without differential privacy.')
+    elif config['dp_epsilon'] < 0:
+        print(
+            'Epsilon value must be positive. Training without differential privacy.')
+    else:
+        # Suppress specific warnings when using Opacus
+        warnings.filterwarnings(
+            'ignore', message="Secure RNG turned off.*")
+        warnings.filterwarnings(
+            'ignore', message="Optimal order is the largest alpha.*")
+        warnings.filterwarnings(
+            'ignore', message="invalid value encountered in log")
+        warnings.filterwarnings(
+            'ignore', message="Using a non-full backward hook.*")
+        print('Training with differential privacy.')
+        if config['dp_epsilon'] > 10:
+            print('Training without differential privacy.')
+            print('Epsilon value is too large. Reducing its value to 10.')
+            config['dp_epsilon'] = 10
+
     if ml_mode == 'ml':
         if config['concurrency_flag']:
             print(
                 "Concurrency flag is set to True, but ml mode is selected. Concurrency flag will be ignored.")
         train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
-                         config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'])
+                         config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'], config['dp_epsilon'], config['dp_delta'])
 
     elif ml_mode == 'fl' or ml_mode == 'bcfl':
-        if config['dp_epsilon'] == 0:
-            print('Training without differential privacy.')
-        elif config['dp_epsilon'] < 0:
-            print(
-                'Epsilon value must be positive. Training without differential privacy.')
-        else:
-            # Suppress specific warnings when using Opacus
-            warnings.filterwarnings(
-                'ignore', message="Secure RNG turned off.*")
-            warnings.filterwarnings(
-                'ignore', message="Optimal order is the largest alpha.*")
-            warnings.filterwarnings(
-                'ignore', message="invalid value encountered in log")
-            warnings.filterwarnings(
-                'ignore', message="Using a non-full backward hook.*")
-            print('Training with differential privacy.')
-            if config['dp_epsilon'] > 10:
-                print('Epsilon value is too large. Reducing its value to 10.')
-                config['dp_epsilon'] = 10
-
-        train_text_class_fl(model, config['ml_mode'], config['models_path'], config['model_name'], trainable_layers, train_loader, eval_loader, config['optimizer'],
+        train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], trainable_layers, train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
                             'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],

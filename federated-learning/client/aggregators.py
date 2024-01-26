@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+
 def federated_aggregate(weights):
     """Compute simple average of model weights from state dictionaries."""
     # Initialize a dictionary to store the aggregated weights
@@ -10,9 +11,11 @@ def federated_aggregate(weights):
     # Iterate over each parameter in the state dictionary
     for key in weights[0]:
         # Sum the weights of this parameter across all state dictionaries
-        agg_weights[key] = sum(state_dict[key] for state_dict in weights) / len(weights)
+        agg_weights[key] = sum(state_dict[key]
+                               for state_dict in weights) / len(weights)
 
     return agg_weights
+
 
 # def federated_aggregate(models):
 #     """Compute simple average of model weights."""
