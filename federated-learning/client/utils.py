@@ -190,20 +190,38 @@ def set_device(device_name):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         device = torch.device('cpu')
-        if (device_name == 'cuda'):
-            try:
-                if torch.cuda.is_available():
-                    device = torch.device('cuda')
-                    print('CUDA device selected and available.')
-                else:
-                    print('CUDA device selected but not available. Using CPU instead.')
-            except:
-                print('CUDA device selected but not working. Using CPU instead.')
-
+        if (device_name.startswith('cuda')):
+            # if torch.cuda.is_available():
+            if is_cuda_device_available(device_name):
+                device = torch.device(device_name)
+                print(f'{device_name} device selected and available.')
+            elif torch.cuda.is_available():
+                print(f'{device_name} device given but it does not exist. cuda default device selected instead.')
+                device = torch.device('cuda')
+            else:
+                print(f'{device_name} device given but no CUDA devices available. Using CPU instead.')
         else:
             print('CPU device selected.')
     return device
 
+def is_cuda_device_available(cuda_device_str):
+    # Check if CUDA is available
+    if not torch.cuda.is_available():
+        return False
+    if cuda_device_str == 'cuda' and torch.cuda.is_available():
+        return True
+    
+    # Extract the device index from the string
+    try:
+        device_index = int(cuda_device_str.split(':')[1])
+    except (IndexError, ValueError):
+        # If the string format is incorrect or not a number
+        return False
+
+    # Check if the device_index is within the range of available devices
+    return device_index >= 0 and device_index < torch.cuda.device_count()
+
+    
 
 def create_model(model_type, device):
     if model_type == 'bert_tiny':
