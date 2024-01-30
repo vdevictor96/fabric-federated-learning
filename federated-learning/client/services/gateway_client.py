@@ -29,8 +29,23 @@ def get_model(model_id):
     return model
 
 
+def delete_model(model_id):
+    response = requests.delete(f'{BASE_URL}/model/{model_id}')
+    return response.json()
+
+
 def get_all_models():
     response = requests.get(f'{BASE_URL}/allModels')
+    return response.json()
+
+
+def delete_all_models():
+    response = requests.delete(f'{BASE_URL}/allModels')
+    return response.json()
+
+
+def get_all_model_names():
+    response = requests.get(f'{BASE_URL}/allModelNames')
     return response.json()
 
 

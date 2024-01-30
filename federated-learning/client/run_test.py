@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--config_file', type=str, default=None,
                         help='Optional: Path to the JSON configuration file.')
     parser.add_argument('--show_config', action='store_true',
-                        help='Show configurable parameters and default values.')
+                        help='Shows configurable parameters and default values.')
     args = parser.parse_args()
 
     if args.show_config:
