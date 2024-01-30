@@ -19,9 +19,10 @@ This project implements a Blockchain-Based Federated Learning framework using [H
   - [Client](#client)
 - [Train](#train)
 - [Test](#test)
-- [Datasets] (#datasets)
 - [Debug](#debug)
   - [Chaincode](#chaincode)
+- [Datasets](#datasets)
+
 
 
 ## Structure 
@@ -204,31 +205,14 @@ These are the default values (configurable):
 }
 ```
 
-### Datasets
-
-The datasets used in this project for fine-tuning the BERT Models are public derived from web scrapping post and comments from mental health, depression, and self-harm subreddits on [Reddit](https://www.reddit.com/) and posts on [Twitter](https://twitter.com/).
-
-Some dataset labels are validated using small datasets (500 posts) labelled by psychologists from the depression subreddit. Some others are labelled from users self-reporting their diagnosis of depression.
-
-We fine-tuned with five different datasets:
-- [twitter_dep](federated-learning/client/data/datasets/twitter_dep/twitter_dep_full.csv) from [Benchmarking Differential Privacy and Federated Learning for BERT Models](https://arxiv.org/abs/2106.13973) contains more than 3000 tweets labelleds as depression or non-depression.
-
-- [acl_dep_sad](federated-learning/client/data/datasets/acl_dep_sad/acl_dep_sad_full.csv) from [Interpretability of Fine-grained Classification of Sadness and Depression](https://arxiv.org/abs/2203.10432). It is a collection of six different datasets (three classifying depression and three classifying sadness). It contains 3256 samples of which 1914 samples were labelled as "sadness"(label 0) and 1342 samples under the label "depression"(label 1).
-
-- [mixed_depression](federated-learning/client/data/datasets/mixed_depression/mixed_depression_full.csv) from [Identifying depression on Reddit: the effect of training data](https://aclanthology.org/W18-5903.pdf) contains almost 3000 posts collected from Reddit, from a large subreddit that is devoted to depression.
-
-- [dreaddit](federated-learning/client/data/datasets/dreaddit/dreaddit_train.csv) from [Dreaddit: A Reddit Dataset for Stress Analysis in Social Media](https://arxiv.org/pdf/1911.00133.pdf) contains more than 3000 posts in Reddit from ten different subreddits — in the five domains of abuse, social, anxiety, PTSD, and financial — classified as depression vs. non-depression.
-
-- deptweet from [DEPTWEET: A typology for social media texts to detect depression severities](https://arxiv.org/pdf/2210.05372.pdf) contains more than 40000 tweets labelled depending on their depression severity ranging 0-3. This dataset is not available to the public, it is used under an User Agreement contract and hence not shared in this public repository.
-
-### Debug
+## Debug
 
 To debug the code you can use the Jupyter Notebooks [train.ipynb](federated-learning/client/notebooks/train.ipynb) and [test.ipynb](federated-learning/client/notebooks/test.ipynb) and run the cells in debug mode.
 
 To execute the Jupyter Notebooks in Visual Studio Code you need to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 
 
-#### Chaincode
+### Chaincode
 
 You can debug the chaincode with the help of [Hyperledger Fabric Debugger Plugin](https://github.com/spydra-tech/fabric-debugger) by Spydra.
 
@@ -238,6 +222,22 @@ Follow these steps:
 3. Go to [test.fabric](federated-learning/chaincode/federation/test.fabric) file inside the [federation](federated-learning/chaincode/federation/) smart contract.
 4. Create a request and invoke it. It will run in debug mode and trigger the added breakpoints.
 
+## Datasets
+
+The datasets used in this project for fine-tuning the BERT Models are public datasets derived from web scrapping posts and comments from mental health, depression, and self-harm subreddits on [Reddit](https://www.reddit.com/) and tweets on [Twitter](https://twitter.com/).
+
+Some dataset labels are validated using small datasets (500 posts) labelled by psychologists from the depression subreddit. Some others are labelled from users self-reporting their diagnosis of depression.
+
+We fine-tuned with five different datasets:
+- [twitter_dep](federated-learning/client/data/datasets/twitter_dep/twitter_dep_full.csv) from [Benchmarking Differential Privacy and Federated Learning for BERT Models](https://arxiv.org/abs/2106.13973) contains more than 3000 tweets labelleds as depression or non-depression.
+
+- [acl_dep_sad](federated-learning/client/data/datasets/acl_dep_sad/acl_dep_sad_full.csv) from [Interpretability of Fine-grained Classification of Sadness and Depression](https://arxiv.org/abs/2203.10432) is a collection of six different datasets, three classifying depression and three classifying sadness. It contains 3256 samples of which 1914 samples were labelled as "sadness" and 1342 samples under the label "depression".
+
+- [mixed_depression](federated-learning/client/data/datasets/mixed_depression/mixed_depression_full.csv) from [Identifying depression on Reddit: the effect of training data](https://aclanthology.org/W18-5903.pdf) contains almost 3000 posts collected from Reddit, from a large subreddit that is devoted to depression.
+
+- [dreaddit](federated-learning/client/data/datasets/dreaddit/dreaddit_train.csv) from [Dreaddit: A Reddit Dataset for Stress Analysis in Social Media](https://arxiv.org/pdf/1911.00133.pdf) contains more than 3000 posts in Reddit from ten different subreddits — in the five domains of abuse, social, anxiety, PTSD, and financial — classified as depression vs. non-depression.
+
+- deptweet from [DEPTWEET: A typology for social media texts to detect depression severities](https://arxiv.org/pdf/2210.05372.pdf) contains more than 40000 tweets labelled depending on their depression severity ranging 0-3. **This dataset is not available to the public. It is used under an user agreement contract for research purposes and hence not shared in this public repository.**
 
 
 
