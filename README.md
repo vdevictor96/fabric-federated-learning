@@ -51,7 +51,10 @@ This script will deploy a Fabric network with Docker . The [Hyperledger Fabric n
 
 It will also install the npm libraries required by the smart contracts (chaincode), specified in the package.json files, before compiling them and adding them to the blockchain nodes.
 
-The network is meant to be used only as a tool for education and testing and not as a model for how to set up a network. To learn how to use Fabric in production, see [Deploying a production network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/deployment_guide_overview.html).
+This network is meant to be used only as a tool for education and testing and not as a model for how to set up a network. To learn how to use Fabric in production, see [Deploying a production network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/deployment_guide_overview.html).
+
+> ⚠️ If you are deploying the blockchain in a shared environment where docker runs in [rootless mode](https://docs.docker.com/engine/security/rootless/) you should set the `DOCKER_HOST` environment variable first `export DOCKER_HOST=unix:///run/user/ID/docker.sock` where ID is to be replace by the value of your `$UID` environment variable.
+
 
 
 ### Gateway
@@ -77,7 +80,10 @@ npm run start:dev
 
 ### Client
 
-To execute the Python client you need to install the Python libraries in the requirements.txt file.
+To execute the Python client you need to install the Python libraries in the [requirements.txt](ederated-learning/client/requirements.txt) file.
+
+> ⚠️ This client is using python 3.11.7 and other version could case incompatibilities with the libraries versions used in [requirements.txt](ederated-learning/client/requirements.txt). More info in [client README file](ederated-learning/client/README.md)
+
 
 First, activate your python environment where you will be running the BERT model training. 
 
@@ -88,13 +94,13 @@ conda activate your-existing-environment
 ```
 or create a new environment:
 ```sh
-conda create --name my-new-environment
+conda create --name my-new-environment python=3.11.7
 conda activate my-new-environment
 ```
 
 You can alternatively manage your environment with venv:
-```sh
-python3 -m venv my-new-environment
+```shs
+python3 -m venv my-new-environment python=3.11.7
 source my-new-environment/bin/activate
 ```
 
@@ -196,9 +202,11 @@ These are the default values (configurable):
 }
 ```
 ### Debug
-To execute the Jupyter Notebooks in Visual Studio Code you need to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 
 To debug the code you can use the Jupyter Notebooks [train.ipynb](federated-learning/client/notebooks/train.ipynb) and [test.ipynb](federated-learning/client/notebooks/test.ipynb) and run the cells in debug mode.
+
+To execute the Jupyter Notebooks in Visual Studio Code you need to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
+
 
 #### Chaincode
 
