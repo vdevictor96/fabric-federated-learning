@@ -26,7 +26,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
     # Save the best model at the end
-    if eval_flag and not os.path.isdir(modelpath):
+    if not os.path.isdir(modelpath):
         os.makedirs(modelpath)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
@@ -181,7 +181,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, train
         progress_bar = None
 
     # Save the best model at the end
-    if eval_flag and not os.path.isdir(modelpath):
+    if not os.path.isdir(modelpath):
         os.makedirs(modelpath)
 
     # partition the training dataset

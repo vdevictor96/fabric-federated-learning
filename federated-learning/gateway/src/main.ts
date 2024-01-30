@@ -7,10 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
-  app.useBodyParser('text', { limit: '50mb', type: 'text/plain' });
+  app.useBodyParser('text', { limit: '500mb', type: 'text/plain' });
   app.useBodyParser('json', { limit: '500mb' });
-  app.useBodyParser('raw', { limit: '50mb' });
-  app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
+  app.useBodyParser('raw', { limit: '500mb' });
+  app.useBodyParser('urlencoded', { limit: '500mb', extended: true });
   await app.listen(3000);
 }
 bootstrap();
