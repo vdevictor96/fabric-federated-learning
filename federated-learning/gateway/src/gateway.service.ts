@@ -243,8 +243,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
     const tlsCredentials = credentials.createSsl(tlsRootCert);
     return new Client(GatewayService.PEER_ENDPOINT, tlsCredentials, {
       'grpc.ssl_target_name_override': GatewayService.PEER_HOST_ALIAS,
-      'grpc.max_send_message_length': 500 * 1024 * 1024,
-      'grpc.max_receive_message_length': 500 * 1024 * 1024,
+      'grpc.max_send_message_length': 120 * 1024 * 1024,
+      'grpc.max_receive_message_length': 120 * 1024 * 1024,
     });
   }
 

@@ -115,40 +115,46 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     # Train only the last 'trainable_layers' layers
     total_params = sum(p.numel() for p in model.parameters())
-    if config['trainable_layers'] > 0:
-        print(
-            f'Training only the last {config["trainable_layers"]} layers. Not including embeddings.')
-        trainable_params, trainable_layers = freeze_layers(
-            model, config['trainable_layers'])
+    if config['trainable_layers'] <= 0:
+        print('The trainable_layers parameter must be positive. Training only the last layer classifier.')
+        config['trainable_layers'] = 1
+    elif config['trainable_layers'] > 4:
+        print('The trainable_layers parameter must be less than or equal to 4. Training the last 4 layers.')
+        config['trainable_layers'] = 4
     else:
-        trainable_layers = None
-        print('Training all layers, including embeddings.')
-        trainable_params = total_params
+        print(
+            f'Training the last {config["trainable_layers"]} layers.')
+        
 
+    trainable_params, trainable_layers = freeze_layers(
+            model, config['trainable_layers'])
+
+    # Comented because embeddings are not trainable
+    
     # Freeze non-compatible layers with Opacus for differential privacy
-    print('-------- Freezing non-compatible layers with Opacus --------')
-    non_trainable_layers = [
-        ('bert.embeddings.position_embeddings', model.bert.embeddings.position_embeddings)]
-    filtered_non_trainable_layers = non_trainable_layers
-    if trainable_layers is not None:
-        # Filter out layers from trainable_layers that are in non_trainable_layers
-        trainable_layers = [
-            (name, layer) for name, layer in trainable_layers
-            if not any(layer is ntl[1] for ntl in non_trainable_layers)
-        ]
-        # Update filtered_non_trainable_layers
-        filtered_non_trainable_layers = [
-            (name, layer) for name, layer in non_trainable_layers if any(layer is tl[1] for tl in trainable_layers)
-        ]
+    # print('-------- Freezing non-compatible layers with Opacus --------')
+    # non_trainable_layers = [
+    #     ('bert.embeddings.position_embeddings', model.bert.embeddings.position_embeddings)]
+    # filtered_non_trainable_layers = non_trainable_layers
+    # if trainable_layers is not None:
+    #     # Filter out layers from trainable_layers that are in non_trainable_layers
+    #     trainable_layers = [
+    #         (name, layer) for name, layer in trainable_layers
+    #         if not any(layer is ntl[1] for ntl in non_trainable_layers)
+    #     ]
+    #     # Update filtered_non_trainable_layers
+    #     filtered_non_trainable_layers = [
+    #         (name, layer) for name, layer in non_trainable_layers if any(layer is tl[1] for tl in trainable_layers)
+    #     ]
 
-    # Freeze non-trainable layers
-    for name, layer in filtered_non_trainable_layers:
-        print(f'Freezing layer {name}: {layer}')
-        for p in layer.parameters():
-            p.requires_grad = False
-            trainable_params -= p.numel()
+    # # Freeze non-trainable layers
+    # for name, layer in filtered_non_trainable_layers:
+    #     print(f'Freezing layer {name}: {layer}')
+    #     for p in layer.parameters():
+    #         p.requires_grad = False
+    #         trainable_params -= p.numel()
 
-    print('-------- Non-compatible layers with Opacus frozen --------')
+    # print('-------- Non-compatible layers with Opacus frozen --------')
 
     print(f"\nTotal parameters count: {total_params}")
     print(f"Trainable parameters count: {trainable_params}")
