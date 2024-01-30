@@ -4,8 +4,8 @@ import transformers
 from torch.utils.data import Dataset, DataLoader
 
 
-def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.2, train_batch_size=4, eval_batch_size=2, max_len=512, seed=200):
-    train_dataset, eval_dataset = get_reddit_dep_datasets(
+def get_twitter_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.2, train_batch_size=4, eval_batch_size=2, max_len=512, seed=200):
+    train_dataset, eval_dataset = get_twitter_dep_datasets(
         root, tokenizer, train_size, eval_size, max_len, seed)
 
     train_params = {'batch_size': train_batch_size,
@@ -25,8 +25,8 @@ def get_reddit_dep_dataloaders(root, tokenizer, train_size=0.8, eval_size=0.2, t
     return train_loader, eval_loader
 
 
-def get_reddit_dep_test_dataloader(root, tokenizer, test_batch_size=2, max_len=512, seed=200):
-    test_dataset = get_reddit_dep_test_dataset(
+def get_twitter_dep_test_dataloader(root, tokenizer, test_batch_size=2, max_len=512, seed=200):
+    test_dataset = get_twitter_dep_test_dataset(
         root, tokenizer, max_len, seed)
 
     test_params = {'batch_size': test_batch_size,
@@ -38,15 +38,15 @@ def get_reddit_dep_test_dataloader(root, tokenizer, test_batch_size=2, max_len=5
     return test_loader
 
 
-def get_reddit_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.2, max_len=512, seed=200):
-    train_dataframe, eval_dataframe = get_reddit_dep_dataframes(
+def get_twitter_dep_datasets(root, tokenizer, train_size=0.8, eval_size=0.2, max_len=512, seed=200):
+    train_dataframe, eval_dataframe = get_twitter_dep_dataframes(
         root, train_size, eval_size, seed)
     train_dataset = RedditDepression(train_dataframe, tokenizer, max_len)
     eval_dataset = RedditDepression(eval_dataframe, tokenizer, max_len)
     return train_dataset, eval_dataset
 
 
-def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.2, seed=200):
+def get_twitter_dep_dataframes(root, train_size=0.8, eval_size=0.2, seed=200):
     # Check if the sizes add up to 1
     if train_size + eval_size != 1:
         raise ValueError(
@@ -64,7 +64,7 @@ def get_reddit_dep_dataframes(root, train_size=0.8, eval_size=0.2, seed=200):
     return train_dataframe, eval_dataframe
 
 
-def get_reddit_dep_test_dataset(root, tokenizer, max_len=512, seed=200):
+def get_twitter_dep_test_dataset(root, tokenizer, max_len=512, seed=200):
     # Load the dataset
     test_df = pd.read_csv(root)
     test_dataframe = test_df.reset_index(drop=True)

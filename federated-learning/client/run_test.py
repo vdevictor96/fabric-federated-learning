@@ -5,7 +5,7 @@ import sys
 import torch
 import os
 import warnings
-from .data.reddit_dep import get_reddit_dep_test_dataloader
+from .data.twitter_dep import get_twitter_dep_test_dataloader
 from .data.acl_dep_sad import get_acl_dep_sad_test_dataloader
 from .data.dreaddit import get_dreaddit_test_dataloader
 from .data.mixed_depression import get_mixed_depression_test_dataloader
@@ -152,9 +152,9 @@ def set_device(device_name):
 
 
 def create_test_dataloader(dataset_type, tokenizer, test_batch_size, max_length, seed):
-    if dataset_type == 'reddit_dep':
+    if dataset_type == 'twitter_dep':
         dataset_path = get_dataset_path(dataset_type, 'test')
-        return get_reddit_dep_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)
+        return get_twitter_dep_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)
     elif dataset_type == 'acl_dep_sad':
         dataset_path = get_dataset_path(dataset_type, 'test')
         return get_acl_dep_sad_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)

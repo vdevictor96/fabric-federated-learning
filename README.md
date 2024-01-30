@@ -19,6 +19,7 @@ This project implements a Blockchain-Based Federated Learning framework using [H
   - [Client](#client)
 - [Train](#train)
 - [Test](#test)
+- [Datasets] (#datasets)
 - [Debug](#debug)
   - [Chaincode](#chaincode)
 
@@ -28,6 +29,7 @@ This project implements a Blockchain-Based Federated Learning framework using [H
 - [`federated-learning/`](./federated-learning/) contains all the logic for the federated learning, including the python ML code, the fabric smart contracts (chaincode) and the nodejs gateway.
 - [`federated-learning/chaincode/`](./federated-learning/chaincode/) contains the TypeScript smart contract for the aggregation of the local models.
 - [`federated-learning/client/`](./federated-learning/client/) contains the Python logic for training the BERT models and connecting to the gateway.
+- [`federated-learning/client/data/datasets`](./federated-learning/client/data/datasets) contains the public datasets used for the ablation studies.
 - [`federated-learning/gateway/`](./federated-learning/gateway/) contains the NestJS server that bridges the Python BERT models with the Hyperledger Fabric blockchain. 
 - [`test-network/`](./test-network/) contains the blockchain test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples), with added functionality to deploy the project's smart contracts.
 
@@ -141,7 +143,7 @@ These are the default values (configurable):
 {
     "concurrency_flag": false,
     "data_distribution": "iid",
-    "dataset": "reddit_dep",
+    "dataset": "twitter_dep",
     "device": "cuda",
     "dp_delta": 0.003,
     "dp_epsilon": 0.0,
@@ -191,7 +193,7 @@ python client.run_test --show_config
 These are the default values (configurable):
 ```json
 {
-    "dataset": "reddit_dep",
+    "dataset": "twitter_dep",
     "device": "cuda",
     "max_length": 512,
     "model": "bert_tiny",
@@ -201,6 +203,24 @@ These are the default values (configurable):
     "test_batch_size": 8
 }
 ```
+
+### Datasets
+
+The datasets used in this project for fine-tuning the BERT Models are public derived from web scrapping post and comments from mental health, depression, and self-harm subreddits on [Reddit](https://www.reddit.com/) and posts on [Twitter](https://twitter.com/).
+
+Some dataset labels are validated using small datasets (500 posts) labelled by psychologists from the depression subreddit. Some others are labelled from users self-reporting their diagnosis of depression.
+
+We fine-tuned with five different datasets:
+- [twitter_dep](federated-learning/client/data/datasets/twitter_dep/twitter_dep_full.csv) from [Benchmarking Differential Privacy and Federated Learning for BERT Models](https://arxiv.org/abs/2106.13973) contains more than 3000 tweets labelleds as depression or non-depression.
+
+- [acl_dep_sad](federated-learning/client/data/datasets/acl_dep_sad/acl_dep_sad_full.csv) from [Interpretability of Fine-grained Classification of Sadness and Depression](https://arxiv.org/abs/2203.10432). It is a collection of six different datasets (three classifying depression and three classifying sadness). It contains 3256 samples of which 1914 samples were labelled as "sadness"(label 0) and 1342 samples under the label "depression"(label 1).
+
+- [mixed_depression](federated-learning/client/data/datasets/mixed_depression/mixed_depression_full.csv) from [Identifying depression on Reddit: the effect of training data](https://aclanthology.org/W18-5903.pdf) contains almost 3000 posts collected from Reddit, from a large subreddit that is devoted to depression.
+
+- [dreaddit](federated-learning/client/data/datasets/dreaddit/dreaddit_train.csv) from [Dreaddit: A Reddit Dataset for Stress Analysis in Social Media](https://arxiv.org/pdf/1911.00133.pdf) contains more than 3000 posts in Reddit from ten different subreddits — in the five domains of abuse, social, anxiety, PTSD, and financial — classified as depression vs. non-depression.
+
+- deptweet from [DEPTWEET: A typology for social media texts to detect depression severities](https://arxiv.org/pdf/2210.05372.pdf) contains more than 40000 tweets labelled depending on their depression severity ranging 0-3. This dataset is not available to the public, it is used under an User Agreement contract and hence not shared in this public repository.
+
 ### Debug
 
 To debug the code you can use the Jupyter Notebooks [train.ipynb](federated-learning/client/notebooks/train.ipynb) and [test.ipynb](federated-learning/client/notebooks/test.ipynb) and run the cells in debug mode.
