@@ -21,7 +21,7 @@ def load_bert_tiny_model(model_path, device='cuda'):
     if ml_mode == 'ml':
         print(f"Loaded model bert-tiny from date {model_info['date']}. Trained with {ml_mode_string} technology.\nEpoch {model_info['epoch']}, lr: {model_info['lr']}, optimizer: {model_info['optimizer']}\nTrain accuracy: {model_info['tr_acc']:.2f} %, Validation accuracy: {model_info['val_acc']:.2f} %")
     else:
-        print(f"Loaded model bert-tiny from date {model_info['date']}. Trained with {ml_mode_string} technology.\nRound {model_info['round']}, lr: {model_info['lr']}, optimizer: {model_info['optimizer']}\nTrain accuracy: {model_info['tr_acc']:.2f} %, Validation accuracy: {model_info['val_acc']:.2f} %")
+        print(f"Loaded model bert-tiny from date {model_info['date']}. Trained with {ml_mode_string} technology.\nRound {model_info['round']}, lr: {model_info['lr']}, optimizer: {model_info['optimizer']}\nAverage train accuracy: {model_info['tr_acc']:.2f} %, Validation accuracy: {model_info['val_acc']:.2f} %")
     model_state = model_info['model_state_dict']
     # Load the state dictionary into the model
     model.load_state_dict(model_state)

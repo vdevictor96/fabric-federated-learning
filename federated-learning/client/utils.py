@@ -4,6 +4,7 @@ import torch.nn as nn
 import warnings
 import numpy as np
 import random
+import sys
 from torch.optim import AdamW
 from transformers import get_scheduler
 from .model.bert_tiny import get_bert_tiny_tokenizer, get_bert_tiny_model, load_bert_tiny_model
@@ -430,3 +431,27 @@ def non_iid_partition(dataset, clients, min_label_ratio=0.2):
         random.shuffle(partitions[client])
 
     return partitions
+
+
+# ------------------ Output utils ------------------
+
+# Function to duplicated output to a file
+def duplicate_output_to_file(filename):
+    sys.stdout = DualOutput(filename)
+
+
+class DualOutput:
+    def __init__(self, filename):
+        self.file = open(filename, 'w')
+        self.stdout = sys.stdout
+
+    def write(self, message):
+        self.file.write(message)
+        self.stdout.write(message)
+
+    def flush(self):  # Needed for compatibility with the flush method of sys.stdout
+        self.file.flush()
+        self.stdout.flush()
+
+    def close(self):  # Method to close the file when done
+        self.file.close()

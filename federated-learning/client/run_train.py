@@ -12,7 +12,7 @@ from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
 from .data.deptweet import get_deptweet_dataloaders
 from .train import train_text_class, train_text_class_fl
-from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements, create_test_dataloader, load_model
+from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements, create_test_dataloader, load_model, duplicate_output_to_file
 from .test import test_text_class
 
 
@@ -95,9 +95,22 @@ def print_config(config):
 
 
 def main():
+    # Parse arguments
     args = parse_args()
     print('\n-------- Loading configuration --------')
     config = load_config(args.config_file)
+    # Set path to save model
+    model_save_path = None
+    if config['save_model']:
+        # Save the best model at the end
+        if not os.path.isdir(config['models_path']):
+            os.makedirs(config['models_path'])
+        # Set path to save model
+        model_save_path = pjoin(
+            config['models_path'], config['model_name'])
+        # Duplicate the output to a file
+        log_file = model_save_path + '.log'
+        duplicate_output_to_file(log_file)
     print_config(config)
     print('-------- Configuration loaded --------')
 
@@ -126,13 +139,12 @@ def main():
     else:
         print(
             f'Training the last {config["layers"]} layers.')
-        
 
     trainable_params, layers = freeze_layers(
-            model, config['layers'])
+        model, config['layers'])
 
     # Comented because embeddings are not trainable
-    
+
     # Freeze non-compatible layers with Opacus for differential privacy
     # print('-------- Freezing non-compatible layers with Opacus --------')
     # non_layers = [
@@ -203,8 +215,6 @@ def main():
     ml_mode_string = 'Centralised Machine Learning' if ml_mode == 'ml' else 'Federated Learning' if ml_mode == 'fl' else 'Blockchain-Based Federated Learning'
     print("Training with {} technology.".format(ml_mode_string))
 
-  
-
     # Setting differential privacy
     if config['dp_epsilon'] == 0:
         print('Training without differential privacy.')
@@ -231,8 +241,8 @@ def main():
         if config['concurrency_flag']:
             print(
                 "Concurrency flag is set to True, but ml mode is selected. Concurrency flag will be ignored.")
-        last_model = train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
-                         config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'], config['dp_epsilon'], config['dp_delta'])
+        last_model = train_text_class(model, model_save_path, train_loader, eval_loader, optimizer,
+                                      config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['save_model'], config['progress_bar_flag'], config['dp_epsilon'], config['dp_delta'])
 
     elif ml_mode == 'fl' or ml_mode == 'bcfl':
         # Setting federated algorithm
@@ -251,32 +261,36 @@ def main():
         else:
             print("Unknown federated algorithm selected. Using federated averaging.")
             config['fed_alg'] = 'fedavg'
-        
-        last_model = train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], layers, train_loader, eval_loader, config['optimizer'],
-                            config['learning_rate'], config['scheduler'], config[
-                            'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
-                            config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
-                            config['dp_epsilon'], config['dp_delta'], config['data_distribution'])
+
+        last_model = train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['model_name'], model_save_path, layers, train_loader, eval_loader, config['optimizer'],
+                                         config['learning_rate'], config['scheduler'], config[
+            'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'], config['save_model'],
+            config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
+            config['dp_epsilon'], config['dp_delta'], config['data_distribution'])
 
     else:
         raise ValueError(f"Unknown learning mode {ml_mode}.")
 
     print('-------- Training finished --------')
-    
+
     if config['test_flag']:
+
+        if config['save_model'] is False:
+            print('\nsave_model flag is False. Testing skipped.')
+            return
+
         print('\nTest flag enabled. Testing the model')
         config['test_batch_size'] = 8
-        
+
         if last_model is not None:
             print('\n-------- Loading last model --------')
             print('-------- Last model loaded --------')
-        else: 
+        else:
             print('\n-------- Loading best model from model_path --------')
-            test_model_path = pjoin(
-                    config['models_path'], config['model_name'] + '_best.ckpt')
+            test_model_path = model_save_path + '_best.ckpt'
             test_model = load_model(config['model'], test_model_path, device)
             print('-------- Best model loaded --------')
-    
+
         print('\n-------- Creating Test Dataloader --------')
         test_loader = create_test_dataloader(
             config['dataset'], tokenizer, config['test_batch_size'], config['max_length'], config['seed'])
@@ -285,9 +299,14 @@ def main():
         print('-------- Test Dataloader created --------')
 
         print('\n-------- Testing --------')
-        test_text_class(test_model, test_loader, device, config['progress_bar_flag'])
+        test_text_class(test_model, test_loader, device,
+                        config['progress_bar_flag'])
         print('-------- Testing finished --------')
-        
+
+    # Restore original stdout and close the file
+    sys.stdout.close()
+    sys.stdout = sys.__stdout__
+
     return
 
 

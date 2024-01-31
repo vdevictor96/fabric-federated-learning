@@ -17,7 +17,7 @@ from os.path import join as pjoin
 from tqdm.auto import tqdm
 
 
-def train_text_class(model, models_path, model_name, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
+def train_text_class(model, model_save_path, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, save_model=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
     total_steps_per_epoch = len(train_loader)
     total_steps = num_epochs * total_steps_per_epoch
     if eval_flag:
@@ -25,9 +25,7 @@ def train_text_class(model, models_path, model_name, train_loader, eval_loader, 
 
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
-    # Save the best model at the end
-    if not os.path.isdir(models_path):
-        os.makedirs(models_path)
+    
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
@@ -136,8 +134,8 @@ def train_text_class(model, models_path, model_name, train_loader, eval_loader, 
                 print(
                     f"Updated best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
                 print("-------------------------------")
-                torch.save(best_model, pjoin(
-                    models_path, model_name + '_best.ckpt'))
+                if save_model:
+                    torch.save(best_model, model_save_path + '_best.ckpt')
 
     # ---------------------- Saving Models ----------------------
 
@@ -159,12 +157,13 @@ def train_text_class(model, models_path, model_name, train_loader, eval_loader, 
             # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
             # 'optimizer_dict': optimizer.state_dict().copy(),
         }
-        torch.save(last_model, pjoin(models_path, model_name + '_last.ckpt'))
+        if save_model:
+            torch.save(last_model, model_save_path + '_last.ckpt')
         print(
             f"Last model in Epoch {epoch+1} saved with Training Accuracy: {accuracy_epoch:.2f} %")
         return model if eval_flag is False else None
 
-def train_text_class_fl(model, fl_mode, fed_alg, mu, models_path, model_name, layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
+def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path, layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, save_model=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
@@ -178,10 +177,6 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, models_path, model_name, la
     else:  # deactivate progress bar if concurrency is enabled
         progress_bar_flag = False
         progress_bar = None
-
-    # Save the best model at the end
-    if not os.path.isdir(models_path):
-        os.makedirs(models_path)
 
     # partition the training dataset
     if data_distribution == 'iid':
@@ -259,15 +254,15 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, models_path, model_name, la
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            best_val_accuracy, best_round = eval_text_class_fl(global_model, models_path, model_name, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
-                                                               device, progress_bar_flag, progress_bar)
+            best_val_accuracy, best_round = eval_text_class_fl(global_model, model_save_path, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
+                                                               save_model, device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
         print(
             f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
-    else:
-        save_model_text_class_fl(global_model, models_path, model_name,
+    elif save_model:
+        save_model_text_class_fl(global_model, model_save_path,
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
     
     return global_model if eval_flag is False else None
@@ -391,7 +386,7 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
     return trainable_weights, loss_epoch, accuracy_epoch
 
 
-def eval_text_class_fl(model, models_path, model_name, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
+def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, save_model=True, device='cuda', progress_bar_flag=True, progress_bar=None):
     # validation loss and accuracy of the model
     model.eval()
     print('-------- Validation --------')
@@ -440,12 +435,12 @@ def eval_text_class_fl(model, models_path, model_name, eval_loader, best_val_acc
         print(
             f"Updated best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         print("-------------------------------")
-        torch.save(best_model, pjoin(
-            models_path, model_name + '_best.ckpt'))
+        if save_model:
+            torch.save(best_model, model_save_path + '_best.ckpt')
     return best_val_accuracy, best_round
 
 
-def save_model_text_class_fl(model, models_path, model_name, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
+def save_model_text_class_fl(model, model_save_path, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
     # Save the last model checkpoint
     last_model = {
         'ml_mode': 'fl',
@@ -460,7 +455,7 @@ def save_model_text_class_fl(model, models_path, model_name, num_rounds, lr, opt
         # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
         # 'optimizer_dict': optimizer.state_dict().copy(),
     }
-    torch.save(last_model, pjoin(models_path, model_name + '_last.ckpt'))
+    torch.save(last_model, model_save_path + '_last.ckpt')
     print(
         f"Last model in round {num_rounds} saved with Training Accuracy: {acc_avg:.2f} %")
     # return model.state_dict()
