@@ -1,7 +1,19 @@
 import torch
 import numpy as np
+from sklearn.metrics import precision_score, recall_score, f1_score
 # progress bar
 from tqdm.auto import tqdm
+
+
+def calculate_precision(true_labels, predicted_labels):
+    return precision_score(true_labels, predicted_labels, average='macro')
+
+def calculate_recall(true_labels, predicted_labels):
+    return recall_score(true_labels, predicted_labels, average='macro')
+
+def calculate_f1_score(true_labels, predicted_labels):
+    return f1_score(true_labels, predicted_labels, average='macro')
+
 
 def test_text_class(model, test_loader, device='cuda', progress_bar_flag=True):
     # In test phase, we don't need to compute gradients (for memory efficiency)
@@ -11,8 +23,8 @@ def test_text_class(model, test_loader, device='cuda', progress_bar_flag=True):
     if progress_bar_flag:
         progress_bar = tqdm(range(len(test_loader)))
     # Initialize lists to store predictions and actual labels
-    # predictions = []
-    # true_labels = []
+    predictions = []
+    true_labels = []
     
     with torch.no_grad():
         for batch in test_loader:
@@ -31,8 +43,8 @@ def test_text_class(model, test_loader, device='cuda', progress_bar_flag=True):
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
             # Convert predictions to CPU and numpy for metric calculation
-            # predictions.extend(logits.detach().cpu().numpy())
-            # true_labels.extend(targets.detach().cpu().numpy())
+            predictions.extend(predicted.cpu().numpy())
+            true_labels.extend(targets.cpu().numpy())
             if progress_bar_flag:
                 progress_bar.update(1)
 
@@ -40,15 +52,22 @@ def test_text_class(model, test_loader, device='cuda', progress_bar_flag=True):
     
 
     test_accuracy = (correct / total) * 100
-    print('Accuracy of the network on the {} test sentences: {:.2f} %'.format(
-        total, test_accuracy))
-
+    precision = calculate_precision(true_labels, predictions)
+    recall = calculate_recall(true_labels, predictions)
+    f1 = calculate_f1_score(true_labels, predictions)
+    
+    print(f'Nº of test samples: {total}')
+    print(f'Accuracy: {test_accuracy:.2f}%')
+    print(f'Precision: {precision*100:.2f}%')
+    print(f'Recall: {recall*100:.2f}%')
+    print(f'F1 Score: {f1*100:.2f}%')
+    
     # Other alternative: Calculating accuracy
     # predicted_labels = np.argmax(predictions, axis=1)
     # accuracy = np.mean(predicted_labels == true_labels)
     # print(f"Test Accuracy: {accuracy}")
         
-    return test_accuracy
+    return test_accuracy, precision, recall, f1
 
     
     
