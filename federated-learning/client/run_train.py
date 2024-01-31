@@ -113,42 +113,42 @@ def main():
 
     print('\n-------- Setting Trainable Layers --------')
     total_params = sum(p.numel() for p in model.parameters())
-    # Train only the last 'trainable_layers' layers
+    # Train only the last 'layers' layers
     total_params = sum(p.numel() for p in model.parameters())
-    if config['trainable_layers'] <= 0:
-        print('The trainable_layers parameter must be positive. Training only the last layer classifier.')
-        config['trainable_layers'] = 1
-    elif config['trainable_layers'] > 4:
-        print('The trainable_layers parameter must be less than or equal to 4. Training the last 4 layers.')
-        config['trainable_layers'] = 4
+    if config['layers'] <= 0:
+        print('The layers parameter must be positive. Training only the last layer classifier.')
+        config['layers'] = 1
+    elif config['layers'] > 4:
+        print('The layers parameter must be less than or equal to 4. Training the last 4 layers.')
+        config['layers'] = 4
     else:
         print(
-            f'Training the last {config["trainable_layers"]} layers.')
+            f'Training the last {config["layers"]} layers.')
         
 
-    trainable_params, trainable_layers = freeze_layers(
-            model, config['trainable_layers'])
+    trainable_params, layers = freeze_layers(
+            model, config['layers'])
 
     # Comented because embeddings are not trainable
     
     # Freeze non-compatible layers with Opacus for differential privacy
     # print('-------- Freezing non-compatible layers with Opacus --------')
-    # non_trainable_layers = [
+    # non_layers = [
     #     ('bert.embeddings.position_embeddings', model.bert.embeddings.position_embeddings)]
-    # filtered_non_trainable_layers = non_trainable_layers
-    # if trainable_layers is not None:
-    #     # Filter out layers from trainable_layers that are in non_trainable_layers
-    #     trainable_layers = [
-    #         (name, layer) for name, layer in trainable_layers
-    #         if not any(layer is ntl[1] for ntl in non_trainable_layers)
+    # filtered_non_layers = non_layers
+    # if layers is not None:
+    #     # Filter out layers from layers that are in non_layers
+    #     layers = [
+    #         (name, layer) for name, layer in layers
+    #         if not any(layer is ntl[1] for ntl in non_layers)
     #     ]
-    #     # Update filtered_non_trainable_layers
-    #     filtered_non_trainable_layers = [
-    #         (name, layer) for name, layer in non_trainable_layers if any(layer is tl[1] for tl in trainable_layers)
+    #     # Update filtered_non_layers
+    #     filtered_non_layers = [
+    #         (name, layer) for name, layer in non_layers if any(layer is tl[1] for tl in layers)
     #     ]
 
     # # Freeze non-trainable layers
-    # for name, layer in filtered_non_trainable_layers:
+    # for name, layer in filtered_non_layers:
     #     print(f'Freezing layer {name}: {layer}')
     #     for p in layer.parameters():
     #         p.requires_grad = False
@@ -249,7 +249,7 @@ def main():
             print("Unknown federated algorithm selected. Using federated averaging.")
             config['fed_alg'] = 'fedavg'
         
-        train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], trainable_layers, train_loader, eval_loader, config['optimizer'],
+        train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], layers, train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
                             'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
@@ -259,6 +259,20 @@ def main():
         raise ValueError(f"Unknown learning mode {ml_mode}.")
 
     print('-------- Training finished --------')
+    
+    # if config['test']:
+    #     print('\n-------- Testing the model --------')
+    #     pprint('\n-------- Creating Test Dataloader --------')
+    #     test_loader = create_test_dataloader(
+    #         config['dataset'], tokenizer, config['test_batch_size'], config['max_length'], config['seed'])
+    #     print(
+    #         f'Test Loader: {len(test_loader.dataset)} total sentences. {len(test_loader)} batches of size {config["test_batch_size"]}.')
+    #     print('-------- Test Dataloader created --------')
+
+    #     print('\n-------- Testing --------')
+    #     test_text_class(model, test_loader, device, config['progress_bar_flag'])
+    #     print('-------- Testing finished --------')
+        
     return
 
 

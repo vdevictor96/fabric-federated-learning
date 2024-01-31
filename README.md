@@ -130,7 +130,7 @@ The 'ml_mode' option can be set to three different values:
   - 'ml' for centralised machine learning
   - 'fl' for federated learning
   - 'bcfl' for blockchain-based federated learning (it needs the gateway running and the blockchain deployed)
-Other configurable options available: 'model', 'dataset', 'trainable_layers', 'concurrency_flag', 'dp_epsilon', 'train_batch_size', etc.
+Other configurable options available: 'model', 'dataset', 'layers', 'concurrency_flag', 'dp_epsilon', 'train_batch_size', etc.
 If you do not provide a valid configuration file the model will train with the [default-config](federated-learning/client/config/default_config.json) values.
 
 
@@ -169,7 +169,7 @@ These are the default values (configurable):
     "seed": 200,
     "train_batch_size": 4,
     "train_size": 0.8,
-    "trainable_layers": 3
+    "layers": 3
 }
 ```
 

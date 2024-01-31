@@ -52,54 +52,54 @@ def translate_state_dict_keys(state_dict, keyword="_module.", replacement=""):
     return state_dict
 
 
-def freeze_layers(model, trainable_layers_count):
-    trainable_layers = []
+def freeze_layers(model, layers_count):
+    layers = []
     # Retrieve the last layers keys
     if hasattr(model, 'classifier'):
-        trainable_layers.append(('classifier', model.classifier))
-        trainable_layers_count -= 1
-    if trainable_layers_count > 0 and hasattr(model.bert, 'pooler'):
-        trainable_layers.append(('bert.pooler', model.bert.pooler))
-        trainable_layers_count -= 1
-    if trainable_layers_count > 0:
+        layers.append(('classifier', model.classifier))
+        layers_count -= 1
+    if layers_count > 0 and hasattr(model.bert, 'pooler'):
+        layers.append(('bert.pooler', model.bert.pooler))
+        layers_count -= 1
+    if layers_count > 0:
         total_encoder_layers = len(model.bert.encoder.layer)
         encoder_layers_to_add = min(
-            trainable_layers_count, total_encoder_layers)
+            layers_count, total_encoder_layers)
         start_index = total_encoder_layers - encoder_layers_to_add
-        trainable_layers.extend([
+        layers.extend([
             (f'bert.encoder.layer.{i}', layer)
             for i, layer in enumerate(model.bert.encoder.layer[-encoder_layers_to_add:], start=start_index)
         ])
-    # trainable_layers_count -= encoder_layers_to_add
+    # layers_count -= encoder_layers_to_add
     # TODO TRAIN EMBEDDINGS?
-    # while trainable_layers_count > 0:
-    # if trainable_layers_count > 0:
-    #     trainable_layers.append(model.bert.embeddings.LayerNorm)
+    # while layers_count > 0:
+    # if layers_count > 0:
+    #     layers.append(model.bert.embeddings.LayerNorm)
     #     tra
     #     embedding_layers = [model.bert.embeddings.word_embeddings, model.bert.embeddings.position_embeddings, model.bert.embeddings.token_type_embeddings, model.bert.embeddings.LayerNorm]
-    #     embeddings_layers_to_add = min(trainable_layers_count, len(embedding_layers))
-    #     trainable_layers.extend(model.bert.embeddings[-embeddings_layers_to_add:])
+    #     embeddings_layers_to_add = min(layers_count, len(embedding_layers))
+    #     layers.extend(model.bert.embeddings[-embeddings_layers_to_add:])
 
     trainable_params = 0
     # Set requires_grad to False for all layers except the last ones
     for param in model.parameters():
         param.requires_grad = False
-    for _, layer in trainable_layers:
+    for _, layer in layers:
         for param in layer.parameters():
             param.requires_grad = True
             trainable_params += param.numel()
 
-    return trainable_params, trainable_layers
+    return trainable_params, layers
 
 
-def filter_trainable_weights(state_dict, trainable_layers, dp):
+def filter_trainable_weights(state_dict, layers, dp):
     dp_prefix = '_module.'
-    if trainable_layers is None:
+    if layers is None:
         return state_dict
 
-    # Extract layer names from the trainable_layers
+    # Extract layer names from the layers
     trainable_layer_names = [
-        dp_prefix+name if dp else name for name, _ in trainable_layers]
+        dp_prefix+name if dp else name for name, _ in layers]
 
     # Filter the state_dict to include only weights from the trainable layers
     trainable_state_dict = {name: weight for name, weight in state_dict.items()
@@ -113,7 +113,7 @@ def filter_trainable_weights(state_dict, trainable_layers, dp):
     return trainable_state_dict
 
 
-def get_trainable_state_dict_elements(model, num_trainable_layers):
+def get_trainable_state_dict_elements(model, num_layers):
     # Function to get parameter names for a given layer
     def get_param_names(key, layer):
         return [key+'.'+name for name, _ in layer.named_parameters()]
@@ -126,7 +126,7 @@ def get_trainable_state_dict_elements(model, num_trainable_layers):
         if key not in layer_keys:
             layer_keys.append(key)
         param_names.extend(get_param_names(key, layer))
-        if len(layer_keys) >= num_trainable_layers:
+        if len(layer_keys) >= num_layers:
             break
 
     # Filtering the state_dict for the last N trainable layers
@@ -136,7 +136,7 @@ def get_trainable_state_dict_elements(model, num_trainable_layers):
     return trainable_state_dict
 
 # Example usage:
-# trainable_state_dict = get_trainable_state_dict_elements(model, trainable_layers)
+# trainable_state_dict = get_trainable_state_dict_elements(model, layers)
 
 
 def print_parameters(model):
