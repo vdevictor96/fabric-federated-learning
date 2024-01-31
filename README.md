@@ -152,6 +152,7 @@ These are the default values (configurable):
     "eval_flag": true,
     "eval_size": 0.2,
     "fed_alg": "fedavg",
+    "layers": 3,
     "learning_rate": 6e-05,
     "max_length": 512,
     "ml_mode": "ml",
@@ -164,12 +165,13 @@ These are the default values (configurable):
     "num_rounds": 10,
     "optimizer": "AdamW",
     "progress_bar_flag": true,
+    "save_model": true,
     "scheduler": "linear",
     "scheduler_warmup_steps": 0,
     "seed": 200,
+    "test_flag": false,
     "train_batch_size": 4,
-    "train_size": 0.8,
-    "layers": 3
+    "train_size": 0.8
 }
 ```
 

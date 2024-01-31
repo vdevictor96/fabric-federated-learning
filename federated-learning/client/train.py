@@ -17,7 +17,7 @@ from os.path import join as pjoin
 from tqdm.auto import tqdm
 
 
-def train_text_class(model, modelpath, modelname, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
+def train_text_class(model, models_path, model_name, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
     total_steps_per_epoch = len(train_loader)
     total_steps = num_epochs * total_steps_per_epoch
     if eval_flag:
@@ -26,8 +26,8 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
     if progress_bar_flag:
         progress_bar = tqdm(range(total_steps))
     # Save the best model at the end
-    if not os.path.isdir(modelpath):
-        os.makedirs(modelpath)
+    if not os.path.isdir(models_path):
+        os.makedirs(models_path)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
@@ -137,7 +137,7 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
                     f"Updated best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
                 print("-------------------------------")
                 torch.save(best_model, pjoin(
-                    modelpath, modelname + '_best.ckpt'))
+                    models_path, model_name + '_best.ckpt'))
 
     # ---------------------- Saving Models ----------------------
 
@@ -159,13 +159,12 @@ def train_text_class(model, modelpath, modelname, train_loader, eval_loader, opt
             # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
             # 'optimizer_dict': optimizer.state_dict().copy(),
         }
-        torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
+        torch.save(last_model, pjoin(models_path, model_name + '_last.ckpt'))
         print(
             f"Last model in Epoch {epoch+1} saved with Training Accuracy: {accuracy_epoch:.2f} %")
-        # return model.state_dict()
+        return model if eval_flag is False else None
 
-
-def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
+def train_text_class_fl(model, fl_mode, fed_alg, mu, models_path, model_name, layers, train_loader, eval_loader, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, num_epochs, concurrency_flag, device='cuda', eval_flag=True, progress_bar_flag=True, num_rounds=10, num_clients=5, dp_epsilon=0.0, dp_delta=3e-3, data_distribution='iid'):
     # Set the progress bar
     total_steps = num_rounds * num_epochs * len(train_loader)
     if eval_flag:
@@ -181,8 +180,8 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
         progress_bar = None
 
     # Save the best model at the end
-    if not os.path.isdir(modelpath):
-        os.makedirs(modelpath)
+    if not os.path.isdir(models_path):
+        os.makedirs(models_path)
 
     # partition the training dataset
     if data_distribution == 'iid':
@@ -207,7 +206,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
         # Parallel training for each client
         if concurrency_flag:
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [executor.submit(train_text_class_fl_inner, global_model, modelname, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
+                futures = [executor.submit(train_text_class_fl_inner, global_model, model_name, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
                                            scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
                 for future in concurrent.futures.as_completed(futures):
                     c_weights, c_local_loss, c_local_acc = future.result()
@@ -220,7 +219,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(
-                    global_model, modelname, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
+                    global_model, model_name, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar)
                 if fl_mode == 'fl':
                     # if fl_mode is bcfl, the local weights have been sent to the blockchain
                     # trainable_weights.append(copy.deepcopy(c_weights))
@@ -242,8 +241,8 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
         else:  # bcfl
             # the local weights have been sent to the blockchain
             # triggering the federated aggregation
-            aggregate_models(modelname, round+1)
-            global_model_data = get_model(modelname + '_round_' + str(round+1))
+            aggregate_models(model_name, round+1)
+            global_model_data = get_model(model_name + '_round_' + str(round+1))
             global_trainable_weights = deserialize_model_msgpack(
                 global_model_data['modelParams'])
 
@@ -260,7 +259,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            best_val_accuracy, best_round = eval_text_class_fl(global_model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
+            best_val_accuracy, best_round = eval_text_class_fl(global_model, models_path, model_name, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
                                                                device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
@@ -268,11 +267,13 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, modelpath, modelname, layer
             f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else:
-        save_model_text_class_fl(global_model, modelpath, modelname,
+        save_model_text_class_fl(global_model, models_path, model_name,
                                  num_rounds, lr, optimizer_type, acc_avg, current_date, device)
+    
+    return global_model if eval_flag is False else None
 
 
-def train_text_class_fl_inner(global_model, modelname, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
+def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, indexes, optimizer_type, lr, scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device='cuda', progress_bar_flag=True, progress_bar=None):
     # print("-------------------------------")
     # print(f"Client {client+1} of {num_clients}")
     # Make a deep copy of the global model to ensure the original global model is not modified
@@ -383,14 +384,14 @@ def train_text_class_fl_inner(global_model, modelname, fl_mode, fed_alg, mu, lay
 
     if fl_mode == 'bcfl':
         # send the local weights to the blockchain
-        submit_model(modelname + '_client_' + str(client+1), trainable_weights)
+        submit_model(model_name + '_client_' + str(client+1), trainable_weights)
         return None, loss_epoch, accuracy_epoch
 
     # return the last epoch weights, local loss and local accuracy
     return trainable_weights, loss_epoch, accuracy_epoch
 
 
-def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
+def eval_text_class_fl(model, models_path, model_name, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, device='cuda', progress_bar_flag=True, progress_bar=None):
     # validation loss and accuracy of the model
     model.eval()
     print('-------- Validation --------')
@@ -440,11 +441,11 @@ def eval_text_class_fl(model, modelpath, modelname, eval_loader, best_val_accura
             f"Updated best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
         print("-------------------------------")
         torch.save(best_model, pjoin(
-            modelpath, modelname + '_best.ckpt'))
+            models_path, model_name + '_best.ckpt'))
     return best_val_accuracy, best_round
 
 
-def save_model_text_class_fl(model, modelpath, modelname, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
+def save_model_text_class_fl(model, models_path, model_name, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
     # Save the last model checkpoint
     last_model = {
         'ml_mode': 'fl',
@@ -459,14 +460,14 @@ def save_model_text_class_fl(model, modelpath, modelname, num_rounds, lr, optimi
         # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
         # 'optimizer_dict': optimizer.state_dict().copy(),
     }
-    torch.save(last_model, pjoin(modelpath, modelname + '_last.ckpt'))
+    torch.save(last_model, pjoin(models_path, model_name + '_last.ckpt'))
     print(
         f"Last model in round {num_rounds} saved with Training Accuracy: {acc_avg:.2f} %")
     # return model.state_dict()
 
 
 # TRAINING FOR CIFAR DATASETS
-def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
+def train(model, models_path, model_name, dataloaders, criterion, optimizer, learning_rate, learning_rate_decay, input_size, num_epochs, device):
 
     # Train the model
     lr = learning_rate
@@ -532,5 +533,5 @@ def train(model, modelpath, modelname, dataloaders, criterion, optimizer, learni
             print('Validation accuracy is: {} %'.format(100 * correct / total))
 
     # Save the model checkpoint
-    torch.save(model.state_dict(), pjoin(modelpath, modelname + '.ckpt'))
-    # torch.save(last_model, pjoin(modelpath, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))
+    torch.save(model.state_dict(), pjoin(models_path, model_name + '.ckpt'))
+    # torch.save(last_model, pjoin(models_path, 'last_model_{}_{}.pt'.format(model_subpath, args.num_labeled)))

@@ -4,6 +4,7 @@ import argparse
 import sys
 import torch
 import os
+from os.path import join as pjoin
 import warnings
 from .data.twitter_dep import get_twitter_dep_dataloaders
 from .data.acl_dep_sad import get_acl_dep_sad_dataloaders
@@ -11,7 +12,8 @@ from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
 from .data.deptweet import get_deptweet_dataloaders
 from .train import train_text_class, train_text_class_fl
-from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements
+from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements, create_test_dataloader, load_model
+from .test import test_text_class
 
 
 DEFAULT_CONFIG_FILE = "config/default_config.json"
@@ -196,6 +198,7 @@ def main():
         pass
 
     print('\n-------- Training --------')
+    last_model = None
     # Setting ML mode
     ml_mode_string = 'Centralised Machine Learning' if ml_mode == 'ml' else 'Federated Learning' if ml_mode == 'fl' else 'Blockchain-Based Federated Learning'
     print("Training with {} technology.".format(ml_mode_string))
@@ -228,7 +231,7 @@ def main():
         if config['concurrency_flag']:
             print(
                 "Concurrency flag is set to True, but ml mode is selected. Concurrency flag will be ignored.")
-        train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
+        last_model = train_text_class(model, config['models_path'], config['model_name'], train_loader, eval_loader, optimizer,
                          config['learning_rate'], scheduler, config['num_epochs'], device, config['eval_flag'], config['progress_bar_flag'], config['dp_epsilon'], config['dp_delta'])
 
     elif ml_mode == 'fl' or ml_mode == 'bcfl':
@@ -249,7 +252,7 @@ def main():
             print("Unknown federated algorithm selected. Using federated averaging.")
             config['fed_alg'] = 'fedavg'
         
-        train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], layers, train_loader, eval_loader, config['optimizer'],
+        last_model = train_text_class_fl(model, config['ml_mode'], config['fed_alg'], config['mu'], config['models_path'], config['model_name'], layers, train_loader, eval_loader, config['optimizer'],
                             config['learning_rate'], config['scheduler'], config[
                             'scheduler_warmup_steps'], config['num_epochs'], config['concurrency_flag'], device, config['eval_flag'],
                             config['progress_bar_flag'], config['num_rounds'], config['num_clients'],
@@ -260,18 +263,30 @@ def main():
 
     print('-------- Training finished --------')
     
-    # if config['test']:
-    #     print('\n-------- Testing the model --------')
-    #     pprint('\n-------- Creating Test Dataloader --------')
-    #     test_loader = create_test_dataloader(
-    #         config['dataset'], tokenizer, config['test_batch_size'], config['max_length'], config['seed'])
-    #     print(
-    #         f'Test Loader: {len(test_loader.dataset)} total sentences. {len(test_loader)} batches of size {config["test_batch_size"]}.')
-    #     print('-------- Test Dataloader created --------')
+    if config['test_flag']:
+        print('\nTest flag enabled. Testing the model')
+        config['test_batch_size'] = 8
+        
+        if last_model is not None:
+            print('\n-------- Loading last model --------')
+            print('-------- Last model loaded --------')
+        else: 
+            print('\n-------- Loading best model from model_path --------')
+            test_model_path = pjoin(
+                    config['models_path'], config['model_name'] + '_best.ckpt')
+            test_model = load_model(config['model'], test_model_path, device)
+            print('-------- Best model loaded --------')
+    
+        print('\n-------- Creating Test Dataloader --------')
+        test_loader = create_test_dataloader(
+            config['dataset'], tokenizer, config['test_batch_size'], config['max_length'], config['seed'])
+        print(
+            f'Test Loader: {len(test_loader.dataset)} total sentences. {len(test_loader)} batches of size {config["test_batch_size"]}.')
+        print('-------- Test Dataloader created --------')
 
-    #     print('\n-------- Testing --------')
-    #     test_text_class(model, test_loader, device, config['progress_bar_flag'])
-    #     print('-------- Testing finished --------')
+        print('\n-------- Testing --------')
+        test_text_class(test_model, test_loader, device, config['progress_bar_flag'])
+        print('-------- Testing finished --------')
         
     return
 
