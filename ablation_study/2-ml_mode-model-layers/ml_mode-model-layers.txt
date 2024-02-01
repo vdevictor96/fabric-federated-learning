@@ -1,3 +1,38 @@
+2. Decide on the trainable layers depending on model and ML model
+(2xml-fl / 2xbert models / 3xlayers / 2xseed) 24 runs
+
+ml bert_tiny 2 layers - 75/78% 
+ml bert_tiny 3 layers - 78/79%
+ml bert_tiny 4 layers - 82.5%
+ml bert_medium 2 layers - 81/82%
+ml bert_medium 3 layers - 81/83%
+ml bert_medium 4 layers - 82/83%
+
+fl bert_tiny 2 layers - 73%
+fl bert_tiny 4 layers - 78%
+fl bert_medium 2 layers - 81%
+fl bert_medium 4 layers - 82%
+
+Size: (this size is not encoded like saved in the blockchain)
+bert_medium 4 layers: 208mb
+bert_medium 2 layers: 183mb
+bert_medium 2 layers: 159mb
+
+Conclusions:
+- FL mode has little effect on result (1/2% lower)
+- 10 epochs for ml
+- 3 rounds x 4 epochs for fl (same result as 5x5)
+- 4 layers good for small models (bert_tiny, bert_mini)
+- 2 layers enough for big models (bert_small, bert_medium)
+
+
+
+
+
+
+
+
+Extensive version (72 runs)
 ml_bert_tiny_2_0
 ml_bert_tiny_2_100
 ml_bert_tiny_2_200
@@ -70,7 +105,3 @@ fl_bert_medium_3_200
 fl_bert_medium_4_0
 fl_bert_medium_4_100
 fl_bert_medium_4_200
-
-
-
-

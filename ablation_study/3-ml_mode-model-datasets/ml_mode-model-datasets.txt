@@ -1,0 +1,75 @@
+3. Table results  (2xml mode / 4xbert models / 5xdatasets) 40 runs
+
+twitter_dep:
+fl bert_tiny - 78.48%
+ml bert_tiny - 82.2%
+fl bert_mini - 81.07%
+ml bert_mini - 81.72%
+fl bert_small - 81.55%
+ml bert_small - 82.04%
+fl bert_medium - 81.39%
+ml bert_medium - 81.07%
+
+Conclusion: 
+- Similar result for all the models for twitter_dep (except fl bert_tiny)
+
+acl_dep_sad:
+fl bert_tiny - 89
+ml bert_tiny - 94
+fl bert_mini - 91.5
+ml bert_mini - 93.5
+fl bert_small (4 layers) - 92.5
+ml bert_small (4 layers) - 94
+fl bert_medium (4 layers) - 93.7
+ml bert_medium (4 layers) - 94.5
+fl bert_small - 87
+ml bert_small - 89.5
+fl bert_medium - 89.5
+ml bert_medium - 91
+
+Conclusion:
+- Smaller models work better, less overtraining (bert_mini is the best) 
+  - tried running ml bert_small with 4 layers - 94%
+  - the decrease in performance is due to less trainable layers!
+- fl similar to ml (+-2%) (except for fl bert_tiny)
+
+mixed_depression:
+fl bert_tiny - 85
+ml bert_tiny - 88
+fl bert_mini - 87
+ml bert_mini - 88.5
+fl bert_small (4 layers) - 89.3
+ml bert_small (4 layers) - 89
+fl bert_medium (4 layers) - 88.5
+ml bert_medium (4 layers) - 89.4
+fl bert_small - 81.5
+fl bert_medium - 82.5
+ml bert_medium - 85.5
+
+dreaddit:
+fl bert_tiny - 72
+ml bert_tiny - 74.5
+fl bert_mini - 76
+ml bert_mini - 77
+fl bert_small - 73.8
+ml bert_small - 73.8
+fl bert_medium - 76.7
+ml bert_medium - 76.8
+
+Conclusions:
+- ml and fl same, especially for bigger models
+- smaller models yield better results (even with 4 trainable layers for big models)
+
+deptweet:
+
+
+
+Global conclusions:
+- fl similar to ml for all models and datasets (+-2%) (except for fl bert_tiny)
+- set 4 layers for all models, twitter_dep does not need 4 layers for big models, but it is not the case for other datasets
+- ml is better than fl because it has all the data, but in reality fl will join several datasets
+- bert_mini and bert_small yields similar results than bert_medium (4 trainable layers) with 400% and 30% less size (55mb vs 160mb vs 208mb)
+
+
+- Set 4 layers for all models
+- Set bert_mini as the standard choice
