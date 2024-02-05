@@ -377,58 +377,70 @@ def iid_partition(dataset, clients):
     return partitions
 
 
-def non_iid_partition(dataset, clients, min_label_ratio=0.2):
-    # Retrieve the labels for the dataset
+def non_iid_partition(dataset, clients, max_label_ratio=0.2):
     labels = np.array(dataset.get_labels())
-
-    # Identify indices of data points for each label
     indices_label_0 = np.where(labels == 0)[0]
     indices_label_1 = np.where(labels == 1)[0]
 
-    # Shuffle the indices
     np.random.shuffle(indices_label_0)
     np.random.shuffle(indices_label_1)
 
-    # Initialize the dictionary to hold the partitions
     partitions = {i: [] for i in range(clients)}
+    total_samples = len(labels)
+    samples_per_client = total_samples // clients
+    max_label_0_samples = int(max_label_ratio * samples_per_client)
+    max_label_1_samples = int(max_label_ratio * samples_per_client)
+    # max_label_1_samples = samples_per_client - max_label_0_samples
 
-    # Calculate the minimum number of samples per label per client
-    min_samples_label_0 = int(min_label_ratio * len(indices_label_0) / clients)
-    min_samples_label_1 = int(min_label_ratio * len(indices_label_1) / clients)
+    # Split clients into two groups
+    half_clients = clients // 2
 
-    # Distribute the minimum required samples of each label to each client
-    for i in range(clients):
-        partitions[i].extend(
-            indices_label_0[i * min_samples_label_0: (i + 1) * min_samples_label_0])
-        partitions[i].extend(
-            indices_label_1[i * min_samples_label_1: (i + 1) * min_samples_label_1])
+    # Allocate primarily label 0 to the first half
+    for i in range(half_clients):
+        # Allocate label 0 up to max_label_ratio
+        label_0_alloc = min(len(indices_label_0), max_label_0_samples)
+        partitions[i].extend(indices_label_0[:label_0_alloc])
+        indices_label_0 = indices_label_0[label_0_alloc:]
 
-    # Distribute remaining samples in a non-IID manner
-    remaining_label_0 = indices_label_0[clients * min_samples_label_0:]
-    remaining_label_1 = indices_label_1[clients * min_samples_label_1:]
+        # Fill the rest with label 1
+        remaining_slots = samples_per_client - label_0_alloc
+        label_1_alloc = min(len(indices_label_1), remaining_slots)
+        partitions[i].extend(indices_label_1[:label_1_alloc])
+        indices_label_1 = indices_label_1[label_1_alloc:]
 
-    np.random.shuffle(remaining_label_0)
-    np.random.shuffle(remaining_label_1)
+    # Allocate primarily label 1 to the second half
+    for i in range(half_clients, clients):
+        # Allocate label 1 up to max_label_ratio
+        label_1_alloc = min(len(indices_label_1), max_label_1_samples)
+        partitions[i].extend(indices_label_1[:label_1_alloc])
+        indices_label_1 = indices_label_1[label_1_alloc:]
 
-    extra_per_client = len(remaining_label_0) // clients
-    for i in range(clients):
-        start_index = i * extra_per_client
-        end_index = start_index + extra_per_client
-        if i == clients - 1:
-            end_index = len(remaining_label_0)
-        partitions[i].extend(remaining_label_0[start_index:end_index])
+        # Fill the rest with label 0
+        remaining_slots = samples_per_client - label_1_alloc
+        label_0_alloc = min(len(indices_label_0), remaining_slots)
+        partitions[i].extend(indices_label_0[:label_0_alloc])
+        indices_label_0 = indices_label_0[label_0_alloc:]
 
-    extra_per_client = len(remaining_label_1) // clients
-    for i in range(clients):
-        start_index = i * extra_per_client
-        end_index = start_index + extra_per_client
-        if i == clients - 1:
-            end_index = len(remaining_label_1)
-        partitions[i].extend(remaining_label_1[start_index:end_index])
+    # Ensure all indices are allocated by distributing any remaining samples evenly
+    # This step is crucial if the total samples aren't perfectly divisible by clients or if max_label_ratio constraints lead to unallocated samples
+    remaining_indices = np.concatenate((indices_label_0, indices_label_1))
+    np.random.shuffle(remaining_indices)
+    while len(remaining_indices) > 0:
+        for i in range(clients):
+            if len(remaining_indices) == 0:
+                break
+            partitions[i].append(remaining_indices[0])
+            remaining_indices = remaining_indices[1:]
 
-    # Optionally shuffle the indices for each client
+    # Shuffle partitions to ensure randomness
     for client in partitions:
-        random.shuffle(partitions[client])
+        np.random.shuffle(partitions[client])
+
+    # Print the distribution of labels for each client
+    # for client in partitions:
+    #     label_0_count = sum(labels[partitions[client]] == 0)
+    #     label_1_count = sum(labels[partitions[client]] == 1)
+    #     print(f"Client {client}: Label 0: {label_0_count}, Label 1: {label_1_count}")
 
     return partitions
 
