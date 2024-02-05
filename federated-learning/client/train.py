@@ -116,7 +116,8 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             # Check if this is the best model based on validation accuracy
             if val_accuracy >= best_val_accuracy:
                 best_val_accuracy = val_accuracy
-                best_model_state = model.state_dict().copy()
+                # Translate model state keys in case it was trained with DP
+                best_model_state = translate_state_dict_keys(model.state_dict().copy())
                 best_model = {
                     'ml_mode': 'ml',
                     'epoch': epoch+1,
@@ -153,7 +154,8 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             'tr_acc': accuracy_epoch,
             'val_acc': best_val_accuracy,  # 0.0
             'date': current_date,
-            'model_state_dict': model.state_dict().copy(),
+            # Translate model state keys in case it was trained with DP
+            'model_state_dict': translate_state_dict_keys(model.state_dict().copy()),
             # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
             # 'optimizer_dict': optimizer.state_dict().copy(),
         }
@@ -184,7 +186,6 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
     else:  # non-iid
         partitioned_indexes = non_iid_partition(
             train_loader.dataset, num_clients)
-
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
@@ -416,7 +417,8 @@ def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, b
     # Check if this is the best model based on validation accuracy
     if val_accuracy >= best_val_accuracy:
         best_val_accuracy = val_accuracy
-        best_model_state = model.state_dict().copy()
+        # Translate model state keys in case it was trained with DP
+        best_model_state = translate_state_dict_keys(model.state_dict().copy())
         best_model = {
             'ml_mode': 'fl',
             'round': round+1,
@@ -450,7 +452,8 @@ def save_model_text_class_fl(model, model_save_path, num_rounds, lr, optimizer_t
         'tr_acc': acc_avg,
         'val_acc': 0.0,
         'date': current_date,
-        'model_state_dict': model.state_dict().copy(),
+        # Translate model state keys in case it was trained with DP
+        'model_state_dict': translate_state_dict_keys(model.state_dict().copy())
         # could be averaged as the model_state_dict
         # 'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
         # 'optimizer_dict': optimizer.state_dict().copy(),

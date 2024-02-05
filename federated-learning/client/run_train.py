@@ -278,7 +278,7 @@ def main():
     total_time = end_time - start_time  # Calculate the total execution time
     minutes = int(total_time // 60)  # Calculate total minutes
     seconds = int(total_time % 60)  # Calculate remaining seconds
-    print('-------- Training finished in {minutes}:{seconds:02d} --------')
+    print(f'\n-------- Training finished in {minutes}:{seconds:02d} --------')
 
     
     if config['test_flag']:
