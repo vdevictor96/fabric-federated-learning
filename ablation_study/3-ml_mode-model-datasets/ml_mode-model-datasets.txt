@@ -61,15 +61,27 @@ Conclusions:
 - smaller models yield better results (even with 4 trainable layers for big models)
 
 deptweet:
-
+fl bert_tiny - 85
+ml bert_tiny - 86
+fl bert_mini - 86.7
+ml bert_mini - 86.3
+fl bert_small - 87.3
+ml bert_small - 87
+fl bert_medium - 86.8
+ml bert_medium - 87.3 
 
 
 Global conclusions:
 - fl similar to ml for all models and datasets (+-2%) (except for fl bert_tiny)
+- ml is a bit better than fl because it has all the data (fl just partitions the dataset), but in reality fl will join several datasets and have more data than a standalone ml node
 - set 4 layers for all models, twitter_dep does not need 4 layers for big models, but it is not the case for other datasets
-- ml is better than fl because it has all the data, but in reality fl will join several datasets
 - bert_mini and bert_small yields similar results than bert_medium (4 trainable layers) with 400% and 30% less size (55mb vs 160mb vs 208mb)
 
 
 - Set 4 layers for all models
 - Set bert_mini as the standard choice
+
+3b. fl/bcfl same result? difference in time? 
+- Same result (thanks to hyperledger fabric where floating arithmetic is possible there is no loss in performance, compared to other bcfl using solidity)
+Time take by bcfl 6:48 (bcfl_bert_tiny_twitter_dep)
+Time take by fl 6:19 (fl_bert_tiny_twitter_dep)

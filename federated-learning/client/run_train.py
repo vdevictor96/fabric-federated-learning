@@ -2,6 +2,7 @@
 import json
 import argparse
 import sys
+import time
 import torch
 import os
 from os.path import join as pjoin
@@ -95,6 +96,7 @@ def print_config(config):
 
 
 def main():
+    start_time = time.time()  # Capture the start time
     # Parse arguments
     args = parse_args()
     print('\n-------- Loading configuration --------')
@@ -271,8 +273,14 @@ def main():
     else:
         raise ValueError(f"Unknown learning mode {ml_mode}.")
 
-    print('-------- Training finished --------')
+    # At the end of the main function, before returning:
+    end_time = time.time()  # Capture the end time
+    total_time = end_time - start_time  # Calculate the total execution time
+    minutes = int(total_time // 60)  # Calculate total minutes
+    seconds = int(total_time % 60)  # Calculate remaining seconds
+    print('-------- Training finished in {minutes}:{seconds:02d} --------')
 
+    
     if config['test_flag']:
 
         if config['save_model'] is False:
@@ -303,6 +311,8 @@ def main():
                         config['progress_bar_flag'])
         print('-------- Testing finished --------')
 
+   
+    
     # Restore original stdout and close the file
     sys.stdout.close()
     sys.stdout = sys.__stdout__

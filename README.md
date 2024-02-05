@@ -44,6 +44,8 @@ This project implements a Blockchain-Based Federated Learning framework using [H
 
 Install the Hyperledger Fabric [prerequisite software](https://hyperledger-fabric.readthedocs.io/en/release-2.5/prereqs.html#linux) to run a Docker-based Fabric test network on your local machine.
 
+> ⚠️ If you are deploying the blockchain in a shared environment where docker runs in [rootless mode](https://docs.docker.com/engine/security/rootless/) you should set the `DOCKER_HOST` environment variable first `export DOCKER_HOST=unix:///run/user/ID/docker.sock` where ID is to be replace by the value of your `$UID` environment variable.
+
 Bring up the blockchain test network with Docker:
 
 ```sh
@@ -55,8 +57,6 @@ This script will deploy a Fabric network with Docker . The [Hyperledger Fabric n
 It will also install the npm libraries required by the smart contracts (chaincode), specified in the package.json files, before compiling them and adding them to the blockchain nodes.
 
 This network is meant to be used only as a tool for education and testing and not as a model for how to set up a network. To learn how to use Fabric in production, see [Deploying a production network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/deployment_guide_overview.html).
-
-> ⚠️ If you are deploying the blockchain in a shared environment where docker runs in [rootless mode](https://docs.docker.com/engine/security/rootless/) you should set the `DOCKER_HOST` environment variable first `export DOCKER_HOST=unix:///run/user/ID/docker.sock` where ID is to be replace by the value of your `$UID` environment variable.
 
 
 
