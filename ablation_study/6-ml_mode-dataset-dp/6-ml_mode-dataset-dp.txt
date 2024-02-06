@@ -1,0 +1,90 @@
+6. Dp effect on several dataset (2xml_mode ml/bcfl - 4xdatasets / 3x dp epsilon 0, .5, 10) 24 runs 
+
+
+dreaddit
+fl_0 - 75
+fl_0.5 - 47.5
+fl_10 - 58
+ml_0 - 75
+ml_0.5 - 59.72
+ml_10 - 60.5
+
+
+
+twitter_dep
+fl_0 - 81
+fl_0.5 - 72.82
+fl_10 - 72.82
+ml_0 - 81.5
+ml_0.5 - 72.82
+ml_10 - 72.82
+
+
+acl_dep_sad
+fl_0 - 91.4
+fl_0.5 - 60
+fl_10 - 59.7
+ml_0 - 94
+ml_0.5 - 60
+ml_10 - 59
+
+mixed_depression
+fl_0 - 87.8 - (6e-4) 89
+fl_0.5 - 49 - (6e-4) 72
+fl_10 - 52.5 - (6e-4) 74.7
+ml_0 - 88 - (6e-4) 88.65
+ml_0.5 - 61 - (6e-4) 78
+ml_10 - 72.5 (6e-4) 79.5
+
+Comments:
+- High DP (low epsilon) hinders more the accuracy. Especially in FL
+- Training with DP needs higher learning rate (6e-4 instead of 6e-5)
+
+
+6b. learning rate 6e-4
+
+dreaddit
+fl_0 - 72
+fl_0.5 - 60 - (6e-3) 55.5
+fl_10 - 56 - (6e-3) 61
+ml_0 - 74
+ml_0.5 - 55
+ml_10 - 66
+
+
+
+twitter_dep
+fl_0 - 81
+fl_0.5 - 72.82
+fl_10 - 72.82
+ml_0 - 79
+ml_0.5 - 72.82
+ml_10 - 72.82
+
+
+acl_dep_sad
+fl_0 - 93.5
+fl_0.5 - 59 - (6e-3) 59
+fl_10 - 59 - (6e-3) 84
+ml_0 - 92
+ml_0.5 - 59
+ml_10 - 86
+
+mixed_depression
+fl_0 - 89
+fl_0.5 - 72
+fl_10 -  74.7 - (6e-3) 76
+ml_0 - 88.65
+ml_0.5  78
+ml_10  79.5
+
+
+Comments:
+- Higher learning rate with DP is better
+- ml_10 has higher acc than ml_0.5 because the DP is lower
+  - ! this should happen on fl two but it does not. - set num_epochs to 1 on privacy engine and increase learning rate to 6e-4 or 6e-3 solves it
+- ml usually a bit better than fl
+- fl with high epsilon better than low epsilon
+- fl with DP needs higher learning rate to converge to a local optima too soon due to the noise added
+
+6c. Try to make changes to dp and fix it  - set num_epochs to 1 and increase learning rate to 6e-4 or 6e-3

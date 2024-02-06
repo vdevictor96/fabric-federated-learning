@@ -78,12 +78,24 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             if (i+1) % 100 == 0:
                 loss_step = accumulated_loss/steps
                 accuracy_step = 100 * correct / total
-                print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'
-                      .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
+                if dp_epsilon > 0.0:
+                    eps = privacy_engine.get_epsilon(dp_delta)
+                    print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %, Epsilon: {:.2f}, Delta: {:.4f}'
+                        .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step, eps, dp_delta))
+                else:
+                    print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'
+                        .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
+        
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
+        
         print("-------------------------------")
-        print('Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
+        if dp_epsilon > 0.0:
+            eps = privacy_engine.get_epsilon(dp_delta)
+            print('Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %, Epsilon: {:.2f}, Delta: {:.4f}'.format(
+            epoch+1, num_epochs, loss_epoch, accuracy_epoch, eps, dp_delta))
+        else:
+            print('Epoch [{}/{}] Loss: {:.4f}, Accuracy: {:.2f} %'.format(
             epoch+1, num_epochs, loss_epoch, accuracy_epoch))
         print("-------------------------------")
         # ---------------------- Validation ----------------------
@@ -296,7 +308,8 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             data_loader=train_loader_subset,
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
-            epochs=num_epochs,
+            # set epochs to 1 so the value of epsilon is set at the beginning
+            epochs=1,
             max_grad_norm=0.1,
             poisson_sampling=False,
         )

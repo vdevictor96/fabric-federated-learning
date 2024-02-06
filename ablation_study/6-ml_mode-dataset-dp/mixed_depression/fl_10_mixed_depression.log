@@ -1,0 +1,191 @@
+Current configuration:
+{
+    "concurrency_flag": false,
+    "data_distribution": "iid",
+    "dataset": "mixed_depression",
+    "device": "cuda",
+    "dp_delta": 0.003,
+    "dp_epsilon": 10,
+    "eval_batch_size": 4,
+    "eval_flag": true,
+    "eval_size": 0.2,
+    "fed_alg": "fedavg",
+    "layers": 3,
+    "learning_rate": 6e-05,
+    "max_length": 512,
+    "ml_mode": "fl",
+    "model": "bert_small",
+    "model_name": "fl_10_mixed_depression",
+    "models_path": "/local/vpaloma/fabric-federated-learning/ablation_study/6-ml_mode-model-data_dist-dp/mixed_depression",
+    "mu": 0.5,
+    "num_clients": 5,
+    "num_epochs": 3,
+    "num_rounds": 4,
+    "optimizer": "AdamW",
+    "progress_bar_flag": false,
+    "save_model": true,
+    "scheduler": "linear",
+    "scheduler_warmup_steps": 0,
+    "seed": 0,
+    "test_flag": true,
+    "train_batch_size": 4,
+    "train_size": 0.8
+}
+-------- Configuration loaded --------
+
+-------- Setting device --------
+cuda device selected and available.
+-------- Device set --------
+
+-------- Setting seed --------
+-------- Seed set --------
+
+-------- Creating Model --------
+-------- Model created --------
+
+-------- Setting Trainable Layers --------
+Training the last 3 layers.
+
+Total parameters count: 28764674
+Trainable parameters count: 3416066
+-------- Trainable Layers set --------
+
+-------- Creating Tokenizer --------
+-------- Tokenizer created --------
+
+-------- Creating Train and Eval Dataloaders --------
+Train Loader: 1806 total sentences. 452 batches of size 4.
+Eval Loader: 452 total sentences. 113 batches of size 4.
+-------- Train and Eval Dataloaders created --------
+
+-------- Training --------
+Training with Federated Learning technology.
+Training with differential privacy.
+Federated averaging algorithm selected.
+
+Round 1 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/3] Loss: 0.7211, Accuracy: 49.58 %, Epsilon: 6.30, Delta: 0.0030
+Client 1 of 5: Local Epoch [2/3] Loss: 0.7084, Accuracy: 50.14 %, Epsilon: 8.34, Delta: 0.0030
+Client 1 of 5: Local Epoch [3/3] Loss: 0.7129, Accuracy: 50.14 %, Epsilon: 10.00, Delta: 0.0030
+Client 2 of 5: Local Epoch [1/3] Loss: 0.7140, Accuracy: 49.86 %, Epsilon: 6.30, Delta: 0.0030
+Client 2 of 5: Local Epoch [2/3] Loss: 0.7129, Accuracy: 50.42 %, Epsilon: 8.34, Delta: 0.0030
+Client 2 of 5: Local Epoch [3/3] Loss: 0.7121, Accuracy: 49.86 %, Epsilon: 10.00, Delta: 0.0030
+Client 3 of 5: Local Epoch [1/3] Loss: 0.7326, Accuracy: 46.81 %, Epsilon: 6.30, Delta: 0.0030
+Client 3 of 5: Local Epoch [2/3] Loss: 0.7280, Accuracy: 46.81 %, Epsilon: 8.34, Delta: 0.0030
+Client 3 of 5: Local Epoch [3/3] Loss: 0.7265, Accuracy: 47.09 %, Epsilon: 10.00, Delta: 0.0030
+Client 4 of 5: Local Epoch [1/3] Loss: 0.7199, Accuracy: 49.31 %, Epsilon: 6.30, Delta: 0.0030
+Client 4 of 5: Local Epoch [2/3] Loss: 0.7143, Accuracy: 49.03 %, Epsilon: 8.34, Delta: 0.0030
+Client 4 of 5: Local Epoch [3/3] Loss: 0.7046, Accuracy: 49.31 %, Epsilon: 10.00, Delta: 0.0030
+Client 5 of 5: Local Epoch [1/3] Loss: 0.7337, Accuracy: 49.72 %, Epsilon: 6.30, Delta: 0.0030
+Client 5 of 5: Local Epoch [2/3] Loss: 0.7213, Accuracy: 49.45 %, Epsilon: 8.34, Delta: 0.0030
+Client 5 of 5: Local Epoch [3/3] Loss: 0.7310, Accuracy: 49.17 %, Epsilon: 10.00, Delta: 0.0030
+-------------------------------
+Round [1/4] Average Local Loss: 0.7174, Average Local Accuracy: 49.11 %
+-------------------------------
+-------- Validation --------
+Round [1/4] Global Model Validation Loss: 0.7111, Validation Accuracy: 48.45 %
+-------- Validation finished --------
+Updated best model in round 1 saved with Validation Accuracy: 48.45 %
+-------------------------------
+
+Round 2 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/3] Loss: 0.7098, Accuracy: 50.97 %, Epsilon: 6.30, Delta: 0.0030
+Client 1 of 5: Local Epoch [2/3] Loss: 0.7131, Accuracy: 51.52 %, Epsilon: 8.34, Delta: 0.0030
+Client 1 of 5: Local Epoch [3/3] Loss: 0.6944, Accuracy: 51.25 %, Epsilon: 10.00, Delta: 0.0030
+Client 2 of 5: Local Epoch [1/3] Loss: 0.7102, Accuracy: 50.97 %, Epsilon: 6.30, Delta: 0.0030
+Client 2 of 5: Local Epoch [2/3] Loss: 0.7045, Accuracy: 50.97 %, Epsilon: 8.34, Delta: 0.0030
+Client 2 of 5: Local Epoch [3/3] Loss: 0.7027, Accuracy: 51.80 %, Epsilon: 10.00, Delta: 0.0030
+Client 3 of 5: Local Epoch [1/3] Loss: 0.7243, Accuracy: 47.09 %, Epsilon: 6.30, Delta: 0.0030
+Client 3 of 5: Local Epoch [2/3] Loss: 0.7198, Accuracy: 49.31 %, Epsilon: 8.34, Delta: 0.0030
+Client 3 of 5: Local Epoch [3/3] Loss: 0.7043, Accuracy: 49.31 %, Epsilon: 10.00, Delta: 0.0030
+Client 4 of 5: Local Epoch [1/3] Loss: 0.7133, Accuracy: 49.86 %, Epsilon: 6.30, Delta: 0.0030
+Client 4 of 5: Local Epoch [2/3] Loss: 0.7055, Accuracy: 50.42 %, Epsilon: 8.34, Delta: 0.0030
+Client 4 of 5: Local Epoch [3/3] Loss: 0.7064, Accuracy: 50.69 %, Epsilon: 10.00, Delta: 0.0030
+Client 5 of 5: Local Epoch [1/3] Loss: 0.7220, Accuracy: 49.72 %, Epsilon: 6.30, Delta: 0.0030
+Client 5 of 5: Local Epoch [2/3] Loss: 0.7255, Accuracy: 50.00 %, Epsilon: 8.34, Delta: 0.0030
+Client 5 of 5: Local Epoch [3/3] Loss: 0.7250, Accuracy: 50.28 %, Epsilon: 10.00, Delta: 0.0030
+-------------------------------
+Round [2/4] Average Local Loss: 0.7065, Average Local Accuracy: 50.66 %
+-------------------------------
+-------- Validation --------
+Round [2/4] Global Model Validation Loss: 0.7021, Validation Accuracy: 48.67 %
+-------- Validation finished --------
+Updated best model in round 2 saved with Validation Accuracy: 48.67 %
+-------------------------------
+
+Round 3 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/3] Loss: 0.7062, Accuracy: 50.14 %, Epsilon: 6.30, Delta: 0.0030
+Client 1 of 5: Local Epoch [2/3] Loss: 0.6915, Accuracy: 53.74 %, Epsilon: 8.34, Delta: 0.0030
+Client 1 of 5: Local Epoch [3/3] Loss: 0.6933, Accuracy: 53.74 %, Epsilon: 10.00, Delta: 0.0030
+Client 2 of 5: Local Epoch [1/3] Loss: 0.6971, Accuracy: 53.19 %, Epsilon: 6.30, Delta: 0.0030
+Client 2 of 5: Local Epoch [2/3] Loss: 0.6942, Accuracy: 53.46 %, Epsilon: 8.34, Delta: 0.0030
+Client 2 of 5: Local Epoch [3/3] Loss: 0.6992, Accuracy: 51.80 %, Epsilon: 10.00, Delta: 0.0030
+Client 3 of 5: Local Epoch [1/3] Loss: 0.7161, Accuracy: 47.37 %, Epsilon: 6.30, Delta: 0.0030
+Client 3 of 5: Local Epoch [2/3] Loss: 0.7084, Accuracy: 50.69 %, Epsilon: 8.34, Delta: 0.0030
+Client 3 of 5: Local Epoch [3/3] Loss: 0.6979, Accuracy: 52.91 %, Epsilon: 10.00, Delta: 0.0030
+Client 4 of 5: Local Epoch [1/3] Loss: 0.7057, Accuracy: 51.25 %, Epsilon: 6.30, Delta: 0.0030
+Client 4 of 5: Local Epoch [2/3] Loss: 0.6983, Accuracy: 51.80 %, Epsilon: 8.34, Delta: 0.0030
+Client 4 of 5: Local Epoch [3/3] Loss: 0.6941, Accuracy: 51.25 %, Epsilon: 10.00, Delta: 0.0030
+Client 5 of 5: Local Epoch [1/3] Loss: 0.7122, Accuracy: 50.55 %, Epsilon: 6.30, Delta: 0.0030
+Client 5 of 5: Local Epoch [2/3] Loss: 0.7137, Accuracy: 51.38 %, Epsilon: 8.34, Delta: 0.0030
+Client 5 of 5: Local Epoch [3/3] Loss: 0.7056, Accuracy: 50.00 %, Epsilon: 10.00, Delta: 0.0030
+-------------------------------
+Round [3/4] Average Local Loss: 0.6980, Average Local Accuracy: 51.94 %
+-------------------------------
+-------- Validation --------
+Round [3/4] Global Model Validation Loss: 0.6936, Validation Accuracy: 49.56 %
+-------- Validation finished --------
+Updated best model in round 3 saved with Validation Accuracy: 49.56 %
+-------------------------------
+
+Round 4 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/3] Loss: 0.6919, Accuracy: 54.57 %, Epsilon: 6.30, Delta: 0.0030
+Client 1 of 5: Local Epoch [2/3] Loss: 0.6842, Accuracy: 56.23 %, Epsilon: 8.34, Delta: 0.0030
+Client 1 of 5: Local Epoch [3/3] Loss: 0.6828, Accuracy: 53.19 %, Epsilon: 10.00, Delta: 0.0030
+Client 2 of 5: Local Epoch [1/3] Loss: 0.6945, Accuracy: 53.19 %, Epsilon: 6.30, Delta: 0.0030
+Client 2 of 5: Local Epoch [2/3] Loss: 0.6868, Accuracy: 54.57 %, Epsilon: 8.34, Delta: 0.0030
+Client 2 of 5: Local Epoch [3/3] Loss: 0.6859, Accuracy: 54.85 %, Epsilon: 10.00, Delta: 0.0030
+Client 3 of 5: Local Epoch [1/3] Loss: 0.7101, Accuracy: 50.97 %, Epsilon: 6.30, Delta: 0.0030
+Client 3 of 5: Local Epoch [2/3] Loss: 0.7015, Accuracy: 50.14 %, Epsilon: 8.34, Delta: 0.0030
+Client 3 of 5: Local Epoch [3/3] Loss: 0.7007, Accuracy: 51.25 %, Epsilon: 10.00, Delta: 0.0030
+Client 4 of 5: Local Epoch [1/3] Loss: 0.6904, Accuracy: 51.25 %, Epsilon: 6.30, Delta: 0.0030
+Client 4 of 5: Local Epoch [2/3] Loss: 0.6854, Accuracy: 54.02 %, Epsilon: 8.34, Delta: 0.0030
+Client 4 of 5: Local Epoch [3/3] Loss: 0.6897, Accuracy: 52.35 %, Epsilon: 10.00, Delta: 0.0030
+Client 5 of 5: Local Epoch [1/3] Loss: 0.7111, Accuracy: 50.83 %, Epsilon: 6.30, Delta: 0.0030
+Client 5 of 5: Local Epoch [2/3] Loss: 0.7062, Accuracy: 52.21 %, Epsilon: 8.34, Delta: 0.0030
+Client 5 of 5: Local Epoch [3/3] Loss: 0.7093, Accuracy: 49.17 %, Epsilon: 10.00, Delta: 0.0030
+-------------------------------
+Round [4/4] Average Local Loss: 0.6937, Average Local Accuracy: 52.16 %
+-------------------------------
+-------- Validation --------
+Round [4/4] Global Model Validation Loss: 0.6851, Validation Accuracy: 51.33 %
+-------- Validation finished --------
+Updated best model in round 4 saved with Validation Accuracy: 51.33 %
+-------------------------------
+Best model in round 4 saved with Validation Accuracy: 51.33 %
+
+-------- Training finished in 14:32 --------
+
+Test flag enabled. Testing the model
+
+-------- Loading best model from model_path --------
+Loaded model bert-small from date 06-02-2024 10:07. Trained with Federated Learning technology.
+Round 4, lr: 6e-05, optimizer: AdamW
+Average train accuracy: 52.16 %, Validation accuracy: 51.33 %
+-------- Best model loaded --------
+
+-------- Creating Test Dataloader --------
+Test Loader: 564 total sentences. 71 batches of size 8.
+-------- Test Dataloader created --------
+
+-------- Testing --------
+Nº of test samples: 564
+Accuracy: 52.66%
+Precision: 68.64%
+Recall: 54.81%
+F1 Score: 43.31%
+-------- Testing finished --------

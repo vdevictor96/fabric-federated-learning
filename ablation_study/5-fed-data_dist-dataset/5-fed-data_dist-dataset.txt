@@ -29,10 +29,10 @@ fedprox_noniid (8 rounds) - 70.6
 
 mixed_depression
 
-fedavg_iid - 88
-fedavg_noniid - 87
-fedprox_iid - 77
-fedprox_noniid - 76
+fedavg_iid - 88 - (6e-4) 89
+fedavg_noniid - 87 - (6e-4) 89
+fedprox_iid - 77 - (6e-4) 87.6
+fedprox_noniid - 76 - (6e-4) 78.5
 
 Conclusions:
 - Fedprox lowers accuracy in all cases, does not work
@@ -41,3 +41,36 @@ Conclusions:
 Arguments
 - Finetuning with non_iid does not have a big effect on accuracy so there is no need for fedprox algorithm. 
 - Fedprox reduces the negative effect of non_iid (already low in fedavg) but is still worse than fedavg since the proximal term hinders the finetuning of the last layers
+
+
+learning rate 6e-4
+
+twitter_dep
+fedavg_iid - 81
+fedavg_noniid - 80.5
+fedprox_iid - 80.5
+fedprox_noniid - 72.82
+
+acl_dep_sad
+fedavg_iid - 92.7
+fedavg_noniid - 92.5
+fedprox_iid - 83
+fedprox_noniid - 83
+
+dreaddit
+fedavg_iid - 72
+fedavg_noniid - 73
+fedprox_iid - 74
+fedprox_noniid - 70
+
+mixed_depression
+fedavg_iid - 88 - (6e-4) 89
+fedavg_noniid - 87 - (6e-4) 89
+fedprox_iid - 77 - (6e-4) 87.6
+fedprox_noniid - 76 - (6e-4) 78.5
+
+Conclusions:
+- higher learning rate improves fedprox for iid data but not for non_iid
+- non_iid does not affect in fedavg
+- non_iid worse in fedprox 
+- fedprox does not work properly, it is worse 
