@@ -135,9 +135,9 @@ def main():
     if config['layers'] <= 0:
         print('The layers parameter must be positive. Training only the last layer classifier.')
         config['layers'] = 1
-    elif config['layers'] > 4:
-        print('The layers parameter must be less than or equal to 4. Training the last 4 layers.')
-        config['layers'] = 4
+    elif config['layers'] > 3:
+        print('The layers parameter must be less than or equal to 3. Training the last 3 layers.')
+        config['layers'] = 3
     else:
         print(
             f'Training the last {config["layers"]} layers.')

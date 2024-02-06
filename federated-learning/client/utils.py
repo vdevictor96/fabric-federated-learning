@@ -437,10 +437,10 @@ def non_iid_partition(dataset, clients, max_label_ratio=0.2):
         np.random.shuffle(partitions[client])
 
     # Print the distribution of labels for each client
-    # for client in partitions:
-    #     label_0_count = sum(labels[partitions[client]] == 0)
-    #     label_1_count = sum(labels[partitions[client]] == 1)
-    #     print(f"Client {client}: Label 0: {label_0_count}, Label 1: {label_1_count}")
+    for client in partitions:
+        label_0_count = sum(labels[partitions[client]] == 0)
+        label_1_count = sum(labels[partitions[client]] == 1)
+        print(f"Client {client}: Label 0: {label_0_count}, Label 1: {label_1_count}")
 
     return partitions
 

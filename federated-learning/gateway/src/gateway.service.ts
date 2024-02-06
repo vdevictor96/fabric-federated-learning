@@ -143,16 +143,16 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         signer: await this.newSigner(),
         // Default timeouts for different gRPC calls
         evaluateOptions: () => {
-          return { deadline: Date.now() + 30000 }; // default 5 seconds
-        },
-        endorseOptions: () => {
-          return { deadline: Date.now() + 60000 }; // default 15 seconds
-        },
-        submitOptions: () => {
           return { deadline: Date.now() + 60000 }; // default 5 seconds
         },
+        endorseOptions: () => {
+          return { deadline: Date.now() + 120000 }; // default 15 seconds
+        },
+        submitOptions: () => {
+          return { deadline: Date.now() + 120000 }; // default 5 seconds
+        },
         commitStatusOptions: () => {
-          return { deadline: Date.now() + 60000 }; // default 1 minute
+          return { deadline: Date.now() + 120000 }; // default 1 minute
         },
       });
     }

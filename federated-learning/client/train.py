@@ -185,7 +185,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
         partitioned_indexes = iid_partition(train_loader.dataset, num_clients)
     else:  # non-iid
         partitioned_indexes = non_iid_partition(
-            train_loader.dataset, num_clients)
+            train_loader.dataset, num_clients, 0.1)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_model_state = None
@@ -304,7 +304,7 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
         #     module=model,
         #     optimizer=optimizer,
         #     data_loader=train_loader_subset,
-        #     noise_multiplier=0.2,
+        #     noise_multiplier=dp_epsilon,
         #     max_grad_norm=0.1,
         #     poisson_sampling=False,
         # )

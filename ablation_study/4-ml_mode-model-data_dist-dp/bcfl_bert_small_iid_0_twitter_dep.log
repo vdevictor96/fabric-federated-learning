@@ -1,0 +1,151 @@
+Current configuration:
+{
+    "concurrency_flag": false,
+    "data_distribution": "iid",
+    "dataset": "twitter_dep",
+    "device": "cuda",
+    "dp_delta": 0.003,
+    "dp_epsilon": 0,
+    "eval_batch_size": 4,
+    "eval_flag": true,
+    "eval_size": 0.2,
+    "fed_alg": "fedavg",
+    "layers": 3,
+    "learning_rate": 6e-05,
+    "max_length": 512,
+    "ml_mode": "bcfl",
+    "model": "bert_small",
+    "model_name": "bcfl_bert_small_iid_0_twitter_dep",
+    "models_path": "/local/vpaloma/fabric-federated-learning/ablation_study/4-ml_mode-model-data_dist-dp/",
+    "mu": 0.5,
+    "num_clients": 5,
+    "num_epochs": 1,
+    "num_rounds": 4,
+    "optimizer": "AdamW",
+    "progress_bar_flag": false,
+    "save_model": true,
+    "scheduler": "linear",
+    "scheduler_warmup_steps": 0,
+    "seed": 0,
+    "test_flag": true,
+    "train_batch_size": 4,
+    "train_size": 0.8
+}
+-------- Configuration loaded --------
+
+-------- Setting device --------
+cuda device selected and available.
+-------- Device set --------
+
+-------- Setting seed --------
+-------- Seed set --------
+
+-------- Creating Model --------
+-------- Model created --------
+
+-------- Setting Trainable Layers --------
+Training the last 3 layers.
+
+Total parameters count: 28764674
+Trainable parameters count: 3416066
+-------- Trainable Layers set --------
+
+-------- Creating Tokenizer --------
+-------- Tokenizer created --------
+
+-------- Creating Train and Eval Dataloaders --------
+Train Loader: 1982 total sentences. 496 batches of size 4.
+Eval Loader: 496 total sentences. 124 batches of size 4.
+-------- Train and Eval Dataloaders created --------
+
+-------- Training --------
+Training with Blockchain-Based Federated Learning technology.
+Training without differential privacy.
+Federated averaging algorithm selected.
+
+Round 1 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/1] Loss: 0.5795, Accuracy: 71.72 %
+Client 2 of 5: Local Epoch [1/1] Loss: 0.5562, Accuracy: 72.22 %
+Client 3 of 5: Local Epoch [1/1] Loss: 0.5940, Accuracy: 71.72 %
+Client 4 of 5: Local Epoch [1/1] Loss: 0.5872, Accuracy: 72.47 %
+Client 5 of 5: Local Epoch [1/1] Loss: 0.5671, Accuracy: 75.88 %
+-------------------------------
+Round [1/4] Average Local Loss: 0.5768, Average Local Accuracy: 72.80 %
+-------------------------------
+-------- Validation --------
+Round [1/4] Global Model Validation Loss: 0.5180, Validation Accuracy: 74.80 %
+-------- Validation finished --------
+Updated best model in round 1 saved with Validation Accuracy: 74.80 %
+-------------------------------
+
+Round 2 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/1] Loss: 0.5188, Accuracy: 76.01 %
+Client 2 of 5: Local Epoch [1/1] Loss: 0.4998, Accuracy: 75.00 %
+Client 3 of 5: Local Epoch [1/1] Loss: 0.5116, Accuracy: 76.01 %
+Client 4 of 5: Local Epoch [1/1] Loss: 0.5035, Accuracy: 75.76 %
+Client 5 of 5: Local Epoch [1/1] Loss: 0.5205, Accuracy: 74.62 %
+-------------------------------
+Round [2/4] Average Local Loss: 0.5108, Average Local Accuracy: 75.48 %
+-------------------------------
+-------- Validation --------
+Round [2/4] Global Model Validation Loss: 0.4853, Validation Accuracy: 75.60 %
+-------- Validation finished --------
+Updated best model in round 2 saved with Validation Accuracy: 75.60 %
+-------------------------------
+
+Round 3 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/1] Loss: 0.4913, Accuracy: 77.78 %
+Client 2 of 5: Local Epoch [1/1] Loss: 0.4778, Accuracy: 80.05 %
+Client 3 of 5: Local Epoch [1/1] Loss: 0.4786, Accuracy: 76.52 %
+Client 4 of 5: Local Epoch [1/1] Loss: 0.4659, Accuracy: 80.81 %
+Client 5 of 5: Local Epoch [1/1] Loss: 0.4706, Accuracy: 78.39 %
+-------------------------------
+Round [3/4] Average Local Loss: 0.4769, Average Local Accuracy: 78.71 %
+-------------------------------
+-------- Validation --------
+Round [3/4] Global Model Validation Loss: 0.4683, Validation Accuracy: 76.81 %
+-------- Validation finished --------
+Updated best model in round 3 saved with Validation Accuracy: 76.81 %
+-------------------------------
+
+Round 4 of 4
+-------------------------------
+Client 1 of 5: Local Epoch [1/1] Loss: 0.4614, Accuracy: 80.81 %
+Client 2 of 5: Local Epoch [1/1] Loss: 0.4436, Accuracy: 77.53 %
+Client 3 of 5: Local Epoch [1/1] Loss: 0.4613, Accuracy: 77.53 %
+Client 4 of 5: Local Epoch [1/1] Loss: 0.4426, Accuracy: 80.30 %
+Client 5 of 5: Local Epoch [1/1] Loss: 0.4700, Accuracy: 76.38 %
+-------------------------------
+Round [4/4] Average Local Loss: 0.4558, Average Local Accuracy: 78.51 %
+-------------------------------
+-------- Validation --------
+Round [4/4] Global Model Validation Loss: 0.4583, Validation Accuracy: 77.82 %
+-------- Validation finished --------
+Updated best model in round 4 saved with Validation Accuracy: 77.82 %
+-------------------------------
+Best model in round 4 saved with Validation Accuracy: 77.82 %
+
+-------- Training finished in 6:33 --------
+
+Test flag enabled. Testing the model
+
+-------- Loading best model from model_path --------
+Loaded model bert-small from date 05-02-2024 16:57. Trained with Federated Learning technology.
+Round 4, lr: 6e-05, optimizer: AdamW
+Average train accuracy: 78.51 %, Validation accuracy: 77.82 %
+-------- Best model loaded --------
+
+-------- Creating Test Dataloader --------
+Test Loader: 618 total sentences. 78 batches of size 8.
+-------- Test Dataloader created --------
+
+-------- Testing --------
+Nº of test samples: 618
+Accuracy: 81.39%
+Precision: 77.40%
+Recall: 72.86%
+F1 Score: 74.52%
+-------- Testing finished --------
