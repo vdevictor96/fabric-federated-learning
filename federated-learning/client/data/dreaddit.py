@@ -83,7 +83,7 @@ class Dreaddit(Dataset):
     def get_labels(self):
         labels = []
         for i in range(self.len):
-            labels.append(self.data.iloc[i].target)
+            labels.append(self.data.iloc[i].label)
         return labels
     
     def __getitem__(self, index):

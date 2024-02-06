@@ -245,6 +245,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
       'grpc.ssl_target_name_override': GatewayService.PEER_HOST_ALIAS,
       'grpc.max_send_message_length': 120 * 1024 * 1024,
       'grpc.max_receive_message_length': 120 * 1024 * 1024,
+      'grpc.keepalive_permit_without_calls': 0,
+      'grpc.keepalive_timeout_ms': 120000
     });
   }
 

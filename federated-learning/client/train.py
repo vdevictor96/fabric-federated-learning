@@ -330,9 +330,6 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             logits = outputs.logits
             loss = outputs.loss
             predicted = torch.argmax(logits, dim=-1)
-            # backpropagation
-            loss.backward()
-
             # FedProx Modification
             if fed_alg == 'fedprox':
                 # Calculate the proximal term
@@ -346,6 +343,9 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             else:  # fedavg
                 pass
 
+            # backpropagation
+            loss.backward()
+            
             optimizer.step()
             lr_scheduler.step()
             if progress_bar_flag:

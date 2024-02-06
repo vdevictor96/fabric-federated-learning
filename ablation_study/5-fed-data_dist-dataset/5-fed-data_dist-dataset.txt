@@ -1,0 +1,43 @@
+5. data dist effect on several dataset with differnt fedAlg (fl-bcf / 2xfederation algorithm / 2xdata distribution / 1xmodel (bert_small) / 4xdataset (16 runs)
+
+twitter_dep
+
+fedavg_iid - 81
+fedavg_noniid - 72.82
+fedprox_iid - 75.57
+fedprox_noniid - 72.82
+
+acl_dep_sad
+
+fedavg_iid - 91.4
+fedavg_noniid - 91
+fedprox_iid - 86
+fedprox_noniid - 84
+
+dreaddit
+
+fedavg_iid - 75
+fedavg_iid (8 rounds) - 76
+fedavg_noniid - 74.3
+fedavg_noniid (0.05) - 72
+fedavg_noniid (8 rounds) - 75
+fedprox_iid - 69.5
+fedprox_iid (8 rounds) - 69.5
+fedprox_noniid - 68
+fedprox_noniid (0.05) - 65.7
+fedprox_noniid (8 rounds) - 70.6
+
+mixed_depression
+
+fedavg_iid - 88
+fedavg_noniid - 87
+fedprox_iid - 77
+fedprox_noniid - 76
+
+Conclusions:
+- Fedprox lowers accuracy in all cases, does not work
+- Non_iid 0.1 has little effect -1/2% on accuracy (except twitter_dep)
+- Non_iid 0.05 has little effect -3/4% on accuracy
+Arguments
+- Finetuning with non_iid does not have a big effect on accuracy so there is no need for fedprox algorithm. 
+- Fedprox reduces the negative effect of non_iid (already low in fedavg) but is still worse than fedavg since the proximal term hinders the finetuning of the last layers
