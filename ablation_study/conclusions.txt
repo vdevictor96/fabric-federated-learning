@@ -1,0 +1,30 @@
+Setting:
+- set to 3 layers (limitation of blockchain, endorsement timeout) (experiment 4)
+- 10 epochs for ml (experiment 2)
+- 3 rounds x 4 epochs for fl (same result as 5x5) (experiment 2)
+- lr 6-e5 (experiment 1)
+- lr 6-e4 for DP (experiment 6) and fedprox (experiment 5)
+- lr 6-e3 for FL with DP high epsilon for some datasets (expermient 6)
+- Set bert_mini as the standard choice
+- non_iid ratio of 0.1
+
+Good:
+- FL mode has little effect on result (1/2% lower) (experiment 2)
+- non_iid not affecting much fedavg (experiment 5)
+  - Fixed non_iid with ratio 0.05 yields just -2%, has little effect. (experiment 4)
+- Non_iid has better train acc (close to 100%) but worse test acc (clients overfit) (experiment 4)
+- bert_mini and bert_small yields similar results than bert_medium (4 trainable layers) with 400% and 30% less size (55mb vs 160mb vs 208mb) (experiment 3)
+- fl/bcfl same result (thanks to hyperledger fabric where floating arithmetic is possible there is no loss in performance, compared to other bcfl using solidity) (experiment 3)
+- fl 6:19 vs bcfl 6:48 / fl 8:23 vs bcfl 9:08 / fl 10:01 vs bcfl 10:01 (experiment 3 and 4)
+  Almost same time in a simple architecture with two peer nodes, one orderer and Raft consensus in the same local network there is not overhead in communication.
+  This shows that there is not software overhead with the gateway.
+  We can expect more network overhead in a decentralised network and overhead for the consensus mechanisms.
+- Higher epsilon has higher acc because the DP is lower (both FL and ML) (except twitter_dep) (experiment 6)
+- fl with DP needs higher learning rate (6e-3) in some datasets to avoid converging to a local optima too soon due to the noise added (experiment 6)
+- - ml usually a bit better than fl with DP. In FL there are more sources of noise (experiment 6)
+
+Bad:
+- fedprox not working, worse performance with non_iid data than fedavg (experiment 5)
+  - Finetuning with non_iid does not have a big effect on accuracy so there is no need for fedprox algorithm. 
+  - higher learning rate improves fedprox for iid data but not for non_iid (experiment 5)
+- DP for twitter_dep same acc for all models and values of epsilon (experiment 6)
