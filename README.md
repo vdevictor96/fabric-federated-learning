@@ -85,13 +85,15 @@ npm run start:dev
 
 To execute the Python client you need to install the Python libraries in the [requirements.txt](ederated-learning/client/requirements.txt) file.
 
-> ⚠️ This client is using python 3.11.7 and other version could case incompatibilities with the libraries versions used in [requirements.txt](ederated-learning/client/requirements.txt). More info in [client README file](ederated-learning/client/README.md)
+> ⚠️ This client is using python 3.11.7 and other version could case incompatibilities with the libraries versions used in [requirements.txt](ederated-learning/client/requirements.txt). More info in [client README file](federated-learning/client/README.md)
 
 
 First, activate your python environment where you will be running the BERT model training. 
 
 
-You can do that using conda with the following command: [(Install conda following these instructions)](https://docs.anaconda.com/free/anaconda/install/linux/)
+You can do that using conda with the following command: 
+
+[(Install conda following these instructions)](https://docs.anaconda.com/free/anaconda/install/linux/)
 ```sh
 conda activate your-existing-environment
 ```
@@ -130,6 +132,7 @@ The 'ml_mode' option can be set to three different values:
   - 'ml' for centralised machine learning
   - 'fl' for federated learning
   - 'bcfl' for blockchain-based federated learning (it needs the gateway running and the blockchain deployed)
+
 Other configurable options available: 'model', 'dataset', 'layers', 'concurrency_flag', 'dp_epsilon', 'train_batch_size', etc.
 If you do not provide a valid configuration file the model will train with the [default-config](federated-learning/client/config/default_config.json) values.
 
