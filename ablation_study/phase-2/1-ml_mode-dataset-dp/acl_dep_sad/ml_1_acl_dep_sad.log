@@ -1,0 +1,355 @@
+Current configuration:
+{
+    "concurrency_flag": false,
+    "data_distribution": "iid",
+    "dataset": "acl_dep_sad",
+    "device": "cuda",
+    "dp_delta": 0.003,
+    "dp_epsilon": 1,
+    "eval_batch_size": 4,
+    "eval_flag": true,
+    "eval_size": 0.2,
+    "fed_alg": "fedavg",
+    "layers": 3,
+    "learning_rate": 0.0006,
+    "max_length": 512,
+    "ml_mode": "ml",
+    "model": "bert_small",
+    "model_name": "ml_1_acl_dep_sad",
+    "models_path": "/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp/acl_dep_sad",
+    "mu": 0.5,
+    "num_clients": 5,
+    "num_epochs": 12,
+    "num_rounds": 4,
+    "optimizer": "AdamW",
+    "progress_bar_flag": false,
+    "save_model": true,
+    "scheduler": "linear",
+    "scheduler_warmup_steps": 0,
+    "seed": 0,
+    "test_flag": true,
+    "train_batch_size": 4,
+    "train_size": 0.8
+}
+-------- Configuration loaded --------
+
+-------- Setting device --------
+cuda device selected and available.
+-------- Device set --------
+
+-------- Setting seed --------
+-------- Seed set --------
+
+-------- Creating Model --------
+-------- Model created --------
+
+-------- Setting Trainable Layers --------
+Training the last 3 layers.
+
+Total parameters count: 28764674
+Trainable parameters count: 3416066
+-------- Trainable Layers set --------
+
+-------- Creating Tokenizer --------
+-------- Tokenizer created --------
+
+-------- Creating Train and Eval Dataloaders --------
+Train Loader: 2085 total sentences. 522 batches of size 4.
+Eval Loader: 521 total sentences. 131 batches of size 4.
+-------- Train and Eval Dataloaders created --------
+
+-------- Creating Optimizer --------
+-------- Optimizer created --------
+
+-------- Creating Scheduler --------
+-------- Scheduler created --------
+
+-------- Training --------
+Training with Centralised Machine Learning technology.
+Training with differential privacy.
+Epoch [1/12], Step [100/522], Loss: 0.7201, Accuracy: 58.00 %, Epsilon: 0.09, Delta: 0.0030
+Epoch [1/12], Step [200/522], Loss: 0.7735, Accuracy: 59.12 %, Epsilon: 0.14, Delta: 0.0030
+Epoch [1/12], Step [300/522], Loss: 0.8996, Accuracy: 57.75 %, Epsilon: 0.18, Delta: 0.0030
+Epoch [1/12], Step [400/522], Loss: 0.9983, Accuracy: 58.00 %, Epsilon: 0.21, Delta: 0.0030
+Epoch [1/12], Step [500/522], Loss: 1.1270, Accuracy: 58.15 %, Epsilon: 0.24, Delta: 0.0030
+Predictions - 1s: 8, 0s: 2077
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.0038369304556354917, Proportion of 0s: 0.9961630695443645
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [1/12] Loss: 1.1528, Accuracy: 58.18 %, Epsilon: 0.25, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 0, 0s: 521
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.7691, Validation Accuracy: 61.23 %
+-------- Validation finished --------
+Updated best model in epoch 1 saved with Validation Accuracy: 61.23 %
+-------------------------------
+Epoch [2/12], Step [100/522], Loss: 2.0182, Accuracy: 57.00 %, Epsilon: 0.27, Delta: 0.0030
+Epoch [2/12], Step [200/522], Loss: 2.0478, Accuracy: 57.75 %, Epsilon: 0.30, Delta: 0.0030
+Epoch [2/12], Step [300/522], Loss: 2.0715, Accuracy: 57.42 %, Epsilon: 0.32, Delta: 0.0030
+Epoch [2/12], Step [400/522], Loss: 2.0422, Accuracy: 58.06 %, Epsilon: 0.34, Delta: 0.0030
+Epoch [2/12], Step [500/522], Loss: 2.0539, Accuracy: 57.95 %, Epsilon: 0.36, Delta: 0.0030
+Predictions - 1s: 0, 0s: 2085
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [2/12] Loss: 2.0400, Accuracy: 58.18 %, Epsilon: 0.36, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 0, 0s: 521
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.9265, Validation Accuracy: 61.23 %
+-------- Validation finished --------
+Epoch [3/12], Step [100/522], Loss: 1.9566, Accuracy: 61.00 %, Epsilon: 0.38, Delta: 0.0030
+Epoch [3/12], Step [200/522], Loss: 1.9857, Accuracy: 60.25 %, Epsilon: 0.40, Delta: 0.0030
+Epoch [3/12], Step [300/522], Loss: 2.0247, Accuracy: 59.25 %, Epsilon: 0.42, Delta: 0.0030
+Epoch [3/12], Step [400/522], Loss: 2.0222, Accuracy: 58.44 %, Epsilon: 0.44, Delta: 0.0030
+Epoch [3/12], Step [500/522], Loss: 2.0088, Accuracy: 58.25 %, Epsilon: 0.45, Delta: 0.0030
+Predictions - 1s: 0, 0s: 2085
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [3/12] Loss: 2.0151, Accuracy: 58.18 %, Epsilon: 0.46, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 0, 0s: 521
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.8177, Validation Accuracy: 61.23 %
+-------- Validation finished --------
+Epoch [4/12], Step [100/522], Loss: 1.8834, Accuracy: 57.00 %, Epsilon: 0.47, Delta: 0.0030
+Epoch [4/12], Step [200/522], Loss: 1.8996, Accuracy: 57.12 %, Epsilon: 0.49, Delta: 0.0030
+Epoch [4/12], Step [300/522], Loss: 1.8874, Accuracy: 57.33 %, Epsilon: 0.50, Delta: 0.0030
+Epoch [4/12], Step [400/522], Loss: 1.8786, Accuracy: 57.62 %, Epsilon: 0.52, Delta: 0.0030
+Epoch [4/12], Step [500/522], Loss: 1.8408, Accuracy: 58.20 %, Epsilon: 0.53, Delta: 0.0030
+Predictions - 1s: 0, 0s: 2085
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [4/12] Loss: 1.8387, Accuracy: 58.18 %, Epsilon: 0.54, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 0, 0s: 521
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.0, Proportion of 0s: 1.0
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.7118, Validation Accuracy: 61.23 %
+-------- Validation finished --------
+Updated best model in epoch 4 saved with Validation Accuracy: 61.23 %
+-------------------------------
+Epoch [5/12], Step [100/522], Loss: 1.7263, Accuracy: 59.00 %, Epsilon: 0.55, Delta: 0.0030
+Epoch [5/12], Step [200/522], Loss: 1.6800, Accuracy: 58.88 %, Epsilon: 0.57, Delta: 0.0030
+Epoch [5/12], Step [300/522], Loss: 1.6578, Accuracy: 59.08 %, Epsilon: 0.58, Delta: 0.0030
+Epoch [5/12], Step [400/522], Loss: 1.6290, Accuracy: 59.25 %, Epsilon: 0.59, Delta: 0.0030
+Epoch [5/12], Step [500/522], Loss: 1.6372, Accuracy: 58.45 %, Epsilon: 0.61, Delta: 0.0030
+Predictions - 1s: 2, 0s: 2083
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.0009592326139088729, Proportion of 0s: 0.9990407673860912
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [5/12] Loss: 1.6435, Accuracy: 58.27 %, Epsilon: 0.61, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 4, 0s: 517
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.007677543186180422, Proportion of 0s: 0.9923224568138196
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.3760, Validation Accuracy: 62.00 %
+-------- Validation finished --------
+Updated best model in epoch 5 saved with Validation Accuracy: 62.00 %
+-------------------------------
+Epoch [6/12], Step [100/522], Loss: 1.4797, Accuracy: 59.75 %, Epsilon: 0.62, Delta: 0.0030
+Epoch [6/12], Step [200/522], Loss: 1.4666, Accuracy: 57.75 %, Epsilon: 0.63, Delta: 0.0030
+Epoch [6/12], Step [300/522], Loss: 1.4242, Accuracy: 58.67 %, Epsilon: 0.65, Delta: 0.0030
+Epoch [6/12], Step [400/522], Loss: 1.3815, Accuracy: 59.00 %, Epsilon: 0.66, Delta: 0.0030
+Epoch [6/12], Step [500/522], Loss: 1.3616, Accuracy: 59.00 %, Epsilon: 0.67, Delta: 0.0030
+Predictions - 1s: 13, 0s: 2072
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.006235011990407674, Proportion of 0s: 0.9937649880095923
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [6/12] Loss: 1.3655, Accuracy: 58.80 %, Epsilon: 0.67, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 15, 0s: 506
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.028790786948176585, Proportion of 0s: 0.9712092130518234
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 1.1364, Validation Accuracy: 63.72 %
+-------- Validation finished --------
+Updated best model in epoch 6 saved with Validation Accuracy: 63.72 %
+-------------------------------
+Epoch [7/12], Step [100/522], Loss: 1.0780, Accuracy: 63.50 %, Epsilon: 0.69, Delta: 0.0030
+Epoch [7/12], Step [200/522], Loss: 1.1121, Accuracy: 62.75 %, Epsilon: 0.70, Delta: 0.0030
+Epoch [7/12], Step [300/522], Loss: 1.1450, Accuracy: 61.75 %, Epsilon: 0.71, Delta: 0.0030
+Epoch [7/12], Step [400/522], Loss: 1.1351, Accuracy: 62.12 %, Epsilon: 0.72, Delta: 0.0030
+Epoch [7/12], Step [500/522], Loss: 1.1479, Accuracy: 61.55 %, Epsilon: 0.73, Delta: 0.0030
+Predictions - 1s: 81, 0s: 2004
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.03884892086330935, Proportion of 0s: 0.9611510791366906
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [7/12] Loss: 1.1496, Accuracy: 61.58 %, Epsilon: 0.73, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 55, 0s: 466
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.10556621880998081, Proportion of 0s: 0.8944337811900192
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.8804, Validation Accuracy: 70.25 %
+-------- Validation finished --------
+Updated best model in epoch 7 saved with Validation Accuracy: 70.25 %
+-------------------------------
+Epoch [8/12], Step [100/522], Loss: 1.0363, Accuracy: 63.25 %, Epsilon: 0.75, Delta: 0.0030
+Epoch [8/12], Step [200/522], Loss: 1.0655, Accuracy: 63.38 %, Epsilon: 0.76, Delta: 0.0030
+Epoch [8/12], Step [300/522], Loss: 0.9997, Accuracy: 65.75 %, Epsilon: 0.77, Delta: 0.0030
+Epoch [8/12], Step [400/522], Loss: 1.0013, Accuracy: 65.56 %, Epsilon: 0.78, Delta: 0.0030
+Epoch [8/12], Step [500/522], Loss: 0.9611, Accuracy: 66.55 %, Epsilon: 0.79, Delta: 0.0030
+Predictions - 1s: 193, 0s: 1892
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.09256594724220624, Proportion of 0s: 0.9074340527577938
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [8/12] Loss: 0.9565, Accuracy: 66.76 %, Epsilon: 0.79, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 74, 0s: 447
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.1420345489443378, Proportion of 0s: 0.8579654510556622
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.8006, Validation Accuracy: 73.13 %
+-------- Validation finished --------
+Updated best model in epoch 8 saved with Validation Accuracy: 73.13 %
+-------------------------------
+Epoch [9/12], Step [100/522], Loss: 1.0323, Accuracy: 66.25 %, Epsilon: 0.80, Delta: 0.0030
+Epoch [9/12], Step [200/522], Loss: 0.9558, Accuracy: 67.25 %, Epsilon: 0.81, Delta: 0.0030
+Epoch [9/12], Step [300/522], Loss: 0.9259, Accuracy: 68.08 %, Epsilon: 0.82, Delta: 0.0030
+Epoch [9/12], Step [400/522], Loss: 0.9063, Accuracy: 68.38 %, Epsilon: 0.83, Delta: 0.0030
+Epoch [9/12], Step [500/522], Loss: 0.8712, Accuracy: 69.25 %, Epsilon: 0.84, Delta: 0.0030
+Predictions - 1s: 276, 0s: 1809
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.13237410071942446, Proportion of 0s: 0.8676258992805755
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [9/12] Loss: 0.8571, Accuracy: 69.78 %, Epsilon: 0.85, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 100, 0s: 421
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.19193857965451055, Proportion of 0s: 0.8080614203454894
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.6639, Validation Accuracy: 76.97 %
+-------- Validation finished --------
+Updated best model in epoch 9 saved with Validation Accuracy: 76.97 %
+-------------------------------
+Epoch [10/12], Step [100/522], Loss: 0.7277, Accuracy: 72.75 %, Epsilon: 0.86, Delta: 0.0030
+Epoch [10/12], Step [200/522], Loss: 0.7263, Accuracy: 72.12 %, Epsilon: 0.87, Delta: 0.0030
+Epoch [10/12], Step [300/522], Loss: 0.7037, Accuracy: 73.42 %, Epsilon: 0.88, Delta: 0.0030
+Epoch [10/12], Step [400/522], Loss: 0.7235, Accuracy: 73.69 %, Epsilon: 0.89, Delta: 0.0030
+Epoch [10/12], Step [500/522], Loss: 0.7291, Accuracy: 73.40 %, Epsilon: 0.90, Delta: 0.0030
+Predictions - 1s: 384, 0s: 1701
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.1841726618705036, Proportion of 0s: 0.8158273381294964
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [10/12] Loss: 0.7282, Accuracy: 73.33 %, Epsilon: 0.90, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 127, 0s: 394
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.2437619961612284, Proportion of 0s: 0.7562380038387716
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.5646, Validation Accuracy: 80.23 %
+-------- Validation finished --------
+Updated best model in epoch 10 saved with Validation Accuracy: 80.23 %
+-------------------------------
+Epoch [11/12], Step [100/522], Loss: 0.6283, Accuracy: 75.75 %, Epsilon: 0.91, Delta: 0.0030
+Epoch [11/12], Step [200/522], Loss: 0.6460, Accuracy: 74.75 %, Epsilon: 0.92, Delta: 0.0030
+Epoch [11/12], Step [300/522], Loss: 0.6448, Accuracy: 75.17 %, Epsilon: 0.93, Delta: 0.0030
+Epoch [11/12], Step [400/522], Loss: 0.6738, Accuracy: 74.56 %, Epsilon: 0.94, Delta: 0.0030
+Epoch [11/12], Step [500/522], Loss: 0.6594, Accuracy: 74.90 %, Epsilon: 0.95, Delta: 0.0030
+Predictions - 1s: 457, 0s: 1628
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.21918465227817746, Proportion of 0s: 0.7808153477218226
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [11/12] Loss: 0.6585, Accuracy: 74.82 %, Epsilon: 0.95, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 134, 0s: 387
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.2571976967370441, Proportion of 0s: 0.7428023032629558
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.5598, Validation Accuracy: 80.81 %
+-------- Validation finished --------
+Updated best model in epoch 11 saved with Validation Accuracy: 80.81 %
+-------------------------------
+Epoch [12/12], Step [100/522], Loss: 0.6142, Accuracy: 77.25 %, Epsilon: 0.96, Delta: 0.0030
+Epoch [12/12], Step [200/522], Loss: 0.6327, Accuracy: 78.38 %, Epsilon: 0.97, Delta: 0.0030
+Epoch [12/12], Step [300/522], Loss: 0.6632, Accuracy: 76.75 %, Epsilon: 0.98, Delta: 0.0030
+Epoch [12/12], Step [400/522], Loss: 0.6447, Accuracy: 77.44 %, Epsilon: 0.98, Delta: 0.0030
+Epoch [12/12], Step [500/522], Loss: 0.6414, Accuracy: 77.50 %, Epsilon: 0.99, Delta: 0.0030
+Predictions - 1s: 474, 0s: 1611
+True Labels - 1s: 872, 0s: 1213
+Predictions - Proportion of 1s: 0.2273381294964029, Proportion of 0s: 0.7726618705035971
+True Labels - Proportion of 1s: 0.41822541966426857, Proportion of 0s: 0.5817745803357314
+-------------------------------
+Epoch [12/12] Loss: 0.6560, Accuracy: 77.17 %, Epsilon: 1.00, Delta: 0.0030
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 134, 0s: 387
+True Labels - 1s: 202, 0s: 319
+Predictions - Proportion of 1s: 0.2571976967370441, Proportion of 0s: 0.7428023032629558
+True Labels - Proportion of 1s: 0.3877159309021113, Proportion of 0s: 0.6122840690978887
+Validation Loss: 0.5594, Validation Accuracy: 80.81 %
+-------- Validation finished --------
+Updated best model in epoch 12 saved with Validation Accuracy: 80.81 %
+-------------------------------
+Best model in epoch 12 saved with Validation Accuracy: 80.81 %
+
+-------- Training finished in 14:53 --------
+
+Test flag enabled. Testing the model
+
+-------- Loading best model from model_path --------
+Loaded model bert-small from date 14-03-2024 14:12. Trained with Centralised Machine Learning technology.
+Epoch 12, lr: 0.0006, optimizer: DPOptimizer
+Train accuracy: 77.17 %, Validation accuracy: 80.81 %
+-------- Best model loaded --------
+
+-------- Creating Test Dataloader --------
+Test Loader: 650 total sentences. 82 batches of size 8.
+-------- Test Dataloader created --------
+
+-------- Testing --------
+Predictions - 1s: 163, 0s: 487
+True Labels - 1s: 268, 0s: 382
+Predictions - Proportion of 1s: 0.25076923076923074, Proportion of 0s: 0.7492307692307693
+True Labels - Proportion of 1s: 0.4123076923076923, Proportion of 0s: 0.5876923076923077
+Nº of test samples: 650
+Accuracy: 80.46%
+Accuracy 2 : 80.46%
+Precision: 84.72%
+Recall: 76.92%
+F1 Score: 77.96%
+Classification report:
+              precision    recall  f1-score   support
+
+           0     0.7618    0.9712    0.8539       382
+           1     0.9325    0.5672    0.7053       268
+
+    accuracy                         0.8046       650
+   macro avg     0.8472    0.7692    0.7796       650
+weighted avg     0.8322    0.8046    0.7926       650
+
+-------- Testing finished --------

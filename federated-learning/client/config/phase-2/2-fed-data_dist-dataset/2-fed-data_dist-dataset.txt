@@ -1,0 +1,76 @@
+- FIXED using squared l2 norm instead of just l2 norm
+
+- PARAMETER TWEAKING
+for non_iid 0.03
+Mu 0.5  77
+mu 0.1 - 84 ( 85.46 **2)
+mu 0.001 ( 87.06 **2)
+mu 1 - 74 - worse
+mu 0 -  87.06 (//2 )
+
+
+for non_iid 0.0
+mu 0.5 76.24 ( 81.56 **2) 
+mu 0.001 80.5 
+mu 0.1 82.27 (83.16 **2) - better 
+mu 1 69.33 - worse
+mu 0 (fedavg) - 56.91
+
+
+
+- try non_iid with clients with different sample size
+varying samples 0.03 minumum_labels 0
+
+fedavg 53.19
+fedprox 0.01 55.67
+fedprox 0.5 67.2
+fedprox 1 65.96
+
+varying samples minumum_labels 40
+
+fedavg 84.22
+fedprox 0.5 83.33
+
+
+
+varying samples minumum_labels 15
+fedavg 81
+fedprox 0.5 78
+
+varying samples minumum_labels 10
+fedavg 82
+fedprox 0.5 76 
+
+varying samples minumum_labels 5
+fedavg 71.63
+fedprox 0.5 72.34
+
+
+
+see what is non_iid for bechmarking bert - instead of 247 samples per client they are using 100 samples per client
+  TRY using less data for non_iid 0.03
+    fedavg all data 87.06 vs less data 61.88
+    fedprox mu 0.1 85.46 vs less data 69.86
+REDUCING THE SIZE of the samples dataset makes fedprox being better than fedavg when non_iid
+
+
+
+
+
+try smaller lr and more rounds - see if converges in a better optima
+
+varying samples minumum_labels 20 
+lr 6e-6 5x5
+fedavg 74.84
+fedprox 0.5 73.23
+
+lr 1e-5 5x5
+fedavg 79.08
+fedprox 0.5 76.06
+
+lr 3e-5 10x5
+feavg - 83.87
+fedprox 0.1 - 83.87
+fedprox 0.5 - 
+ 
+

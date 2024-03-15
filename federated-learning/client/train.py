@@ -1,4 +1,4 @@
-from .utils import iid_partition, non_iid_partition, create_optimizer, create_scheduler, translate_state_dict_keys, filter_trainable_weights
+from .utils import iid_partition, non_iid_partition, non_iid_partition_varying_samples, create_optimizer, create_scheduler, translate_state_dict_keys, filter_trainable_weights
 from .services.utils import deserialize_model_msgpack
 from .services.gateway_client import submit_model, aggregate_models, get_model
 from .aggregators import federated_aggregate
@@ -28,6 +28,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
     
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
+    best_val_loss = 1000.0
     best_model_state = None
     best_epoch = 0
     current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
@@ -51,6 +52,8 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
 
     for epoch in range(num_epochs):
         model.train()
+        predictions = []
+        true_labels = []
         accumulated_loss, steps, correct, total = 0, 0, 0, 0
         for i, batch in enumerate(train_loader):
             # Move batch to GPU
@@ -64,6 +67,13 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             logits = outputs.logits
             loss = outputs.loss
             predicted = torch.argmax(logits, dim=-1)
+            
+            # debugging
+            # Convert predictions to CPU and numpy for metric calculation
+            predictions.extend(predicted.cpu().numpy())
+            true_labels.extend(targets.cpu().numpy())
+            # debugging
+                    
             # backpropagation
             loss.backward()
             optimizer.step()
@@ -86,6 +96,28 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'
                         .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
         
+        # debugging
+        # Counting occurrences of 1 and 0 in predictions
+        predictions_count_1 = predictions.count(1)
+        predictions_count_0 = predictions.count(0)
+
+        # Counting occurrences of 1 and 0 in true_labels
+        true_labels_count_1 = true_labels.count(1)
+        true_labels_count_0 = true_labels.count(0)
+
+        # Printing out the counts
+        print(f"Predictions - 1s: {predictions_count_1}, 0s: {predictions_count_0}")
+        print(f"True Labels - 1s: {true_labels_count_1}, 0s: {true_labels_count_0}")
+
+        # Optionally, calculate the proportions
+        # total_predictions = len(predictions)
+        # total_true_labels = len(true_labels)
+
+        # print(f"Predictions - Proportion of 1s: {predictions_count_1/total_predictions}, Proportion of 0s: {predictions_count_0/total_predictions}")
+        # print(f"True Labels - Proportion of 1s: {true_labels_count_1/total_true_labels}, Proportion of 0s: {true_labels_count_0/total_true_labels}")
+        # debugging
+
+        
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
         
@@ -102,6 +134,8 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
         if eval_flag:
             print('-------- Validation --------')
             model.eval()
+            predictions = []
+            true_labels = []
             val_loss, val_correct, val_total = 0, 0, 0
             with torch.no_grad():
                 for i, batch in enumerate(eval_loader):
@@ -116,17 +150,48 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
                     loss = outputs.loss
                     predicted = torch.argmax(outputs.logits, dim=-1)
 
+                    # debugging
+                    # Convert predictions to CPU and numpy for metric calculation
+                    predictions.extend(predicted.cpu().numpy())
+                    true_labels.extend(targets.cpu().numpy())
+                    # debugging
+                    
                     val_loss += loss.item()
                     val_total += targets.size(0)
                     val_correct += (predicted == targets).cpu().sum().item()
                     if progress_bar_flag:
                         progress_bar.update(1)
+            
+            
+            # debugging
+            # Counting occurrences of 1 and 0 in predictions
+            predictions_count_1 = predictions.count(1)
+            predictions_count_0 = predictions.count(0)
+
+            # Counting occurrences of 1 and 0 in true_labels
+            true_labels_count_1 = true_labels.count(1)
+            true_labels_count_0 = true_labels.count(0)
+
+            # Printing out the counts
+            print(f"Predictions - 1s: {predictions_count_1}, 0s: {predictions_count_0}")
+            print(f"True Labels - 1s: {true_labels_count_1}, 0s: {true_labels_count_0}")
+
+            # Optionally, calculate the proportions
+            # total_predictions = len(predictions)
+            # total_true_labels = len(true_labels)
+
+            # print(f"Predictions - Proportion of 1s: {predictions_count_1/total_predictions}, Proportion of 0s: {predictions_count_0/total_predictions}")
+            # print(f"True Labels - Proportion of 1s: {true_labels_count_1/total_true_labels}, Proportion of 0s: {true_labels_count_0/total_true_labels}")
+            # debugging
+        
             val_accuracy = 100 * val_correct / val_total
+            val_loss =  val_loss / len(eval_loader)
             print('Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
-                val_loss / len(eval_loader), val_accuracy))
+                val_loss, val_accuracy))
             print('-------- Validation finished --------')
             # Check if this is the best model based on validation accuracy
-            if val_accuracy >= best_val_accuracy:
+            if val_loss <= best_val_loss:
+                best_val_loss = val_loss
                 best_val_accuracy = val_accuracy
                 # Translate model state keys in case it was trained with DP
                 best_model_state = translate_state_dict_keys(model.state_dict().copy())
@@ -137,6 +202,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
                     'optimizer': optimizer.__class__.__name__,
                     'tr_acc': accuracy_epoch,
                     'val_acc': best_val_accuracy,
+                    'val_loss': best_val_loss,
                     'date': current_date,
                     'model_state_dict': model.state_dict().copy(),
                     'lr_scheduler_dict': lr_scheduler.state_dict().copy(),
@@ -145,7 +211,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
                 }
                 best_epoch = epoch + 1
                 print(
-                    f"Updated best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+                    f"Updated best model in epoch {best_epoch} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
                 print("-------------------------------")
                 if save_model:
                     torch.save(best_model, model_save_path + '_best.ckpt')
@@ -154,7 +220,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
 
     if best_val_accuracy != 0.0:
         print(
-            f"Best model in epoch {best_epoch} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Best model in epoch {best_epoch} saved with with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else:
         # Save the last model checkpoint
@@ -165,6 +231,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             'optimizer': optimizer.__class__.__name__,
             'tr_acc': accuracy_epoch,
             'val_acc': best_val_accuracy,  # 0.0
+            'val_loss': best_val_loss,
             'date': current_date,
             # Translate model state keys in case it was trained with DP
             'model_state_dict': translate_state_dict_keys(model.state_dict().copy()),
@@ -196,10 +263,11 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
     if data_distribution == 'iid':
         partitioned_indexes = iid_partition(train_loader.dataset, num_clients)
     else:  # non-iid
-        partitioned_indexes = non_iid_partition(
-            train_loader.dataset, num_clients, 0.1)
+        partitioned_indexes = non_iid_partition_varying_samples(
+            train_loader.dataset, num_clients, 0.003)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
+    best_val_loss = 1000.0
     best_model_state = None
     best_round = 0
     current_date = datetime.now().strftime("%d-%m-%Y %H:%M")
@@ -267,12 +335,12 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
         global_model.load_state_dict(global_weights)
         # ---------------------- Validation ----------------------
         if eval_flag:
-            best_val_accuracy, best_round = eval_text_class_fl(global_model, model_save_path, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
+            best_val_accuracy, best_val_loss, best_round = eval_text_class_fl(global_model, model_save_path, eval_loader, best_val_accuracy, best_val_loss, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date,
                                                                save_model, device, progress_bar_flag, progress_bar)
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
         print(
-            f"Best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Best model in round {best_round} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     elif save_model:
         save_model_text_class_fl(global_model, model_save_path,
@@ -309,7 +377,7 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             # set epochs to 1 so the value of epsilon is set at the beginning
-            epochs=1,
+            epochs=num_epochs,
             max_grad_norm=0.1,
             poisson_sampling=False,
         )
@@ -329,6 +397,8 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
     # inner training loop
     for epoch in range(num_epochs):
         model.train()
+        predictions = []
+        true_labels = []
         accumulated_loss, steps, correct, total = 0, 0, 0, 0
         # train on the partitioned dataset
         for i, batch in enumerate(train_loader_subset):
@@ -343,14 +413,20 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             logits = outputs.logits
             loss = outputs.loss
             predicted = torch.argmax(logits, dim=-1)
+            
+            # debugging
+            # Convert predictions to CPU and numpy for metric calculation
+            predictions.extend(predicted.cpu().numpy())
+            true_labels.extend(targets.cpu().numpy())
+            # debugging
+            
             # FedProx Modification
             if fed_alg == 'fedprox':
                 # Calculate the proximal term
                 proximal_term = 0
                 for param, global_param in zip(model.parameters(), global_model.parameters()):
-                    proximal_term += (param - global_param).norm(2)
+                    proximal_term += ((param - global_param).norm(2))**2
                 proximal_term = (mu / 2.0) * proximal_term
-
                 # Include proximal term in the loss
                 loss += proximal_term
             else:  # fedavg
@@ -373,6 +449,29 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             #     accuracy_step = 100 * correct / total
             #     print('Local Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f} %'
             #             .format(epoch+1, num_epochs, i+1, total_steps_per_epoch, loss_step, accuracy_step))
+        
+        # debugging
+        # Counting occurrences of 1 and 0 in predictions
+        predictions_count_1 = predictions.count(1)
+        predictions_count_0 = predictions.count(0)
+
+        # Counting occurrences of 1 and 0 in true_labels
+        true_labels_count_1 = true_labels.count(1)
+        true_labels_count_0 = true_labels.count(0)
+
+        # Printing out the counts
+        print(f"Predictions - 1s: {predictions_count_1}, 0s: {predictions_count_0}")
+        print(f"True Labels - 1s: {true_labels_count_1}, 0s: {true_labels_count_0}")
+
+        # Optionally, calculate the proportions
+        # total_predictions = len(predictions)
+        # total_true_labels = len(true_labels)
+
+        # print(f"Predictions - Proportion of 1s: {predictions_count_1/total_predictions}, Proportion of 0s: {predictions_count_0/total_predictions}")
+        # print(f"True Labels - Proportion of 1s: {true_labels_count_1/total_true_labels}, Proportion of 0s: {true_labels_count_0/total_true_labels}")
+        # debugging
+        
+        
         loss_epoch = accumulated_loss/steps
         accuracy_epoch = 100 * correct / total
         if dp_epsilon > 0.0:
@@ -400,9 +499,11 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
     return trainable_weights, loss_epoch, accuracy_epoch
 
 
-def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, save_model=True, device='cuda', progress_bar_flag=True, progress_bar=None):
+def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, best_val_loss, best_round, round, num_rounds, lr, optimizer_type, acc_avg, current_date, save_model=True, device='cuda', progress_bar_flag=True, progress_bar=None):
     # validation loss and accuracy of the model
     model.eval()
+    predictions = []
+    true_labels = []
     print('-------- Validation --------')
     val_loss, val_correct, val_total = 0, 0, 0
     with torch.no_grad():
@@ -418,17 +519,47 @@ def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, b
             loss = outputs.loss
             predicted = torch.argmax(outputs.logits, dim=-1)
 
+            # debugging
+            # Convert predictions to CPU and numpy for metric calculation
+            predictions.extend(predicted.cpu().numpy())
+            true_labels.extend(targets.cpu().numpy())
+            # debugging
+                    
             val_loss += loss.item()
             val_total += targets.size(0)
             val_correct += (predicted == targets).cpu().sum().item()
             if progress_bar_flag:
                 progress_bar.update(1)
+    
+    # debugging
+    # Counting occurrences of 1 and 0 in predictions
+    predictions_count_1 = predictions.count(1)
+    predictions_count_0 = predictions.count(0)
+
+    # Counting occurrences of 1 and 0 in true_labels
+    true_labels_count_1 = true_labels.count(1)
+    true_labels_count_0 = true_labels.count(0)
+
+    # Printing out the counts
+    print(f"Predictions - 1s: {predictions_count_1}, 0s: {predictions_count_0}")
+    print(f"True Labels - 1s: {true_labels_count_1}, 0s: {true_labels_count_0}")
+
+    # Optionally, calculate the proportions
+    # total_predictions = len(predictions)
+    # total_true_labels = len(true_labels)
+
+    # print(f"Predictions - Proportion of 1s: {predictions_count_1/total_predictions}, Proportion of 0s: {predictions_count_0/total_predictions}")
+    # print(f"True Labels - Proportion of 1s: {true_labels_count_1/total_true_labels}, Proportion of 0s: {true_labels_count_0/total_true_labels}")
+    # debugging
+    
     val_accuracy = 100 * val_correct / val_total
+    val_loss =  val_loss / len(eval_loader)
     print('Round [{}/{}] Global Model Validation Loss: {:.4f}, Validation Accuracy: {:.2f} %'.format(
-        round+1, num_rounds, val_loss / len(eval_loader), val_accuracy))
+        round+1, num_rounds, val_loss, val_accuracy))
     print('-------- Validation finished --------')
     # Check if this is the best model based on validation accuracy
-    if val_accuracy >= best_val_accuracy:
+    if val_loss <= best_val_loss:
+        best_val_loss = val_loss
         best_val_accuracy = val_accuracy
         # Translate model state keys in case it was trained with DP
         best_model_state = translate_state_dict_keys(model.state_dict().copy())
@@ -439,6 +570,7 @@ def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, b
             'optimizer': optimizer_type,
             'tr_acc': acc_avg,
             'val_acc': best_val_accuracy,
+            'val_loss': best_val_loss,
             'date': current_date,
             'model_state_dict': best_model_state,
             # TODO could be averaged as the model_state_dict
@@ -448,11 +580,11 @@ def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, b
         }
         best_round = round + 1
         print(
-            f"Updated best model in round {best_round} saved with Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Updated best model in round {best_round} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
         print("-------------------------------")
         if save_model:
             torch.save(best_model, model_save_path + '_best.ckpt')
-    return best_val_accuracy, best_round
+    return best_val_accuracy, best_val_loss, best_round
 
 
 def save_model_text_class_fl(model, model_save_path, num_rounds, lr, optimizer_type, acc_avg, current_date, device):
@@ -464,6 +596,7 @@ def save_model_text_class_fl(model, model_save_path, num_rounds, lr, optimizer_t
         'optimizer': optimizer_type,
         'tr_acc': acc_avg,
         'val_acc': 0.0,
+        'val_loss': 1000.0,
         'date': current_date,
         # Translate model state keys in case it was trained with DP
         'model_state_dict': translate_state_dict_keys(model.state_dict().copy())

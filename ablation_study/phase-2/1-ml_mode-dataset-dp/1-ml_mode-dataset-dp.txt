@@ -1,23 +1,83 @@
-- increasing learning rate to 6e-3 or 6e-2
-  - gets slight different accuracies and ml 10 is better than ml 0.5
-  - no precission error
-6e-2 0.5
----- Test Dataloader created --------
+modificar el batch size a mayor y menor. Menor batch funciona algo mejor. Se ajusta más al modelo, como aumentar el learning rate.
 
--------- Testing --------
-Nº of test samples: 618
-Accuracy: 70.87%
-Precision: 48.86%
-Recall: 49.79%
-F1 Score: 44.50%
--------- Testing fi
+check percentage of 1s and 0s in training, eval and test split IT IS GOOD
 
-6e-2 10
+use val_loss instead of val_acc to choose the best model. Parece que el loss se ajusta más al ratio de predicciones con 0 y 1s que la accuracy. WORKS!!!
+
+comprobar benchmarking a ver si pasa lo mismo. SÍ QUE PASA
 
 
--------- Testing --------
-Nº of test samples: 618
-Accuracy: 71.20%
-Precision: 45.67%
-Recall: 49.45%
-F1 Score: 43.17%
+
+
+
+We improve it by:
+
+1- changing val_acc for val_loss to set the chosen model  (validation)
+
+2- decreasing batch size or increasing learning rate
+
+
+
+Justification:
+
+small models are difficult to train with DP https://arxiv.org/pdf/2011.11660.pdf
+
+agains high learning rate ?? https://arxiv.org/pdf/2011.11660.pdf
+
+dp has a lot of effect on slightly uimbalance datasets and even looser privacy (higher epsilon) does not yield better resutls https://arxiv.org/pdf/2009.06389.pdf https://www.cs.cornell.edu/~shmat/shmat_neurips19.pdf
+
+we see same effect here https://arxiv.org/pdf/2106.13973.pdf where they worked on twitter_dep dataset
+
+twitter_dep is specially skewed, much more negative samples than positive
+
+this happened too with acl_dep_dataset, the other dataset where the data is umbalance but we could fix it with higher learning rate
+
+
+Important to note that We have small amount of data because we partitioned the single dataset
+  in reality we would have many datasets working together, so this problem could not happen
+The nodes could consider gathering samples in a balanced way
+
+We tried to remove samples from the dataset to get a more balance distribution, but with less data the accuracy was even lower
+
+
+
+
+*no weight decay improves a bit
+
+
+EXPERIMENTS:
+
+mixed_depression, dreaddit:
+  dp 0 learning rate 6e-5
+  dp 1 and 10 learning rate 6e-4
+
+acl_dep_dataset:
+  dp 0 learning rate 6e-5
+  ml dp 1 and 10 learning rate 6e-4
+  fl dp 0.5, 1 and 10 lr 6e-2 batch_size 2
+
+
+twitter_dep:
+  dp 0 learning rate 6e-5
+  ml dp 0.5, 1 and 10 lr 6e-3 batch_size 2
+  fl dp 0.5, 1 and 10 lr 6e-2 batch_size 2
+
+
+
+----------- PENDING:
+
+----------- DONE:
+fix twitter_dep fl 0.5, 1 and 10 
+  RUN with lr6e-2 batch size 2
+DONE
+
+fix acl_dep_sad fl 0.5, 1 and (10) 
+  RUN with lr6e-2 batch size 2 (10 can be lr6e-3 batch size 4)
+FIXED
+
+
+
+conclusion:
+in fl the effect of the noise is almost the same even being higher values
+  changed num_epochs of fl from 1 to num_epochs variable. DOES IT CHANGE?
+
