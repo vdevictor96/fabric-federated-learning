@@ -47,8 +47,8 @@ def process_data_file(input_file, output_file):
             file.write("\n")  # Extra newline for spacing between datasets
 
 # Specify the input and output file paths
-input_file_path = '/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp/model_accuracy_summary.txt'
-output_file_path = '/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp/model_accuracy_averaged_summary.txt'
+input_file_path = '/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset/model_accuracy_summary.txt'
+output_file_path = '/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset/model_accuracy_averaged_summary.txt'
 
 # Process the input file and write the results to the output file
 process_data_file(input_file_path, output_file_path)

@@ -407,7 +407,7 @@ def non_iid_partition_varying_samples(dataset, clients, max_label_ratio=0.2, sam
     total_label_0 = len(indices_label_0)
     total_label_1 = len(indices_label_1)
     partitions = {i: [] for i in range(clients)}
-    min_samples_per_label = 20
+    min_samples_per_label = 0
 
     allocated_indices_0 = 0
     allocated_indices_1 = 0

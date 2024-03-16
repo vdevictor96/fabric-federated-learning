@@ -211,7 +211,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
                 }
                 best_epoch = epoch + 1
                 print(
-                    f"Updated best model in epoch {best_epoch} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
+                    f"Updated best model in epoch {best_epoch} saved with Validation Loss: {best_val_loss:.4f} and Validation Accuracy: {best_val_accuracy:.2f} %")
                 print("-------------------------------")
                 if save_model:
                     torch.save(best_model, model_save_path + '_best.ckpt')
@@ -220,7 +220,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
 
     if best_val_accuracy != 0.0:
         print(
-            f"Best model in epoch {best_epoch} saved with with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Best model in epoch {best_epoch} saved with with Validation Loss: {best_val_loss:.4f} and Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     else:
         # Save the last model checkpoint
@@ -263,8 +263,8 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
     if data_distribution == 'iid':
         partitioned_indexes = iid_partition(train_loader.dataset, num_clients)
     else:  # non-iid
-        partitioned_indexes = non_iid_partition_varying_samples(
-            train_loader.dataset, num_clients, 0.003)
+        partitioned_indexes = non_iid_partition(
+            train_loader.dataset, num_clients, 0.0)
     # Initialize variables to track the best model
     best_val_accuracy = 0.0
     best_val_loss = 1000.0
@@ -340,7 +340,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
     # ---------------------- Saving Models ----------------------
     if best_val_accuracy != 0.0:
         print(
-            f"Best model in round {best_round} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Best model in round {best_round} saved with Validation Loss: {best_val_loss:.4f} and Validation Accuracy: {best_val_accuracy:.2f} %")
         # return best_model_state
     elif save_model:
         save_model_text_class_fl(global_model, model_save_path,
@@ -580,7 +580,7 @@ def eval_text_class_fl(model, model_save_path, eval_loader, best_val_accuracy, b
         }
         best_round = round + 1
         print(
-            f"Updated best model in round {best_round} saved with Validation Loss: {best_val_loss} and Validation Accuracy: {best_val_accuracy:.2f} %")
+            f"Updated best model in round {best_round} saved with Validation Loss: {best_val_loss:.4f} and Validation Accuracy: {best_val_accuracy:.2f} %")
         print("-------------------------------")
         if save_model:
             torch.save(best_model, model_save_path + '_best.ckpt')

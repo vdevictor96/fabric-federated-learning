@@ -6,9 +6,9 @@ BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-
 
 
 # List of folders to read files from
-FOLDERS=("dreaddit")
+# FOLDERS=("dreaddit")
 
-# FOLDERS=("acl_dep_sad" "mixed_depression" "dreaddit"  "twitter_dep")
+FOLDERS=("acl_dep_sad" "mixed_depression" "dreaddit"  "twitter_dep")
 # "dreaddit"  "twitter_dep"
 
 
