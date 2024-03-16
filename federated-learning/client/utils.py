@@ -273,7 +273,7 @@ def load_model(model_type, model_path, device):
 
 
 def create_test_dataloader(dataset_type, tokenizer, test_batch_size, max_length, seed):
-    if dataset_type == 'twitter_dep':
+    if dataset_type == 'twitter_dep' or dataset_type == 'twitter_dep_balanced':
         dataset_path = get_dataset_path(dataset_type, 'test')
         return get_twitter_dep_test_dataloader(dataset_path, tokenizer, test_batch_size, max_length, seed)
     elif dataset_type == 'acl_dep_sad':
@@ -334,9 +334,17 @@ def get_dir_path():
 def get_dataset_path(dataset_name, dataset_type='train'):
     # Get the directory of the current script
     dir_path = get_dir_path()
+    balanced = False
+    if (dataset_name == 'twitter_dep_balanced'):
+            dataset_name = 'twitter_dep'
+            balanced = True
     if (dataset_type == 'train'):
-        dataset_path = os.path.join(
-            dir_path, "data", "datasets", dataset_name, dataset_name + "_train.csv")
+        if balanced:
+            dataset_path = os.path.join(
+                dir_path, "data", "datasets", dataset_name, dataset_name + "_train_balanced.csv")
+        else:
+            dataset_path = os.path.join(
+                dir_path, "data", "datasets", dataset_name, dataset_name + "_train.csv")
     elif (dataset_type == 'test'):
         dataset_path = os.path.join(
             dir_path, "data", "datasets", dataset_name, dataset_name + "_test.csv")
@@ -373,11 +381,16 @@ def iid_partition(dataset, clients):
             end_index = dataset_length
 
         partitions[i] = indexes[start_index:end_index]
+    labels = np.array(dataset.get_labels())
+    # Print the distribution of labels for each client
+    for client in partitions:
+        label_0_count = sum(labels[partitions[client]] == 0)
+        label_1_count = sum(labels[partitions[client]] == 1)
+        print(f"Client {client}: Label 0: {label_0_count}, Label 1: {label_1_count}")
 
     return partitions
 
-
-def non_iid_partition(dataset, clients, max_label_ratio=0.2):
+def non_iid_partition_varying_samples(dataset, clients, max_label_ratio=0.2, sample_allocation_strategy=None):
     labels = np.array(dataset.get_labels())
     indices_label_0 = np.where(labels == 0)[0]
     indices_label_1 = np.where(labels == 1)[0]
@@ -385,7 +398,105 @@ def non_iid_partition(dataset, clients, max_label_ratio=0.2):
     np.random.shuffle(indices_label_0)
     np.random.shuffle(indices_label_1)
 
+    # If no specific strategy is provided, use a simple random allocation
+    if sample_allocation_strategy is None:
+        sample_allocation_strategy = np.random.rand(clients)
+        sample_allocation_strategy /= sample_allocation_strategy.sum()  # Normalize
+
+    total_samples = len(labels)
+    total_label_0 = len(indices_label_0)
+    total_label_1 = len(indices_label_1)
     partitions = {i: [] for i in range(clients)}
+    min_samples_per_label = 0
+
+    allocated_indices_0 = 0
+    allocated_indices_1 = 0
+
+        # Initial allocation of min_samples_per_label of each label to every client
+    for i in range(clients):
+        partitions[i].extend(indices_label_0[i * min_samples_per_label:(i + 1) * min_samples_per_label])
+        partitions[i].extend(indices_label_1[i * min_samples_per_label:(i + 1) * min_samples_per_label])
+    
+    # Update indices to remove those already allocated
+    indices_label_0 = indices_label_0[clients * min_samples_per_label:]
+    indices_label_1 = indices_label_1[clients * min_samples_per_label:]
+    
+    for i in range(clients):
+        # Calculate samples for each client based on the strategy
+        client_samples = int(sample_allocation_strategy[i] * total_samples)
+        max_label_0_samples = int(max_label_ratio * client_samples)
+        max_label_1_samples = client_samples - max_label_0_samples
+        # max_label_1_samples = int(max_label_ratio * client_samples)
+
+        # Allocate primarily label 0 to the client up to max_label_ratio
+        label_0_alloc = min(len(indices_label_0) - allocated_indices_0, max_label_0_samples)
+        partitions[i].extend(indices_label_0[allocated_indices_0:allocated_indices_0 + label_0_alloc])
+        allocated_indices_0 += label_0_alloc
+
+        # Fill the rest with label 1
+        label_1_alloc = min(client_samples - label_0_alloc, len(indices_label_1) - allocated_indices_1)
+        partitions[i].extend(indices_label_1[allocated_indices_1:allocated_indices_1 + label_1_alloc])
+        allocated_indices_1 += label_1_alloc
+
+    # Allocate any remaining samples of each label
+    remaining_indices_label_0 = np.setdiff1d(indices_label_0, np.concatenate([partitions[i] for i in partitions]))
+    remaining_indices_label_1 = np.setdiff1d(indices_label_1, np.concatenate([partitions[i] for i in partitions]))
+
+    # Distribute remaining label 0 samples
+    np.random.shuffle(remaining_indices_label_0)
+    for i, idx in enumerate(remaining_indices_label_0):
+        partitions[i % clients].append(idx)
+
+    # Distribute remaining label 1 samples
+    np.random.shuffle(remaining_indices_label_1)
+    for i, idx in enumerate(remaining_indices_label_1):
+        partitions[(i + len(remaining_indices_label_0)) % clients].append(idx)
+        
+    # Shuffle partitions to ensure randomness
+    for client in partitions:
+        np.random.shuffle(partitions[client])
+
+    # Print distribution of labels for each client
+    total_counted_samples = 0
+    total_counted_label_0 = 0
+    total_counted_label_1 = 0
+    for client in partitions:
+        label_0_count = sum(labels[partitions[client]] == 0)
+        label_1_count = sum(labels[partitions[client]] == 1)
+        total_counted_samples += label_0_count + label_1_count
+        total_counted_label_0 += label_0_count
+        total_counted_label_1 += label_1_count
+        print(f"Client {client}: Label 0: {label_0_count}, Label 1: {label_1_count}")
+    print(f"Total samples: {total_samples}")
+    print(f"Total counted samples: {total_counted_samples}")
+    print(f"Total label 0: {total_label_0}")
+    print(f"Total label 1: {total_label_1}")
+    print(f"Total counted label 0: {total_counted_label_0}")
+    print(f"Total counted label 1: {total_counted_label_1}")
+
+    return partitions
+
+
+
+def non_iid_partition(dataset, clients, max_label_ratio=0.2):
+    labels = np.array(dataset.get_labels())
+    indices_label_0 = np.where(labels == 0)[0]
+    indices_label_1 = np.where(labels == 1)[0]
+
+    # Halve the data for each label
+    # debugging fedprox in benchmarking
+    # indices_label_0 = indices_label_0[:len(indices_label_0) // 2]
+    # indices_label_1 = indices_label_1[:len(indices_label_1) // 2]
+    
+    np.random.shuffle(indices_label_0)
+    np.random.shuffle(indices_label_1)
+
+    partitions = {i: [] for i in range(clients)}
+    # total_samples = len(indices_label_0) + len(indices_label_1)  # Adjusted total samples
+    # samples_per_client = total_samples // clients
+    # print(total_samples)
+    # max_label_0_samples = int(max_label_ratio * samples_per_client)
+    # max_label_1_samples = samples_per_client - max_label_0_samples
     total_samples = len(labels)
     samples_per_client = total_samples // clients
     max_label_0_samples = int(max_label_ratio * samples_per_client)

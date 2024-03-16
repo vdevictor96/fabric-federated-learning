@@ -135,9 +135,12 @@ def main():
     if config['layers'] <= 0:
         print('The layers parameter must be positive. Training only the last layer classifier.')
         config['layers'] = 1
-    elif config['layers'] > 3:
-        print('The layers parameter must be less than or equal to 3. Training the last 3 layers.')
+    elif config['ml_mode'] == 'bcfl' and config['layers'] > 3:
+        print('The layers parameter in BCFL training mode must be less than or equal to 3. Training the last 3 layers.')
         config['layers'] = 3
+    elif config['layers'] > 4:
+        print('The layers parameter must be less than or equal to 4. Training the last 4 layers.')
+        config['layers'] = 4
     else:
         print(
             f'Training the last {config["layers"]} layers.')
@@ -311,7 +314,23 @@ def main():
                         config['progress_bar_flag'])
         print('-------- Testing finished --------')
 
-   
+
+    # # Accuracy values per epoch
+    # epochs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    # accuracies = [71.90, 70.79, 70.59, 69.12, 67.66, 69.78, 70.03, 69.12, 69.12, 70.03, 69.07, 70.64]
+
+    # # Creating the plot
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(epochs, accuracies, marker='o', linestyle='-', color='b')
+    # plt.title('Accuracy Evolution Per Epoch')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Accuracy (%)')
+    # plt.grid(True)
+    # plt.xticks(epochs)
+    # plt.ylim([65, 75])
+
+    # # Display the plot
+    # plt.show()
     
     # Restore original stdout and close the file
     sys.stdout.close()
@@ -321,7 +340,7 @@ def main():
 
 
 def create_dataloaders(dataset_type, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed):
-    if dataset_type == 'twitter_dep':
+    if dataset_type == 'twitter_dep' or dataset_type == 'twitter_dep_balanced':
         dataset_path = get_dataset_path(dataset_type)
         return get_twitter_dep_dataloaders(dataset_path, tokenizer, train_size, eval_size, train_batch_size, eval_batch_size, max_length, seed)
     elif dataset_type == 'acl_dep_sad':

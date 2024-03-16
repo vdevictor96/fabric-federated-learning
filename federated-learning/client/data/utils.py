@@ -52,3 +52,41 @@ def split_data(df, test_size=0.2, seed=200):
     test_data = shuffled_df.iloc[:n_test]
     train_val_data = shuffled_df.iloc[n_test:]
     return train_val_data, test_data
+
+def balance_train_split(train_csv_path, balanced_csv_path=None):
+    """
+    Ensures there are equal numbers of samples for each target in the training dataset.
+    If balanced_csv_path is not provided, the original file is overwritten.
+    
+    Parameters:
+    - train_csv_path: Path to the training split CSV file.
+    - balanced_csv_path: Optional; Path to save the balanced CSV file. If None, overwrites the original file.
+    """
+    # Load the dataset
+    df = pd.read_csv(train_csv_path)
+    
+    # Count the instances of each class
+    count_class_0, count_class_1 = df.target.value_counts()
+    
+    # Divide by class
+    df_class_0 = df[df['target'] == 0]
+    df_class_1 = df[df['target'] == 1]
+    
+    # Balance the dataset
+    if count_class_0 > count_class_1:
+        df_class_0_under = df_class_0.sample(count_class_1)
+        df_balanced = pd.concat([df_class_0_under, df_class_1], axis=0)
+    else:
+        df_class_1_under = df_class_1.sample(count_class_0)
+        df_balanced = pd.concat([df_class_0, df_class_1_under], axis=0)
+    
+    # Shuffle the dataset
+    df_balanced = df_balanced.sample(frac=1, random_state=200).reset_index(drop=True)
+    
+    # Determine the path for saving the balanced dataset
+    save_path = balanced_csv_path if balanced_csv_path else train_csv_path
+    
+    # Save the balanced dataset
+    df_balanced.to_csv(save_path, index=False)
+
+    print(f"Balanced dataset saved to {save_path}")
