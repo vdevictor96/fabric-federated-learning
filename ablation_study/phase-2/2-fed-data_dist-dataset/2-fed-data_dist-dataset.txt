@@ -128,10 +128,14 @@ fedprox_non : 53.71% +- 9.21
   - in all distribution cases, fedyogi was yielded better results than fedprox for non_iid, future work
   - another example of fedprox working worse than fedavg https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9619688/pdf/ocac188.pdf (page 8/10)
 
-  - for our experiments we used non_iid scenario with equal partitions between 5 clients
+  - for our experiments we used non_iid scenario (some clients with only data from one class) with equal partitions between 5 clients
 
-- TODO check fedavg vs fedprox https://ieeexplore.ieee.org/iel7/10370004/10370033/10370601.pdf
-            https://ieeexplore.ieee.org/abstract/document/9345723/
+- https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9345723 proposes CSFedAvg. Is FedAvg but chooses the clients with more IID data.
+  Their experiments have slight better accuracy for FedProx than FedAvg, but they also run them with extreme non_iid scenarios.
+  Some clients containing only one class in Hybrid I and some clients containing only two classes (out of 10) in Hybrid IID
+  https://ieeexplore.ieee.org/iel7/10370004/10370033/10370601.pdf In this paper they tried fedavg vs fedprox in iid scenarios and fedprox was worse
+  for non_iid, they just tried fedprox so there is no comparsion possible with fedavg for non_iid
+
 
 
 - with min label per client 0
