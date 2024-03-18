@@ -49,12 +49,15 @@ EXPERIMENTS:
 
 mixed_depression, dreaddit:
   dp 0 learning rate 6e-5
-  dp 1 and 10 learning rate 6e-4
+  ml, fl dp 0.5 and 1 learning rate 6e-4
+  ml_10 learning rate 6e-4
+  fl_10 learning rate 6e-3
 
 acl_dep_sad:
   dp 0 learning rate 6e-5
-  ml dp 1 and 10 learning rate 6e-4
-  fl dp 0.5, 1 and 10 lr 6e-2 batch_size 2
+  ml 0.5, 1 and 10 learning rate 6e-4
+  fl dp 10 lr 6e-3
+  fl dp 0.5, 1 lr 6e-2 batch_size 2
 
 
 twitter_dep:
@@ -80,4 +83,26 @@ FIXED
 conclusion:
 in fl the effect of the noise is almost the same even being higher values
   changed num_epochs of fl from 1 to num_epochs variable. DOES IT CHANGE?
+
+
+
+Some clarifications: 
+-The dataset we were talking about last week was twitter_dep.
+-ml_0 and fl_0 means no differential privacy and higher value of epsilon is looser privacy strength, hence less noise
+ 
+I still have to make up the proper justification by properly refercing and so, but just some quick ideas:
+ 
+-For higher privacy (lower epsilon) the models were getting stuck in a local minima really soon because of the noise, they didn't generalise well. That is why they were yielding the same test accuracy for all noise values. So I had to increase the learning rate. This was specially necessary for umbalanced datasets (different size of negative and positive samples) such as twitter_dep and acl_dep_sad and for the FL training mode because as we are partitioning our dataset among the clients, we are left with really small "local datasets". This two papers talk about thow DP really degrades the performance for small imbalances and/or small amount of data (both things apply to our datasets) https://arxiv.org/pdf/2011.11660.pdf https://www.cs.cornell.edu/~shmat/shmat_neurips19.pdf
+This also explains why the looser privacy strength (higher epsilon values) is not having an impact on yielding better accuracies that the stronger one, specially in FL training
+ 
+-For the balanced datasets (mixed_depression and dreaddit) I notice that we now get worse accuracies for higher epsilons than before, so I might train the higher epsilons with a lower learning rate (like the previos experiments) so they generalies better. For the umbalanced datasets, there is not much more that we can do.
+
+https://arxiv.org/pdf/2106.13973.pdf
+This paper run their models on the twitter_dep dataset and you can see how in some experiments, lower epsilon (more noise) had better accuracies than higher ones when the intuitive should be the contrary. You can see how the models not always respond as expected
+
+They use bigger models than us and most of the times get worse accuracies, I argue that the are overfitting with such big models to the small dataset. Specially noticible in FL because they partition the data among more clients and do not use all the clients for all the training rounds, so they are left with even less data for bigger models
+
+And they don't comment anything about lower epsilon yielding higher accuracies in some cases. I guess they just ignore it because with Deep Learning you always get some cases where the result is counterintuitive
+
+I think this should be enough, since my thesis was about designing and implementing the BCFL framework, and these were added functionalities to improve the applicability of the framework. But whether they yield good results or not for the specific test datasets that I'm using, I think should rather fall outside of the scope of the project.
 

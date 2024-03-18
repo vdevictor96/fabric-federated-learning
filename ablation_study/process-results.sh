@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Define the base directory
-# BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp"
-BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset"
+BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp"
+# BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset"
 
 
 # List of folders to read files from
 # FOLDERS=("dreaddit")
 
-FOLDERS=("acl_dep_sad" "mixed_depression" "dreaddit"  "twitter_dep")
-# "dreaddit"  "twitter_dep"
+FOLDERS=( "acl_dep_sad" "mixed_depression" "dreaddit"  "twitter_dep" )
+# "dreaddit"  "twitter_dep" 
 
 
 # Output file for model names and accuracy values

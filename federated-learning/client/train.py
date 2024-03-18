@@ -377,7 +377,7 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             # set epochs to 1 so the value of epsilon is set at the beginning
-            epochs=num_epochs,
+            epochs=1,
             max_grad_norm=0.1,
             poisson_sampling=False,
         )
