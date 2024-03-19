@@ -52,6 +52,7 @@ mixed_depression, dreaddit:
   ml, fl dp 0.5 and 1 learning rate 6e-4
   ml_10 learning rate 6e-4
   fl_10 learning rate 6e-3
+  fl 0.5, 1, 10   GRADIENT clipping
 
 acl_dep_sad:
   dp 0 learning rate 6e-5
@@ -63,7 +64,8 @@ acl_dep_sad:
 twitter_dep:
   dp 0 learning rate 6e-5
   ml dp 0.5, 1 and 10 lr 6e-3 batch_size 2
-  fl dp 0.5, 1 and 10 lr 6e-2 batch_size 2
+  fl dp 0.5, 1 and 10 lr 6e-2 GRADIENT clipping
+
 
 
 
@@ -105,3 +107,14 @@ They use bigger models than us and most of the times get worse accuracies, I arg
 And they don't comment anything about lower epsilon yielding higher accuracies in some cases. I guess they just ignore it because with Deep Learning you always get some cases where the result is counterintuitive
 
 I think this should be enough, since my thesis was about designing and implementing the BCFL framework, and these were added functionalities to improve the applicability of the framework. But whether they yield good results or not for the specific test datasets that I'm using, I think should rather fall outside of the scope of the project.
+
+
+https://arxiv.org/pdf/2306.06503.pdf
+
+GRADIENT CLIPPING SET TO 1.5 for fl 0.5, 1 and 10 for all but acl_dep_sad
+(fourth_model_accuracy_averaged_summary)
+
+
+grad clipping 5
+running mixed_depression ml and fl with dp with learning rate 6e-4
+ml was before run with 6e-5

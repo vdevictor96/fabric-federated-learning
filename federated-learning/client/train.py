@@ -46,7 +46,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             epochs=num_epochs,
-            max_grad_norm=0.1,
+            max_grad_norm=1.5,
             poisson_sampling=False,
         )
 
@@ -378,7 +378,8 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             target_epsilon=dp_epsilon,
             # set epochs to 1 so the value of epsilon is set at the beginning
             epochs=1,
-            max_grad_norm=0.1,
+            max_grad_norm=1.5,
+            # max_grad_norm=0.1,
             poisson_sampling=False,
         )
         # model, optimizer, train_loader_subset = privacy_engine.make_private(
@@ -434,6 +435,8 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
 
             # backpropagation
             loss.backward()
+            
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=3)
             
             optimizer.step()
             lr_scheduler.step()
