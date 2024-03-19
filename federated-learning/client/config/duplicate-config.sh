@@ -2,13 +2,15 @@
 
 # Define the directory containing the files.
 # Replace "/path/to/your/folder" with the actual path to your folder.
-DIRECTORY="./phase-2/1-ml_mode-dataset-dp/twitter_dep"
+# DIRECTORY="./phase-2/1-ml_mode-dataset-dp/twitter_dep"
+DIRECTORY="./phase-2/3-accs/acl_dep_sad"
+
 
 # Navigate to the directory
 cd "$DIRECTORY"
 
 # Loop through all files matching the pattern "fl_1_*.json"
-for FILE in fl_1_*.json; do
+for FILE in *.json; do
     # Check if the file exists to avoid error messages
     if [ -f "$FILE" ]; then
         # Generate the new file name by replacing "fl_1_" with "fl_0.5_"
