@@ -1,0 +1,154 @@
+Current configuration:
+{
+    "concurrency_flag": false,
+    "data_distribution": "iid",
+    "dataset": "mixed_depression",
+    "device": "cuda:1",
+    "dp_delta": 0.003,
+    "dp_epsilon": 0.0,
+    "eval_batch_size": 4,
+    "eval_flag": true,
+    "eval_size": 0.2,
+    "fed_alg": "fedavg",
+    "layers": 3,
+    "learning_rate": 6e-05,
+    "max_length": 512,
+    "ml_mode": "ml",
+    "model": "bert_small",
+    "model_name": "ml_small_seed3_mixed_depression",
+    "models_path": "/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/3-accs/mixed_depression/",
+    "mu": 0.5,
+    "num_clients": 5,
+    "num_epochs": 3,
+    "num_rounds": 4,
+    "num_seed3_epochs": 12,
+    "optimizer": "AdamW",
+    "progress_bar_flag": false,
+    "save_model": true,
+    "scheduler": "linear",
+    "scheduler_warmup_steps": 0,
+    "seed": 331,
+    "test_flag": true,
+    "train_batch_size": 4,
+    "train_size": 0.8
+}
+-------- Configuration loaded --------
+
+-------- Setting device --------
+cuda:1 device selected and available.
+-------- Device set --------
+
+-------- Setting seed --------
+-------- Seed set --------
+
+-------- Creating Model --------
+-------- Model created --------
+
+-------- Setting Trainable Layers --------
+Training the last 3 layers.
+
+Total parameters count: 28764674
+Trainable parameters count: 3416066
+-------- Trainable Layers set --------
+
+-------- Creating Tokenizer --------
+-------- Tokenizer created --------
+
+-------- Creating Train and Eval Dataloaders --------
+Train Loader: 1806 total sentences. 452 batches of size 4.
+Eval Loader: 452 total sentences. 113 batches of size 4.
+-------- Train and Eval Dataloaders created --------
+
+-------- Creating Optimizer --------
+-------- Optimizer created --------
+
+-------- Creating Scheduler --------
+-------- Scheduler created --------
+
+-------- Training --------
+Training with Centralised Machine Learning technology.
+Training without differential privacy.
+Epoch [1/3], Step [100/452], Loss: 0.5573, Accuracy: 68.50 %
+Epoch [1/3], Step [200/452], Loss: 0.4836, Accuracy: 74.75 %
+Epoch [1/3], Step [300/452], Loss: 0.4378, Accuracy: 78.50 %
+Epoch [1/3], Step [400/452], Loss: 0.4191, Accuracy: 80.25 %
+Predictions - 1s: 970, 0s: 836
+True Labels - 1s: 949, 0s: 857
+-------------------------------
+Epoch [1/3] Loss: 0.4080, Accuracy: 81.01 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 263, 0s: 189
+True Labels - 1s: 236, 0s: 216
+Validation Loss: 0.3347, Validation Accuracy: 85.18 %
+-------- Validation finished --------
+Updated best model in epoch 1 saved with Validation Loss: 0.3347 and Validation Accuracy: 85.18 %
+-------------------------------
+Epoch [2/3], Step [100/452], Loss: 0.2565, Accuracy: 89.25 %
+Epoch [2/3], Step [200/452], Loss: 0.2744, Accuracy: 88.88 %
+Epoch [2/3], Step [300/452], Loss: 0.2653, Accuracy: 89.17 %
+Epoch [2/3], Step [400/452], Loss: 0.2659, Accuracy: 89.44 %
+Predictions - 1s: 973, 0s: 833
+True Labels - 1s: 949, 0s: 857
+-------------------------------
+Epoch [2/3] Loss: 0.2624, Accuracy: 89.59 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 264, 0s: 188
+True Labels - 1s: 236, 0s: 216
+Validation Loss: 0.3316, Validation Accuracy: 86.28 %
+-------- Validation finished --------
+Updated best model in epoch 2 saved with Validation Loss: 0.3316 and Validation Accuracy: 86.28 %
+-------------------------------
+Epoch [3/3], Step [100/452], Loss: 0.2016, Accuracy: 93.75 %
+Epoch [3/3], Step [200/452], Loss: 0.2038, Accuracy: 94.12 %
+Epoch [3/3], Step [300/452], Loss: 0.2143, Accuracy: 93.33 %
+Epoch [3/3], Step [400/452], Loss: 0.2026, Accuracy: 93.56 %
+Predictions - 1s: 988, 0s: 818
+True Labels - 1s: 949, 0s: 857
+-------------------------------
+Epoch [3/3] Loss: 0.2005, Accuracy: 93.41 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 243, 0s: 209
+True Labels - 1s: 236, 0s: 216
+Validation Loss: 0.3219, Validation Accuracy: 86.06 %
+-------- Validation finished --------
+Updated best model in epoch 3 saved with Validation Loss: 0.3219 and Validation Accuracy: 86.06 %
+-------------------------------
+Best model in epoch 3 saved with with Validation Loss: 0.3219 and Validation Accuracy: 86.06 %
+
+-------- Training finished in 10:06 --------
+
+Test flag enabled. Testing the model
+
+-------- Loading best model from model_path --------
+Loaded model bert-small from date 19-03-2024 16:49. Trained with Centralised Machine Learning technology.
+Epoch 3, lr: 6e-05, optimizer: AdamW
+Train accuracy: 93.41 %, Validation accuracy: 86.06 %
+-------- Best model loaded --------
+
+-------- Creating Test Dataloader --------
+Test Loader: 564 total sentences. 71 batches of size 8.
+-------- Test Dataloader created --------
+
+-------- Testing --------
+Predictions - 1s: 283, 0s: 281
+True Labels - 1s: 296, 0s: 268
+Nº of test samples: 564
+Accuracy: 89.54%
+Accuracy 2 : 89.54%
+Precision: 89.53%
+Recall: 89.63%
+F1 Score: 89.53%
+Classification report:
+              precision    recall  f1-score   support
+
+           0     0.8719    0.9142    0.8925       268
+           1     0.9187    0.8784    0.8981       296
+
+    accuracy                         0.8954       564
+   macro avg     0.8953    0.8963    0.8953       564
+weighted avg     0.8965    0.8954    0.8955       564
+
+-------- Testing finished --------
