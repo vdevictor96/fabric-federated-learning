@@ -11,7 +11,8 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 # Find all .json files in the ./client/config/ directory and its subdirectories
 # For each file found, execute the python command in parallel
 # find "$CONFIG_DIR" -type f -name "*.json" | while read config_file; do
-find "$CONFIG_DIR" -type f -name "*.json" ! -name "bcfl*" | while read config_file; do
+# ! -name "bcfl*"
+find "$CONFIG_DIR" -type f -name "ml*seed3*.json"  ! -name "bcfl*" | while read config_file; do
 
 # find "$CONFIG_DIR" -type f -name "fed*.json" | while read config_file; do
 # find "$CONFIG_DIR" -type f -regextype posix-extended -regex ".*\/fl_0\..*\.json|.*\/fl_1.*\.json" | while read config_file; do

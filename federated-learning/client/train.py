@@ -15,7 +15,19 @@ from datetime import datetime
 from os.path import join as pjoin
 # progress bar
 from tqdm.auto import tqdm
+import torch.multiprocessing as mp
 
+def worker_init_fn():
+    """Initializer function to ensure different random seeds for each worker."""
+    pid = os.getpid()
+    torch.manual_seed(pid)
+
+def train_text_class_fl_inner_wrapper(args):
+    """Wrapper function to unpack arguments since Pool.map and Pool.apply only support functions with a single argument."""
+    return train_text_class_fl_inner(*args)
+
+# Set the start method to 'spawn' for CUDA compatibility
+# multiprocessing.set_start_method('spawn', force=True)
 
 def train_text_class(model, model_save_path, train_loader, eval_loader, optimizer, lr, lr_scheduler, num_epochs, device='cuda', eval_flag=True, save_model=True, progress_bar_flag=True, dp_epsilon=0.0, dp_delta=3e-3):
     total_steps_per_epoch = len(train_loader)
@@ -292,6 +304,21 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
                         trainable_weights.append(c_weights)
                     local_loss.append(c_local_loss)
                     local_acc.append(c_local_acc)
+            
+            # mp.set_start_method('spawn', force=True)  # Set the start method to 'spawn'
+            
+            # args_list = [(global_model, model_name, fl_mode, fed_alg, mu, layers, client, num_clients, train_loader, partitioned_indexes[client], optimizer_type, lr,
+            #       scheduler_type, scheduler_warmup_steps, dp_epsilon, dp_delta, num_epochs, device, progress_bar_flag, progress_bar) for client in range(num_clients)]
+                                           
+            # with mp.Pool(processes=mp.cpu_count(), initializer=worker_init_fn) as pool:
+            #   results = pool.map(train_text_class_fl_inner_wrapper, args_list)
+            #   for c_weights, c_local_loss, c_local_acc in results:
+            #     if fl_mode == 'fl':
+            #         trainable_weights.append(c_weights)
+            #     local_loss.append(c_local_loss)
+            #     local_acc.append(c_local_acc)
+                
+                
         else:  # sequential
             for client in range(num_clients):
                 c_weights, c_local_loss, c_local_acc = train_text_class_fl_inner(

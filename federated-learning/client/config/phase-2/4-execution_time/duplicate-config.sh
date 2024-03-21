@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directory containing the files. The DIRECTORY is set to the current directory "./"
-DIRECTORY="./dreaddit"
+DIRECTORY="./acl_dep_sad"
 
 # Navigate to the directory
 cd "$DIRECTORY"

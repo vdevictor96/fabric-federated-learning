@@ -12,7 +12,7 @@ BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-exec
 # List of folders to read files from
 # FOLDERS=("dreaddit")
 
-FOLDERS=( "twitter_dep"  "mixed_depression")
+FOLDERS=( "twitter_dep"  "mixed_depression" "acl_dep_sad" "dreaddit")
 # "acl_dep_sad" "dreaddit"
 # "dreaddit"  "twitter_dep" 
 # "mixed_depression" "dreaddit" 
@@ -81,7 +81,6 @@ for FOLDER in "${FOLDERS[@]}"; do
 done
 
 
-if [ "$PARSE_TRAINING_TIME" = "false" ]; then
-    python "$PYTHON_FILE"
-fi
+python "$PYTHON_FILE"
+    
 
