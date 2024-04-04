@@ -234,7 +234,7 @@ The datasets used in this project for fine-tuning the BERT Models are public dat
 
 Some dataset labels are validated using small datasets (500 posts) labelled by psychologists from the depression subreddit. Some others are labelled from users self-reporting their diagnosis of depression.
 
-We fine-tuned with five different datasets:
+We fine-tuned with four different datasets:
 - [twitter_dep](federated-learning/client/data/datasets/twitter_dep/twitter_dep_full.csv) from [Benchmarking Differential Privacy and Federated Learning for BERT Models](https://arxiv.org/abs/2106.13973) contains more than 3000 tweets labelleds as depression or non-depression.
 
 - [acl_dep_sad](federated-learning/client/data/datasets/acl_dep_sad/acl_dep_sad_full.csv) from [Interpretability of Fine-grained Classification of Sadness and Depression](https://arxiv.org/abs/2203.10432) is a collection of six different datasets, three classifying depression and three classifying sadness. It contains 3256 samples of which 1914 samples were labelled as "sadness" and 1342 samples under the label "depression".
@@ -243,7 +243,7 @@ We fine-tuned with five different datasets:
 
 - [dreaddit](federated-learning/client/data/datasets/dreaddit/dreaddit_train.csv) from [Dreaddit: A Reddit Dataset for Stress Analysis in Social Media](https://arxiv.org/pdf/1911.00133.pdf) contains more than 3000 posts in Reddit from ten different subreddits — in the five domains of abuse, social, anxiety, PTSD, and financial — classified as depression vs. non-depression.
 
-- deptweet from [DEPTWEET: A typology for social media texts to detect depression severities](https://arxiv.org/pdf/2210.05372.pdf) contains more than 40000 tweets labelled depending on their depression severity ranging 0-3. **This dataset is not available to the public. It is used under an user agreement contract for research purposes and hence not shared in this public repository.**
+<!-- - deptweet from [DEPTWEET: A typology for social media texts to detect depression severities](https://arxiv.org/pdf/2210.05372.pdf) contains more than 40000 tweets labelled depending on their depression severity ranging 0-3. **This dataset is not available to the public. It is used under an user agreement contract for research purposes and hence not shared in this public repository.**  -->
 
 
 
