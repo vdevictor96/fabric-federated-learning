@@ -26,6 +26,7 @@ This project implements a Blockchain-Based Federated Learning framework using [H
 
 
 ## Structure 
+- [`ablation_study/`](./ablation_study/) contains the log files and the results of the experiments for the evaluation of this framework.
 - [`config/`](./config/) contains config files to deploy the blockchain network.
 - [`federated-learning/`](./federated-learning/) contains all the logic for the federated learning, including the python ML code, the fabric smart contracts (chaincode) and the nodejs gateway.
 - [`federated-learning/chaincode/`](./federated-learning/chaincode/) contains the TypeScript smart contract for the aggregation of the local models.
