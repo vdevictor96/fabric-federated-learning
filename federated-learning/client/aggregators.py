@@ -17,6 +17,32 @@ def federated_aggregate(weights):
     return agg_weights
 
 
+def federated_aggregate_integer(weights, scale_factor=10):
+    """Compute simple average of model weights from state dictionaries using integer arithmetic."""
+    agg_weights = {}
+    num_models = len(weights)
+
+    for key in weights[0]:
+        # Accumulate scaled weights for each parameter across all models
+        scaled_weight_sum = None
+
+        for state_dict in weights:
+            # Scale the weight
+            scaled_weight = state_dict[key] * scale_factor
+
+            # Check if scaled_weight_sum is not yet initialized
+            if scaled_weight_sum is None:
+                scaled_weight_sum = torch.zeros_like(scaled_weight)
+
+            # Convert scaled_weight to integers, and sum
+            scaled_weight_sum += scaled_weight.type(torch.int64)
+
+        # Average the summed weights and scale back
+        avg_scaled_weight = scaled_weight_sum // num_models
+        agg_weights[key] = avg_scaled_weight.float() / scale_factor
+
+    return agg_weights
+
 # def federated_aggregate(models):
 #     """Compute simple average of model weights."""
 #     # Initialize a dictionary to store the aggregated weights

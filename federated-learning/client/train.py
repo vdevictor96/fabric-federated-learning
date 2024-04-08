@@ -1,7 +1,7 @@
 from .utils import iid_partition, non_iid_partition, non_iid_partition_varying_samples, create_optimizer, create_scheduler, translate_state_dict_keys, filter_trainable_weights
 from .services.utils import deserialize_model_msgpack
 from .services.gateway_client import submit_model, aggregate_models, get_model
-from .aggregators import federated_aggregate
+from .aggregators import federated_aggregate, federated_aggregate_integer
 import torch
 import torch.nn as nn
 import torchvision
@@ -341,6 +341,7 @@ def train_text_class_fl(model, fl_mode, fed_alg, mu, model_name, model_save_path
         global_trainable_weights = {}
         if fl_mode == 'fl':
             global_trainable_weights = federated_aggregate(trainable_weights)
+            # global_trainable_weights = federated_aggregate_integer(trainable_weights)
         else:  # bcfl
             # the local weights have been sent to the blockchain
             # triggering the federated aggregation
