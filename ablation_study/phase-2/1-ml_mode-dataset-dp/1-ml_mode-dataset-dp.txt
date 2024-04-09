@@ -54,6 +54,12 @@ mixed_depression, dreaddit:
   fl_10 learning rate 6e-3
   fl 0.5, 1, 10   GRADIENT clipping
 
+dreaddit:
+  dp 0 learning rate 6e-5
+  fl 0.5 lr 6e-3 (model)
+  fl 10 lr 6e-3 (model)
+  ml 0.5 lr 6e-4 (model)
+  ml 10 lr 6e-4 (model)
 acl_dep_sad:
   dp 0 learning rate 6e-5
   ml 0.5, 1 and 10 learning rate 6e-4
@@ -118,3 +124,121 @@ GRADIENT CLIPPING SET TO 1.5 for fl 0.5, 1 and 10 for all but acl_dep_sad
 grad clipping 5
 running mixed_depression ml and fl with dp with learning rate 6e-4
 ml was before run with 6e-5
+
+
+
+LAST MODEL configurations:
+(last model)
+dreaddit:
+  dp 0 learning rate 6e-5
+  fl 0.5 lr 6e-3 (model)
+  fl 10 lr 6e-3 (model)
+  ml 0.5 lr 6e-4 (model)
+  ml 10 lr 6e-4 (model)
+
+(last model)
+acl_dep_sad:
+  dp 0 learning rate 6e-5
+  ml 0.5, 1 and 10 learning rate 6e-4
+  fl dp 10 lr 6e-3
+  fl dp 0.5 lr 6e-2 batch_size 4 
+
+mixed_depression:
+fl (last model)
+0.5, 10 lr 6e-3
+ml (fourth)
+0.5, 10 lr 6e-4
+
+
+
+
+fourth MODEL configurations:
+
+
+
+acl_dep_sad
+fl 10 lr 6e-3 bs 4  (not lr 6e-3 bs 4, but similar) (not lr 6e-2) (not lr 6e-4)
+fl 0.5 lr 6e-2 bs 2  (not lr 6e-2 bs 4)
+ml 10 lr 6e-4
+ml 0.5 lr 6e-4
+
+dreaddit
+fl 10 (last model) lr 6e-3 
+fl 0.5 (last model) lr 6e-3
+ml 10 lr 6e-4 norm 0.1 (not 6e-4)
+ml 0.5 lr 6e-4 norm 0.1 (not 6e-4)
+
+mixed_depression
+fl 10  lr 6e-4 ?? (not lr 6e-3)
+fl 0.5 lr 6e-4 ?? (not lr 6e-3)
+ml 10 lr 6e-4 ?? (not lr 6e-3)
+ml 0.5 lr 6e-4 ?? (not lr 6e-3) 
+
+
+----- Definitive model parameters -----
+twitter_dep  
+fl 10 lr 6e-2 bs 4 - grad norm 1.5 (fourth)
+fl 0.5 lr 6e-2 bs 4 - grad norm 1.5 (fourth)
+fl 0 lr 6e-5 (fourth, fifth)
+ml 10 lr 6e-3 bs2 - grad norm 1.5 (sixth)
+ml 0.5 lr 6e-3 bs2 - grad norm 1.5 (sixth)
+ml 0 lr 6e-5 (fourth, fifth)
+
+
+dreaddit
+fl 10 lr 6e-3 - grad norm 1.5 (sixth)
+fl 0.5 lr 6e-3 - grad norm 1.5 (sixth)
+fl 0 lr 6e-5 (fourth, fifth)
+ml 10 lr 6e-4 - grad norm 1.5 (sixth) 
+ml 0.5  lr 6e-4 - grad norm 1.5 (sixth)
+ml 0 lr 6e-5 (fourth, fifth)
+
+mixed_depression
+fl 10 lr 6e-3 - grad norm 1.5 (sixth) 
+fl 0.5 lr 6e-3 - grad norm 1.5 (sixth)
+fl 0 lr 6e-5 (fourth, fifth)
+ml 10 lr 6e-4 - grad norm 0.1 (fourth)  %tried with grad norm 1.5 (not lr 6e-4 bs2) (not lr 6e-3)
+ml 0.5 lr 6e-4 - grad norm 0.1 (fourth)  %tried with grad norm 1.5 (not lr 6e-4bs2) (not lr 6e-3)
+ml 0 lr 6e-5 (fourth, fifth)
+
+acl_dep_sad
+fl 10 lr 6e-3 grad norm 1.5 (sixth) 
+fl 0.5 lr 6e-3 grad norm 1.5 (sixth)
+fl 0 lr 6e-5 (fourth, fifth)
+ml 10 lr 6e-4 grad norm 1.5 (sixth)
+ml 0.5 lr 6e-4 grad norm 1.5 (sixth)
+ml 0 lr 6e-5 (fourth, fifth)
+
+
+  ml 0.5, 1 and 10 learning rate 6e-4
+  fl dp 10 lr 6e-3
+  fl dp 0.5, 1 lr 6e-2 batch_size 2
+
+
+
+---- rerun if possible
+mixed_depression ml 10, ml 0.5
+
+
+------ TEMP
+
+
+(last model)
+
+twitter_dep
+fl no
+ml ok ya en uso
+
+
+dreaddit
+fl ok (cambiar)
+ml no
+
+
+acl_dep_sad
+fl ok (cambiar)
+ml ok ya en uso
+
+mixed_depression
+fl ok (cambiar)
+ml no

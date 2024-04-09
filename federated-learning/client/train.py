@@ -50,6 +50,7 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
     if dp_epsilon > 0.0:
         # Create differential privacy engine if differential privacy is enabled
         privacy_engine = PrivacyEngine()
+        max_grad_norm = 1.5
         # Integrate the privacy engine with the model, optimizer and data loader
         model, optimizer, train_loader = privacy_engine.make_private_with_epsilon(
             module=model,
@@ -58,9 +59,11 @@ def train_text_class(model, model_save_path, train_loader, eval_loader, optimize
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             epochs=num_epochs,
-            max_grad_norm=1.5,
+            max_grad_norm=max_grad_norm,
+            # max_grad_norm=0.1,
             poisson_sampling=False,
         )
+        print("max_grad_norm: ", max_grad_norm)
 
     for epoch in range(num_epochs):
         model.train()
@@ -397,6 +400,7 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
     if dp_epsilon > 0.0:
         # Create differential privacy engine if differential privacy is enabled
         privacy_engine = PrivacyEngine()
+        max_grad_norm = 1.5
         # Integrate the privacy engine with the model, optimizer and data loader
         model, optimizer, train_loader_subset = privacy_engine.make_private_with_epsilon(
             module=model,
@@ -405,11 +409,13 @@ def train_text_class_fl_inner(global_model, model_name, fl_mode, fed_alg, mu, la
             target_delta=dp_delta,
             target_epsilon=dp_epsilon,
             # set epochs to 1 so the value of epsilon is set at the beginning
+            # epochs=num_epochs,
             epochs=1,
-            max_grad_norm=1.5,
+            max_grad_norm=max_grad_norm,
             # max_grad_norm=0.1,
             poisson_sampling=False,
         )
+        print("max_grad_norm: ", max_grad_norm)
         # model, optimizer, train_loader_subset = privacy_engine.make_private(
         #     module=model,
         #     optimizer=optimizer,

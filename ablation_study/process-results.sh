@@ -4,7 +4,9 @@
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp"
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset"
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/3-accs"
-BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-execution_time"
+# BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-execution_time"
+BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-3/1-ml_mode-dataset-dp"
+
 
 
 
@@ -12,7 +14,7 @@ BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-exec
 # List of folders to read files from
 # FOLDERS=("dreaddit")
 
-FOLDERS=( "twitter_dep"  "mixed_depression" "acl_dep_sad" "dreaddit")
+FOLDERS=( "twitter_dep" "dreaddit" "mixed_depression" "acl_dep_sad")
 # "acl_dep_sad" "dreaddit"
 # "dreaddit"  "twitter_dep" 
 # "mixed_depression" "dreaddit" 
