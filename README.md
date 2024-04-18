@@ -123,7 +123,7 @@ To run the fine-tuning of the BERT model, execute the following command:
 
 ```sh
 cd federated-learning
-python client.run_train --config_file ./client/config/bert_tiny_config.json
+ client.run_train --config_file ./client/config/bert_tiny_config.json
 ```
 or open the [train.ipynb](federated-learning/client/notebooks/train.ipynb) Jupyter Notebook on VSCode and run the last cell (it allows debugging of the code).
 
@@ -141,7 +141,7 @@ If you do not provide a valid configuration file the model will train with the [
 To see the different configuration parameters and valid values run:
 ```sh
 cd federated-learning
-python client.run_train --show_config
+python -m client.run_train --show_config
 ```
 These are the default values (configurable):
 ```json
@@ -183,7 +183,7 @@ These are the default values (configurable):
 To test the fine-tuned BERT model, execute the following command:
 ```sh
 cd federated-learning
-python client.run_test --config_file ./client/config/bert_tiny_test_config.json
+python -m client.run_test --config_file ./client/config/bert_tiny_test_config.json
 ```
 or open the [test.ipynb](federated-learning/client/notebooks/test.ipynb) Jupyter Notebook on VSCode and run the last cell (it allows debugging of the code).
 
@@ -195,7 +195,7 @@ If you do not provide a valid configuration file the model will train with the [
 To see the different configuration parameters and valid values run:
 ```sh
 cd federated-learning
-python client.run_test --show_config
+python -m client.run_test --show_config
 ```
 These are the default values (configurable):
 ```json
