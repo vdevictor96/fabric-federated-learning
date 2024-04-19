@@ -6,18 +6,37 @@ DIRECTORY=$1
 cd "$DIRECTORY"
 
 # Loop through all files matching the pattern "fl_*.json"
-for FILE in fl_*.json; do
+# for FILE in fl_*.json; do
+#     # Check if the file exists to avoid error messages
+#     if [ -f "$FILE" ]; then
+#         # Generate the new file name by prepending "bc" to the original file name
+#         NEW_FILE_NAME="bc$FILE"
+        
+#         # Duplicate the file with the new name, if it does not already exist
+#         if [ ! -f "$NEW_FILE_NAME" ]; then
+#             cp "$FILE" "$NEW_FILE_NAME"
+#         else
+#             echo "File $NEW_FILE_NAME already exists. Skipping."
+#         fi
+#     fi
+# done
+
+for FILE in *_seed3_*.json; do
     # Check if the file exists to avoid error messages
     if [ -f "$FILE" ]; then
-        # Generate the new file name by prepending "bc" to the original file name
-        NEW_FILE_NAME="bc$FILE"
-        
-        # Duplicate the file with the new name, if it does not already exist
-        if [ ! -f "$NEW_FILE_NAME" ]; then
-            cp "$FILE" "$NEW_FILE_NAME"
-        else
-            echo "File $NEW_FILE_NAME already exists. Skipping."
-        fi
+        # Loop to create duplicates with seed4 to seed10
+        for SEED in {4..10}; do
+            # Generate the new file name by replacing "seed3" with "seed$SEED"
+            NEW_FILE_NAME=$(echo "$FILE" | sed "s/seed3/seed$SEED/")
+            
+            # Check if the new file name already exists
+            if [ ! -f "$NEW_FILE_NAME" ]; then
+                # Copy the file to the new file with the modified name
+                cp "$FILE" "$NEW_FILE_NAME"
+            else
+                echo "File $NEW_FILE_NAME already exists. Skipping."
+            fi
+        done
     fi
 done
 

@@ -21,40 +21,7 @@ export class ModelTransferContract extends Contract {
 
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
-    const models: Model[] = [
-      {
-        id: "model1",
-        modelParams: "",
-        owner: "Tomoko",
-      },
-      {
-        id: "model2",
-        modelParams: "",
-        owner: "Brad",
-      },
-      {
-        id: "model3",
-        modelParams: "",
-        owner: "Jin Soo",
-      },
-      {
-        id: "model4",
-        modelParams: "",
-        owner: "Max",
-      },
-    ];
-
-    for (const model of models) {
-      // example of how to write to world state deterministically
-      // use convetion of alphabetic order
-      // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-      // when retrieving data, in any lang, the order of data will be the same and consequently also the corresonding hash
-      await ctx.stub.putState(
-        model.id,
-        Buffer.from(stringify(sortKeysRecursive(model)))
-      );
-      console.info(`Model ${model.id} initialized`);
-    }
+    console.info("Ledger initialized")
   }
 
   // CreateModel issues a new model to the world state with given details.

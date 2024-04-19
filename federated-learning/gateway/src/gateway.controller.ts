@@ -54,7 +54,7 @@ export class GatewayController {
   public async initLedger(@Res() response: Response) {
     try {
       console.log(
-        '\n--> Submit Transaction: InitLedger, function creates the initial set of models on the ledger',
+        '\n--> Submit Transaction: InitLedger, function initializes the ledger',
       );
       const contract = await this.gatewayService.getContract();
       const res = await contract.submitTransaction('InitLedger');
