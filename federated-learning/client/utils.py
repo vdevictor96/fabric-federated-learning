@@ -182,7 +182,17 @@ def compare_weights(model1, model2):
 
 # --- Run utils ---
 
-
+def set_random_seed(device='cuda'):
+    seed = random.randint(0, 999999)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if device == 'cuda' and torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    print("seed set: ", seed)
+    
 def set_seed(seed, device='cuda'):
     random.seed(seed)
     np.random.seed(seed)
@@ -191,6 +201,7 @@ def set_seed(seed, device='cuda'):
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    print("seed set: ", seed)
 
 
 def set_device(device_name):

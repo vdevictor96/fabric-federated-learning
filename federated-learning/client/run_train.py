@@ -13,7 +13,7 @@ from .data.dreaddit import get_dreaddit_dataloaders
 from .data.mixed_depression import get_mixed_depression_dataloaders
 from .data.deptweet import get_deptweet_dataloaders
 from .train import train_text_class, train_text_class_fl
-from .utils import set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements, create_test_dataloader, load_model, duplicate_output_to_file
+from .utils import set_random_seed, set_seed, set_device, create_model, create_tokenizer, get_dir_path, get_dataset_path, create_optimizer, create_scheduler, freeze_layers, get_trainable_state_dict_elements, create_test_dataloader, load_model, duplicate_output_to_file
 from .test import test_text_class
 
 
@@ -121,7 +121,10 @@ def main():
     print('-------- Device set --------')
 
     print('\n-------- Setting seed --------')
-    set_seed(config['seed'], device)
+    if config['seed'] == "random":
+        set_random_seed(device)
+    else: # number
+        set_seed(config['seed'], device)
     print('-------- Seed set --------')
 
     print('\n-------- Creating Model --------')
