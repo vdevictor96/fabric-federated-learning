@@ -122,7 +122,7 @@ def main():
 
     print('\n-------- Setting seed --------')
     if config['seed'] == "random":
-        set_random_seed(device)
+        config['seed'] = set_random_seed(device)
     else: # number
         set_seed(config['seed'], device)
     print('-------- Seed set --------')

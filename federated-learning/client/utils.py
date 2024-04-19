@@ -192,6 +192,7 @@ def set_random_seed(device='cuda'):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     print("seed set: ", seed)
+    return seed
     
 def set_seed(seed, device='cuda'):
     random.seed(seed)

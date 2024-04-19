@@ -17,16 +17,16 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 
 
 find "$CONFIG_DIR" -type f -name "bcfl*.json" | while read config_file; do
-    if [[ "$config_file" != *"/twitter_dep"* ]]; then
+    # if [[ "$config_file" != *"/twitter_dep"* ]]; then
 
 # find "$CONFIG_DIR" -type f -regextype posix-extended -regex ".*\/fl_0\..*\.json|.*\/fl_1.*\.json" | while read config_file; do
 
-        echo "Executing config file: $config_file"
-        # parallel execution
-        # python -m client.run_train --config_file "$config_file" &
-        # sequential execution (for execution time ablation study)
-        python -m client.run_train --config_file "$config_file"
-    fi
+    echo "Executing config file: $config_file"
+    # parallel execution
+    # python -m client.run_train --config_file "$config_file" &
+    # sequential execution (for execution time ablation study)
+    python -m client.run_train --config_file "$config_file"
+    # fi
 done
 
 # Wait for all background processes to finish
