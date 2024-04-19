@@ -16,7 +16,7 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 # find "$CONFIG_DIR" -type f -name "ml_*.json"  ! -name "ml_1_*" ! -name "ml_0_*" | while read config_file; do
 
 
-find "$CONFIG_DIR" -type f -name "bcfl*.json" | while read config_file; do
+find "$CONFIG_DIR" -type f -name "fl*.json" | while read config_file; do
     # if [[ "$config_file" != *"/twitter_dep"* ]]; then
 
 # find "$CONFIG_DIR" -type f -regextype posix-extended -regex ".*\/fl_0\..*\.json|.*\/fl_1.*\.json" | while read config_file; do
