@@ -123,7 +123,7 @@ To run the fine-tuning of the BERT model, execute the following command:
 
 ```sh
 cd federated-learning
- client.run_train --config_file ./client/config/bert_tiny_config.json
+python -m client.run_train --config_file ./client/config/bert_tiny_config.json
 ```
 or open the [train.ipynb](federated-learning/client/notebooks/train.ipynb) Jupyter Notebook on VSCode and run the last cell (it allows debugging of the code).
 
