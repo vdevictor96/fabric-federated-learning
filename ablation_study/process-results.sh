@@ -3,9 +3,10 @@
 # Define the base directory
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/1-ml_mode-dataset-dp"
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/2-fed-data_dist-dataset"
-BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/3-accs"
+# BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/3-accs"
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-execution_time"
 # BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-3/1-ml_mode-dataset-dp"
+BASE_DIR="/local/vpaloma/fabric-federated-learning/ablation_study/phase-4/final/accs-times"
 
 
 
@@ -25,7 +26,9 @@ PYTHON_FILE="${BASE_DIR}/calculate-averages.py"
 
 
 # Automatically set PARSE_TRAINING_TIME based on BASE_DIR
-if [ "$BASE_DIR" = "/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-execution_time" ]; then
+# if [ "$BASE_DIR" = "/local/vpaloma/fabric-federated-learning/ablation_study/phase-2/4-execution_time" ]; then
+if [ "$BASE_DIR" = "/local/vpaloma/fabric-federated-learning/ablation_study/phase-4/final/accs-times" ]; then
+
     PARSE_TRAINING_TIME="true"
     OUTPUT_FILE="${BASE_DIR}/model_execution_time_summary.txt"
 else
