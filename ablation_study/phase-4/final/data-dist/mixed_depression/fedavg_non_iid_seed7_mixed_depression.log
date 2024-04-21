@@ -1,0 +1,332 @@
+Current configuration:
+{
+    "concurrency_flag": true,
+    "data_distribution": "non_iid",
+    "dataset": "mixed_depression",
+    "device": "cuda",
+    "dp_delta": 0.003,
+    "dp_epsilon": 0,
+    "eval_batch_size": 4,
+    "eval_flag": true,
+    "eval_size": 0.2,
+    "fed_alg": "fedavg",
+    "layers": 3,
+    "learning_rate": 6e-05,
+    "max_length": 512,
+    "ml_mode": "bcfl",
+    "model": "bert_small",
+    "model_name": "fedavg_non_iid_seed7_mixed_depression",
+    "models_path": "/local/vpaloma/fabric-federated-learning/ablation_study/phase-4/final/data-dist/mixed_depression",
+    "mu": 0.5,
+    "num_clients": 5,
+    "num_epochs": 3,
+    "num_rounds": 4,
+    "optimizer": "AdamW",
+    "progress_bar_flag": false,
+    "save_model": true,
+    "scheduler": "linear",
+    "scheduler_warmup_steps": 0,
+    "seed": "random",
+    "test_flag": true,
+    "train_batch_size": 4,
+    "train_size": 0.8
+}
+-------- Configuration loaded --------
+
+-------- Setting device --------
+cuda device selected and available.
+-------- Device set --------
+
+-------- Setting seed --------
+seed set:  916819
+-------- Seed set --------
+
+-------- Creating Model --------
+-------- Model created --------
+
+-------- Setting Trainable Layers --------
+Training the last 3 layers.
+
+Total parameters count: 28764674
+Trainable parameters count: 3416066
+-------- Trainable Layers set --------
+
+-------- Creating Tokenizer --------
+-------- Tokenizer created --------
+
+-------- Creating Train and Eval Dataloaders --------
+Train Loader: 1806 total sentences. 452 batches of size 4.
+Eval Loader: 452 total sentences. 113 batches of size 4.
+-------- Train and Eval Dataloaders created --------
+
+-------- Training --------
+Training with Blockchain-Based Federated Learning technology.
+Training without differential privacy.
+Federated averaging algorithm selected.
+Client 0: Label 0: 0, Label 1: 409
+Client 1: Label 0: 0, Label 1: 409
+Client 2: Label 0: 361, Label 1: 48
+Client 3: Label 0: 361, Label 1: 48
+Client 4: Label 0: 123, Label 1: 47
+
+Round 1 of 4
+-------------------------------
+Predictions - 1s: 8, 0s: 162
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [1/3] Loss: 0.5316, Accuracy: 75.88 %
+Predictions - 1s: 1, 0s: 408
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [1/3] Loss: 0.3249, Accuracy: 88.02 %
+Predictions - 1s: 23, 0s: 147
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [2/3] Loss: 0.4036, Accuracy: 84.71 %
+Predictions - 1s: 401, 0s: 8
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [1/3] Loss: 0.0531, Accuracy: 98.04 %
+Predictions - 1s: 404, 0s: 5
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [1/3] Loss: 0.0515, Accuracy: 98.78 %
+Predictions - 1s: 1, 0s: 408
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [1/3] Loss: 0.3478, Accuracy: 88.02 %
+Predictions - 1s: 30, 0s: 140
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [3/3] Loss: 0.3410, Accuracy: 86.47 %
+Predictions - 1s: 23, 0s: 386
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [2/3] Loss: 0.2247, Accuracy: 91.44 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [2/3] Loss: 0.0028, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [2/3] Loss: 0.0026, Accuracy: 100.00 %
+Predictions - 1s: 9, 0s: 400
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [2/3] Loss: 0.2784, Accuracy: 89.00 %
+Predictions - 1s: 27, 0s: 382
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [3/3] Loss: 0.1705, Accuracy: 94.38 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [3/3] Loss: 0.0019, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [3/3] Loss: 0.0018, Accuracy: 100.00 %
+Predictions - 1s: 15, 0s: 394
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [3/3] Loss: 0.2303, Accuracy: 90.95 %
+-------------------------------
+Round [1/4] Average Local Loss: 0.1491, Average Local Accuracy: 94.36 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 442, 0s: 10
+True Labels - 1s: 224, 0s: 228
+Round [1/4] Global Model Validation Loss: 0.7779, Validation Accuracy: 51.33 %
+-------- Validation finished --------
+Updated best model in round 1 saved with Validation Loss: 0.7779 and Validation Accuracy: 51.33 %
+-------------------------------
+
+Round 2 of 4
+-------------------------------
+Predictions - 1s: 32, 0s: 138
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [1/3] Loss: 0.4312, Accuracy: 80.59 %
+Predictions - 1s: 40, 0s: 130
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [2/3] Loss: 0.3344, Accuracy: 88.82 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [1/3] Loss: 0.0053, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [1/3] Loss: 0.0067, Accuracy: 100.00 %
+Predictions - 1s: 32, 0s: 377
+Predictions - 1s: 16, 0s: 393
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [1/3] Loss: 0.2759, Accuracy: 88.26 %
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [1/3] Loss: 0.3330, Accuracy: 86.31 %
+Predictions - 1s: 37, 0s: 133
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [3/3] Loss: 0.2880, Accuracy: 90.59 %
+Predictions - 1s: 27, 0s: 382
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [2/3] Loss: 0.2375, Accuracy: 90.95 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [2/3] Loss: 0.0005, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [2/3] Loss: 0.0005, Accuracy: 100.00 %
+Predictions - 1s: 29, 0s: 380
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [2/3] Loss: 0.1663, Accuracy: 93.89 %
+Predictions - 1s: 32, 0s: 377
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [3/3] Loss: 0.1949, Accuracy: 92.18 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [3/3] Loss: 0.0004, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [3/3] Loss: 0.0003, Accuracy: 100.00 %
+Predictions - 1s: 44, 0s: 365
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [3/3] Loss: 0.1519, Accuracy: 94.62 %
+-------------------------------
+Round [2/4] Average Local Loss: 0.1271, Average Local Accuracy: 95.48 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 384, 0s: 68
+True Labels - 1s: 224, 0s: 228
+Round [2/4] Global Model Validation Loss: 0.8522, Validation Accuracy: 63.27 %
+-------- Validation finished --------
+
+Round 3 of 4
+-------------------------------
+Predictions - 1s: 35, 0s: 135
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [1/3] Loss: 0.3750, Accuracy: 85.88 %
+Predictions - 1s: 35, 0s: 374
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [1/3] Loss: 0.2683, Accuracy: 88.02 %
+Predictions - 1s: 35, 0s: 374
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [1/3] Loss: 0.2377, Accuracy: 89.98 %
+Predictions - 1s: 42, 0s: 128
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [2/3] Loss: 0.2709, Accuracy: 88.82 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [1/3] Loss: 0.0046, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [1/3] Loss: 0.0025, Accuracy: 100.00 %
+Predictions - 1s: 40, 0s: 130
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [3/3] Loss: 0.2231, Accuracy: 93.53 %
+Predictions - 1s: 39, 0s: 370
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [2/3] Loss: 0.2282, Accuracy: 90.95 %
+Predictions - 1s: 38, 0s: 371
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [2/3] Loss: 0.1552, Accuracy: 94.13 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [2/3] Loss: 0.0004, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [2/3] Loss: 0.0002, Accuracy: 100.00 %
+Predictions - 1s: 35, 0s: 374
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [3/3] Loss: 0.1723, Accuracy: 92.42 %
+Predictions - 1s: 39, 0s: 370
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [3/3] Loss: 0.1216, Accuracy: 95.84 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [3/3] Loss: 0.0003, Accuracy: 100.00 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [3/3] Loss: 0.0002, Accuracy: 100.00 %
+-------------------------------
+Round [3/4] Average Local Loss: 0.1035, Average Local Accuracy: 96.36 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 359, 0s: 93
+True Labels - 1s: 224, 0s: 228
+Round [3/4] Global Model Validation Loss: 0.8813, Validation Accuracy: 68.81 %
+-------- Validation finished --------
+
+Round 4 of 4
+-------------------------------
+Predictions - 1s: 37, 0s: 133
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [1/3] Loss: 0.4537, Accuracy: 81.18 %
+Predictions - 1s: 45, 0s: 364
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [1/3] Loss: 0.1887, Accuracy: 91.44 %
+Predictions - 1s: 40, 0s: 130
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [2/3] Loss: 0.2540, Accuracy: 92.35 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [1/3] Loss: 0.0009, Accuracy: 100.00 %
+Predictions - 1s: 39, 0s: 370
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [1/3] Loss: 0.2854, Accuracy: 88.02 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [1/3] Loss: 0.0012, Accuracy: 100.00 %
+Predictions - 1s: 43, 0s: 127
+True Labels - 1s: 47, 0s: 123
+Client 5 of 5: Local Epoch [3/3] Loss: 0.2096, Accuracy: 94.12 %
+Predictions - 1s: 43, 0s: 366
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [2/3] Loss: 0.1181, Accuracy: 95.35 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [2/3] Loss: 0.0001, Accuracy: 100.00 %
+Predictions - 1s: 34, 0s: 375
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [2/3] Loss: 0.1913, Accuracy: 92.18 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [2/3] Loss: 0.0001, Accuracy: 100.00 %
+Predictions - 1s: 46, 0s: 363
+True Labels - 1s: 48, 0s: 361
+Client 3 of 5: Local Epoch [3/3] Loss: 0.0934, Accuracy: 96.09 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 1 of 5: Local Epoch [3/3] Loss: 0.0001, Accuracy: 100.00 %
+Predictions - 1s: 41, 0s: 368
+True Labels - 1s: 48, 0s: 361
+Client 4 of 5: Local Epoch [3/3] Loss: 0.1503, Accuracy: 94.38 %
+Predictions - 1s: 409, 0s: 0
+True Labels - 1s: 409, 0s: 0
+Client 2 of 5: Local Epoch [3/3] Loss: 0.0001, Accuracy: 100.00 %
+-------------------------------
+Round [4/4] Average Local Loss: 0.0907, Average Local Accuracy: 96.92 %
+-------------------------------
+-------- Validation --------
+Predictions - 1s: 353, 0s: 99
+True Labels - 1s: 224, 0s: 228
+Round [4/4] Global Model Validation Loss: 0.9886, Validation Accuracy: 70.58 %
+-------- Validation finished --------
+Best model in round 1 saved with Validation Loss: 0.7779 and Validation Accuracy: 51.33 %
+
+-------- Training finished in 5:34 --------
+
+Test flag enabled. Testing the model
+
+-------- Loading best model from model_path --------
+Loaded model bert-small from date 21-04-2024 00:48. Trained with Federated Learning technology.
+Round 1, lr: 6e-05, optimizer: AdamW
+Average train accuracy: 94.36 %, Validation accuracy: 51.33 %
+-------- Best model loaded --------
+
+-------- Creating Test Dataloader --------
+Test Loader: 564 total sentences. 71 batches of size 8.
+-------- Test Dataloader created --------
+
+-------- Testing --------
+Predictions - 1s: 537, 0s: 27
+True Labels - 1s: 296, 0s: 268
+Nº of test samples: 564
+Accuracy: 57.27%
+Accuracy 2 : 57.27%
+Precision: 77.56%
+Recall: 55.04%
+F1 Score: 44.69%
+Classification report:
+              precision    recall  f1-score   support
+
+           0     1.0000    0.1007    0.1831       268
+           1     0.5512    1.0000    0.7107       296
+
+    accuracy                         0.5727       564
+   macro avg     0.7756    0.5504    0.4469       564
+weighted avg     0.7645    0.5727    0.4600       564
+
+-------- Testing finished --------
