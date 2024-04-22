@@ -16,18 +16,42 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 # find "$CONFIG_DIR" -type f -name "ml_*.json"  ! -name "ml_1_*" ! -name "ml_0_*" | while read config_file; do
 
 
-find "$CONFIG_DIR" -type f -name "fl*.json" | while read config_file; do
-    # if [[ "$config_file" != *"/twitter_dep"* ]]; then
+# find "$CONFIG_DIR" -type f -name "fl*.json" | while read config_file; do
+#     # if [[ "$config_file" != *"/twitter_dep"* ]]; then
 
-# find "$CONFIG_DIR" -type f -regextype posix-extended -regex ".*\/fl_0\..*\.json|.*\/fl_1.*\.json" | while read config_file; do
+# # find "$CONFIG_DIR" -type f -regextype posix-extended -regex ".*\/fl_0\..*\.json|.*\/fl_1.*\.json" | while read config_file; do
 
-    echo "Executing config file: $config_file"
-    # parallel execution
-    # python -m client.run_train --config_file "$config_file" &
-    # sequential execution (for execution time ablation study)
-    python -m client.run_train --config_file "$config_file"
-    # fi
+#     echo "Executing config file: $config_file"
+#     # parallel execution
+#     # python -m client.run_train --config_file "$config_file" &
+#     # sequential execution (for execution time ablation study)
+#     python -m client.run_train --config_file "$config_file"
+#     # fi
+# done
+
+# Loop through all .json config files in the specified directory
+# find "$CONFIG_DIR" -type f -name "fl*.json" | while read config_file; do
+find "$CONFIG_DIR" -type f -name "bcfl_*.json" | while read config_file; do
+
+    # Extract base name without the "_config.json" part
+    base_name=$(basename "$config_file" "_config.json")
+    
+    # Extract the dataset name from the path, assuming it's the name of the subdirectory in the config path
+    dataset_name=$(basename $(dirname "$config_file"))
+    
+    # Construct the log file path by including the dataset name in the log filename
+    log_file=$(echo "$config_file" | sed -e "s#./client/config/#../ablation_study/#" -e "s#_config.json#_${dataset_name}.log#")
+    echo $log_file
+    # Check if the output log file exists
+    if [[ -f "$log_file" ]]; then
+        echo "Skipping execution for: $config_file (Output log exists)"
+    else
+        echo "Executing config file: $config_file"
+        # Run the Python command for training
+        python -m client.run_train --config_file "$config_file" 
+    fi
 done
+
 
 # Wait for all background processes to finish
 wait
