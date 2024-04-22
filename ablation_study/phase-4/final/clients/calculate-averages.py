@@ -10,6 +10,8 @@ def seconds_to_time(seconds):
     """Convert total seconds back to MM:SS format."""
     minutes = seconds // 60
     seconds = seconds % 60
+    # print(minutes)
+    # print(seconds)
     return f"{int(minutes):02d}:{int(seconds):02d}"
 
 
