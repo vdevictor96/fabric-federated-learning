@@ -30,8 +30,8 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 # done
 
 # Loop through all .json config files in the specified directory
-# find "$CONFIG_DIR" -type f -name "fl*.json" | while read config_file; do
-find "$CONFIG_DIR" -type f -name "bcfl_*.json" | while read config_file; do
+find "$CONFIG_DIR" -type f -name "*.json" | while read config_file; do
+# find "$CONFIG_DIR" -type f -name "*.json" ! -name "*_seed3_*.json" ! -name "*_seed4_*.json" ! -name "*_seed5_*.json" ! -name "*_seed6_*.json" ! -name "*_seed7_*.json" ! -name "*_seed8_*.json" ! -name "*_seed9_*.json" ! -name "*_seed10_*.json" | while read config_file; do
 
     # Extract base name without the "_config.json" part
     base_name=$(basename "$config_file" "_config.json")
@@ -44,7 +44,10 @@ find "$CONFIG_DIR" -type f -name "bcfl_*.json" | while read config_file; do
     echo $log_file
     # Check if the output log file exists
     if [[ -f "$log_file" ]]; then
-        echo "Skipping execution for: $config_file (Output log exists)"
+        # echo "Skipping execution for: $config_file (Output log exists)"
+        echo "Executing config file: $config_file"
+        # Run the Python command for training
+        python -m client.run_train --config_file "$config_file" 
     else
         echo "Executing config file: $config_file"
         # Run the Python command for training

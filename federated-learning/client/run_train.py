@@ -298,6 +298,7 @@ def main():
 
         if last_model is not None:
             print('\n-------- Loading last model --------')
+            test_model = last_model
             print('-------- Last model loaded --------')
         else:
             print('\n-------- Loading best model from model_path --------')
