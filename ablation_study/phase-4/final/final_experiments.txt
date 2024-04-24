@@ -1,0 +1,60 @@
+
+------------- NEXT: ---------------
+
+
+--------- ONGOING ---------
+	
+
+
+
+---------------- DONE: ----------------------
+DONE 2a100-04 fl accs-times
+DONE 2a100-03 bcfl accs-times
+DONE 2a100-02 ml accs-times
+DONE 2a100-04 ml dp
+DONE 2a100-03 fl dp
+2a100-02 bcfl dp (REVIEW FOR ERRORS)
+2a100-04 fedprox data-dist
+2a100-03 fedavg data-dist
+2a100-04 - run fl with 3 clients and 10 clients 
+(- fixed hyperparams
+	fl0.5 and bcfl0.5 acl_dep_sad with other hyperparameters (not 58.77%)
+		lr 6e-3 58.77
+		lr 6e-2 57.23
+		lr 6e-2 bs 2 45.54  
+		- lr 6e-3 bs 2 58.62, 58.92
+		(update hyperparam in file)
+)
+
+2a100-02 - rerun acl_dep_sad fl0.5,  bcfl0.5
+2a100-04 - run bcfl num_clients (check for errors) 
+	
+fedavg_noniid twitter dep with other hyperparameters (not 72.82)
+		lr 6e-4 78.64, 72.82,
+		lr 6e-3 bs 2 72,82
+		lr 6e-6 72.82
+		---- !! lr 6e-4 last model WORKS
+		lr 6e-5 last model ?
+-FIX fedprox_noniid twitter_dep
+	fedprox-noniid twitter_dep other hyperparams (not 72.82)
+		lr 6e-3 72.82
+		lr 6e-4 72.82
+		lr 6e-3 bs 2 72.82
+		lr 6e-2 72.82
+		---- !! lr 6e-2/4? last model WORKS
+		
+2a100-02 rerun ./client/config/phase-4/final/data-dist/mixed_depression/fedavg_noniid_config.json
+
+
+2a100-04 - run bcfl 15 clients	(error ./client/config/phase-4/final/clients/twitter_dep/bcfl_small_c20_seed7_config.json)
+
+2a100-03 - bcfl data-dist twitter_dep lr 6e-4
+
+2a100-03 rerun data dist mixed_depression/fedavg_noniid with last model
+
+
+comments:
+2a100-04 busy with other processes (longer execution times)
+	fl accs-times
+	ml dp
+	fl0.5 bcfl 0.5 acl_dep_sad
