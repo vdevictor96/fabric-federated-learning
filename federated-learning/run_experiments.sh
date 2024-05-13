@@ -30,7 +30,7 @@ cd /local/vpaloma/fabric-federated-learning/federated-learning
 # done
 
 # Loop through all .json config files in the specified directory
-find "$CONFIG_DIR" -type f -name "*.json" | while read config_file; do
+find "$CONFIG_DIR" -type f -name "ml*.json" ! -name "ml_0_*.json" | while read config_file; do
 # find "$CONFIG_DIR" -type f -name "*.json" ! -name "*_seed3_*.json" ! -name "*_seed4_*.json" ! -name "*_seed5_*.json" ! -name "*_seed6_*.json" ! -name "*_seed7_*.json" ! -name "*_seed8_*.json" ! -name "*_seed9_*.json" ! -name "*_seed10_*.json" | while read config_file; do
 
     # Extract base name without the "_config.json" part
